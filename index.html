@@ -26,6 +26,7 @@
     <button class="tab" role="tab" aria-selected="false" data-t="gov">Government</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
     <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="pap">Papers</button>
     <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
     <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
   </div>
@@ -159,6 +160,21 @@
       </div>
     </section>
 
+    <section class="screen" id="s-pap">
+      <div class="grid g-pap">
+        <div class="panel">
+          <h2>Register <em>acts, orders and minutes</em></h2>
+          <div class="pbody flush" style="max-height:640px;overflow:auto">
+            <table id="pp-list"></table>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Document</h2>
+          <div class="pbody flush" id="pp-doc"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="screen" id="s-cx">
       <div class="panel" style="height:calc(100vh - 130px);min-height:520px">
         <h2>Concordance <em>public reference &middot; attested editing</em></h2>
@@ -206,6 +222,7 @@
 <script src="content/constituencies.js"></script>
 <script src="content/cabinet.js"></script>
 <script src="content/instruments.js"></script>
+<script src="content/minutes.js"></script>
 <script src="content/functional.js"></script>
 <script src="content/names.js"></script>
 <script src="content/characters.js"></script>
@@ -216,6 +233,7 @@
 <script src="content/index.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/orbitchart.js"></script>
+<script src="js/papers.js"></script>
 <script src="js/encyclopedia.js"></script>
 <script src="js/ui.js"></script>
 <script>

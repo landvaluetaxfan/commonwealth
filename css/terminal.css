@@ -536,3 +536,16 @@ img.dith{
 .c-emulation{background:#4a7c8c;}
 .c-uplift{background:#6b8f47;}
 .c-synthetic{background:#7a5c8c;}
+
+/* ---------- Papers register ---------- */
+.g-pap{grid-template-columns:290px minmax(0,1fr);}
+#pp-doc{background:#f4f0e4;overflow:auto;max-height:640px;}
+#pp-doc .paper{min-height:0;}
+.madestamp{
+  border:2px solid #4e4838;color:#4e4838;padding:5px 12px;
+  font-family:var(--f-ui);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  text-align:center;line-height:1.35;
+}
+.madestamp small{display:block;font-size:8px;letter-spacing:.11em;}
+/* the ceremony fires once and stays drawn */
+.paper.sig-done #sigpath{stroke-dasharray:none;stroke-dashoffset:0;}

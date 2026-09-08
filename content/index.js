@@ -6,7 +6,8 @@ const CONTENT = (function () {
     stations: STATIONS,
     constituencies: typeof CONSTITUENCIES !== "undefined" ? CONSTITUENCIES : [],
     cabinet: typeof CABINET !== "undefined" ? CABINET : [],
-    instruments: typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : [], characters: CHARACTERS, bills: BILLS, events: EVENTS, glossary: GLOSSARY, encyclopedia: ENCYCLOPEDIA,
+    instruments: typeof INSTRUMENTS !== "undefined" ? INSTRUMENTS : [],
+    minutes: typeof MINUTES !== "undefined" ? MINUTES : [], characters: CHARACTERS, bills: BILLS, events: EVENTS, glossary: GLOSSARY, encyclopedia: ENCYCLOPEDIA,
     functional: typeof FUNCTIONAL !== "undefined" ? FUNCTIONAL : [],
     archetypes: typeof ARCHETYPES !== "undefined" ? ARCHETYPES : []
   };

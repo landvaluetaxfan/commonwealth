@@ -64,7 +64,9 @@ const UI = (function () {
     });
 
     $("#btn-new").addEventListener("click", () => {
-      st = Engine.newGame(C); currentEvent = null; lastResult = null; drawAll();
+      st = Engine.newGame(C); currentEvent = null; lastResult = null;
+      if (typeof Papers !== "undefined") Papers.reset();
+      drawAll();
     });
     drawAll();
   }
@@ -72,6 +74,7 @@ const UI = (function () {
   function drawAll() {
     drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawOrbit(); drawLog(); drawStatus();
     if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
+    if (typeof Papers !== "undefined") Papers.render(st, C);
   }
 
   /* ---------- title / status ---------- */

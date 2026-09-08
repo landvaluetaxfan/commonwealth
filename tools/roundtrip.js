@@ -2,7 +2,7 @@
    game is byte-for-byte unchanged in behaviour. If this fails, the editor
    would silently corrupt content, which is the one thing it must never do. */
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
-const CF=["setup","parties","stations","constituencies","cabinet","instruments","characters","bills","events","glossary","encyclopedia"];
+const CF=["setup","parties","stations","constituencies","cabinet","instruments","minutes","characters","bills","events","glossary","encyclopedia"];
 const src=CF.map(f=>fs.readFileSync(path.join(root,"content",f+".js"),"utf8")).join("\n");
 vm.runInThisContext(src+"\n;globalThis.__A={SETUP,PARTIES,CURRENTS,STATIONS,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA,CONSTITUENCIES};");
 const A=globalThis.__A;

@@ -1,6 +1,6 @@
 /* Concordance integrity: does every [[link]] and see-also resolve? */
 const fs=require("fs"), vm=require("vm"), path=require("path"), root=path.join(__dirname,"..");
-const files=["setup","parties","stations","constituencies","cabinet","instruments","characters","bills","events","glossary","encyclopedia"]
+const files=["setup","parties","stations","constituencies","cabinet","instruments","minutes","characters","bills","events","glossary","encyclopedia"]
   .map(f=>path.join(root,"content",f+".js"));
 vm.runInThisContext(files.map(f=>fs.readFileSync(f,"utf8")).join("\n")+
   "\n;globalThis.__G={ENCYCLOPEDIA,PARTIES,STATIONS,BILLS,CHARACTERS,GLOSSARY};");

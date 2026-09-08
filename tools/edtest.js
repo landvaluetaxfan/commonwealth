@@ -21,7 +21,7 @@ const w = dom.window;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => null;
 w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = function () {};
 
-const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/functional.js",
+const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/characters.js","content/bills.js","content/glossary.js","content/archetypes.js","content/names.js",
   "content/events.js","content/encyclopedia.js","content/index.js",
   "js/engine.js","js/schema.js","js/refs.js","js/coverage.js","js/serialise.js","js/editor.js"];

@@ -12,6 +12,7 @@
 
 const BILLS = [
   { id:"divergence", ref:"HC 4/117", stage:"committee", owner:"psa", priority:true,
+    referrable:true, signalled:true,   /* Tenaya has privately indicated he would refer this */
     title:"Divergence Threshold (Amendment) Bill",
     summary:"Reduces the statutory divergence threshold from 168 subjective hours to 40. "+
             "An instance separated for longer than the threshold becomes a person in law: "+
@@ -50,7 +51,7 @@ const BILLS = [
             {wire:"THERMAL QUOTA REALLOCATED; QUOTA PRICE FALLS SHARPLY"}],
     onFail:[{scalar:{thermal_margin:-4}},{price:{thermal:8}}] },
 
-  { id:"shedorder", ref:"HC 4/061", stage:"blocked", owner:"cu",
+  { id:"shedorder", ref:"HC 4/061", stage:"blocked", owner:"cu", referrable:true,
     title:"Shed Order (Civilian Oversight) Bill",
     summary:"Places the published shedding priority under civilian review. Touches "+
             "life-support integrity, so the dual test applies.",

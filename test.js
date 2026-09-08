@@ -1,6 +1,6 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
-const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js",
+const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js",
                "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);

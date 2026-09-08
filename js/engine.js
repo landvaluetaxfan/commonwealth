@@ -348,13 +348,102 @@ const Engine = (function () {
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
-    apply(st, C, result.carries ? b.onPass : b.onFail);
-    st.bills[billId].stage = result.carries ? "passed" : "defeated";
-    st.bills[billId].dead = true;
-    st.log.unshift({ sitting: st.sitting,
-      text: "Division: " + b.title + " — " + (result.carries ? "carried" : "defeated") +
-            (paid.seats ? " (" + paid.seats + " whipped)" : "") });
-    return { result: result, paid: paid };
+    const bs = st.bills[billId];
+
+    if (!result.carries) {
+      apply(st, C, b.onFail);
+      bs.stage = "defeated"; bs.dead = true;
+      st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — defeated" +
+        (paid.seats ? " (" + paid.seats + " whipped)" : "") });
+      return { result: result, paid: paid, assent: null };
+    }
+
+    /* Carrying is not the end. The bill goes to the President, who signs or
+       refers it for constitutional review. Referral is not a veto — it delays
+       and returns a verdict — but it is the reserve power with the sharpest
+       teeth, and Tenaya has privately indicated he would use it on a threshold
+       bill carried on a contested dual majority. */
+    bs.stage = "awaiting_assent";
+    bs.carriedAt = st.sitting;
+    bs.contested = !!(b.dualMajority && result.functional.aye < result.functional.need + 3);
+    st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — carried" +
+      (paid.seats ? " (" + paid.seats + " whipped)" : "") });
+    const a = presidentDecides(st, C, billId, result);
+    return { result: result, paid: paid, assent: a };
+  }
+
+  /* ---------------------------------------------------------
+     PRESIDENTIAL ASSENT
+
+     Deterministic, per the brief: referral is a condition on the state,
+     never a random roll. Three things make it likely — a cold
+     relationship, a bill the office has signalled about, and a dual
+     majority carried on a narrow functional margin.
+     --------------------------------------------------------- */
+
+  function referralRisk(st, C, billId) {
+    const b = C.billById[billId], bs = st.bills[billId];
+    if (!b.referrable) return { willRefer: false, reasons: [] };
+    const reasons = [];
+    if (st.president.relationship < 35) reasons.push("relations with the office are cold");
+    if (bs.contested) reasons.push("carried on a contested dual majority");
+    if (b.signalled) reasons.push("the office signalled it would refer this measure");
+    if (st.flags.board_packed || st.flags.legal_board_packed)
+      reasons.push("licensing boards were altered by order during its passage");
+    return { willRefer: reasons.length >= 2, reasons: reasons };
+  }
+
+  function presidentDecides(st, C, billId, result) {
+    const b = C.billById[billId], bs = st.bills[billId];
+    const risk = referralRisk(st, C, billId);
+    if (risk.willRefer) {
+      bs.stage = "referred";
+      bs.returnsAt = st.sitting + 4 + (bs.contested ? 4 : 0);
+      st.log.unshift({ sitting: st.sitting, text: "Referred for constitutional review: " + b.title });
+      st.wire.unshift({ sitting: st.sitting,
+        text: "PRESIDENT REFERS " + b.title.toUpperCase() + " FOR CONSTITUTIONAL REVIEW" });
+      return { referred: true, reasons: risk.reasons, returnsAt: bs.returnsAt };
+    }
+    return assent(st, C, billId);
+  }
+
+  /* Signing is where the effects land, and where the ceremony fires. */
+  function assent(st, C, billId) {
+    const b = C.billById[billId], bs = st.bills[billId];
+    apply(st, C, b.onPass);
+    bs.stage = "assented"; bs.dead = true; bs.assentedAt = st.sitting;
+    st.log.unshift({ sitting: st.sitting, text: "Assented: " + b.title });
+    /* The ceremony is reserved for acts that cannot be undone, so it fires only
+       on a bill that needed more than a simple majority. Six or eight times a
+       playthrough, not on every division. */
+    const ceremony = !!b.dualMajority;
+    if (ceremony) st.pendingCeremony = billId;
+    return { referred: false, assented: true, ceremony: ceremony };
+  }
+
+  /* Referred bills come back. The verdict is deterministic too: a measure that
+     was carried narrowly on a packed bench does not survive review. */
+  function reviewReturns(st, C) {
+    const out = [];
+    Object.keys(st.bills).forEach(id => {
+      const bs = st.bills[id];
+      if (bs.stage !== "referred" || bs.returnsAt == null) return;
+      if (st.sitting < bs.returnsAt) return;
+      const b = C.billById[id];
+      const struck = bs.contested && (st.flags.board_packed || st.flags.legal_board_packed);
+      if (struck) {
+        bs.stage = "struck"; bs.dead = true;
+        apply(st, C, b.onFail);
+        st.log.unshift({ sitting: st.sitting, text: "Struck on review: " + b.title });
+        st.wire.unshift({ sitting: st.sitting, text: "COURT STRIKES " + b.title.toUpperCase() });
+        out.push({ bill: id, struck: true });
+      } else {
+        assent(st, C, id);
+        st.wire.unshift({ sitting: st.sitting, text: "REVIEW UPHOLDS " + b.title.toUpperCase() + "; ACT SIGNED" });
+        out.push({ bill: id, struck: false });
+      }
+    });
+    return out;
   }
 
   /* ---------------------------------------------------------
@@ -822,6 +911,7 @@ const Engine = (function () {
 
   function advance(st, C) {
     st.sitting += 1;
+    if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
   }
@@ -861,6 +951,7 @@ const Engine = (function () {
     partyPopular, partyFunctional, partyTotal,
     division, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
+    assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
