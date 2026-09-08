@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circumterrestrial Commonwealth — Executive Terminal</title>
+<link rel="stylesheet" href="css/terminal.css">
+<style>
+.prose p{font-size:12px;line-height:1.5;margin:0 0 8px;}
+.choice{width:100%;white-space:normal;line-height:1.35;padding:4px 8px;}
+#gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
+#gov-wire .post p{margin:0;font-size:11px;}
+.g-sit{grid-template-columns:minmax(0,1fr) 300px;}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="titlebar">
+    <span>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</span>
+    <span class="sys" id="tb-sys"></span>
+    <span class="boxes"><i></i><i></i><i></i></span>
+  </div>
+
+  <div id="tabstrip" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-t="sit">Sitting</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="gov">Government</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="cham">Chamber</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="orb">Orbit</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="cx">Concordance</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="log">Record</button>
+  </div>
+
+  <div id="viewport">
+
+    <section class="screen on" id="s-sit">
+      <div class="grid g-sit">
+        <div class="panel">
+          <h2><span id="sitting-hdr">Sitting</span></h2>
+          <div class="pbody" id="sitting-body"></div>
+        </div>
+        <div class="stack">
+          <div class="panel"><h2>Indicators</h2><div class="pbody" id="gov-meters-mirror"></div></div>
+          <div class="panel"><h2>Wire</h2><div class="pbody flush" id="gov-wire"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-gov">
+      <div class="grid g-gov">
+        <div class="stack">
+          <div class="panel">
+            <h2>Coalition <em id="gov-coalition-hdr"></em></h2>
+            <div class="pbody flush">
+              <table id="gov-coalition"></table>
+              <div class="pbody"><div class="note" id="gov-margin"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Own party currents</h2>
+            <div class="pbody flush"><table id="gov-currents"></table></div>
+          </div>
+          <div class="panel">
+            <h2>Coalition ledger <em>permanent</em></h2>
+            <div class="pbody flush">
+              <table id="gov-ledger"></table>
+              <div class="pbody"><div class="note" id="gov-ledger-note"></div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Scarcity <em>index, 100 at series open</em></h2>
+            <div class="pbody" id="gov-prices"></div>
+          </div>
+          <div class="panel">
+            <h2>Order paper time</h2>
+            <div class="pbody" id="gov-slots"></div>
+          </div>
+          <div class="panel">
+            <h2>Instruments <em>fast, deniable, prayable</em></h2>
+            <div class="pbody flush">
+              <table id="gov-si"></table>
+              <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
+                An instrument needs no majority and can be revoked. A negative-procedure order is
+                in force the moment it is made and stands unless the House prays against it inside
+                the window.</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Cabinet</h2>
+            <div class="pbody flush"><table id="gov-cabinet"></table></div>
+          </div>
+          <div class="panel">
+            <h2>Presidency</h2>
+            <div class="pbody" id="gov-pres"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel">
+            <h2>Order paper <em>select a bill</em></h2>
+            <div class="pbody flush"><table id="gov-bills"></table></div>
+          </div>
+          <div class="panel">
+            <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
+            <div class="pbody" id="bill-detail" data-bill="divergence"></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="panel"><h2>Standing indicators</h2><div class="pbody" id="gov-meters"></div></div>
+          <div class="panel">
+            <h2>Files</h2>
+            <div class="pbody">
+              <div class="btnrow" style="margin-top:0">
+                <button class="btn" id="btn-save">Save</button>
+                <button class="btn" id="btn-load">Load</button>
+                <button class="btn" id="btn-new">New game</button>
+              </div>
+              <input type="file" id="file-load" accept=".json" style="display:none">
+              <div class="note" style="margin-top:6px">State is versioned. Saves from older versions migrate on load.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-cham">
+      <div class="grid g-cham">
+        <div class="panel">
+          <h2>Parliament &mdash; House of Delegates <em>district / list / functional</em></h2>
+          <div class="pbody flush">
+            <svg viewBox="0 0 720 300" role="img" aria-label="Seating diagram">
+              <g id="hemi"></g>
+              <line x1="360" y1="52" x2="360" y2="278" stroke="#75776e" stroke-dasharray="4 3"/>
+            </svg>
+            <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b></div>
+            <div class="legend" id="chamber-legend"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Composition</h2>
+          <div class="pbody flush"><table id="comp-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-orb">
+      <div class="panel" style="margin-bottom:5px">
+        <h2>Habitat schematic <em>altitude bands &middot; not to lateral scale</em></h2>
+        <div class="pbody flush plate" id="orbit-chart"></div>
+        <div class="pbody okeys" id="orbit-key"></div>
+      </div>
+      <div class="grid g-orb">
+        <div class="panel">
+          <h2>Constituencies</h2>
+          <div class="pbody flush" style="max-height:520px;overflow:auto"><table id="orbit-table"></table></div>
+        </div>
+        <div class="panel">
+          <h2><span id="station-hdr"></span> <em id="station-sub"></em></h2>
+          <div class="pbody" id="station-detail" data-station="ashfield"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-cx">
+      <div class="panel" style="height:calc(100vh - 130px);min-height:520px">
+        <h2>Concordance <em>public reference &middot; attested editing</em></h2>
+        <div class="pbody flush" style="flex:1;min-height:0">
+          <div class="cx-wrap">
+            <div id="cx-side">
+              <div class="cx-brand"><h3>Concordance</h3><p>the attested encyclopedia</p></div>
+              <div class="cx-search">
+                <button class="btn" id="cx-back" title="Back" disabled>&larr;</button>
+                <input type="text" id="cx-q" placeholder="Search" aria-label="Search the Concordance">
+                <button class="btn" id="cx-goto">Go</button>
+              </div>
+              <div id="cx-nav"></div>
+            </div>
+            <div id="cx-body"><div id="cx-article"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="s-log">
+      <div class="panel">
+        <h2>Record of decisions</h2>
+        <div class="pbody flush"><table id="log-body"></table></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="statusbar">
+    <span id="sb-state">READY</span>
+    <span id="sb-chapter"></span>
+    <span id="sb-slots"></span>
+    <span id="sb-sig"></span>
+    <span id="sb-conf"></span>
+    <span id="sb-margin"></span>
+    <span class="grow">Divergence Threshold (Amendment) Bill &mdash; dual test applies</span>
+    <span id="sb-thermal"></span>
+  </div>
+</div>
+
+<script src="content/setup.js"></script>
+<script src="content/parties.js"></script>
+<script src="content/stations.js"></script>
+<script src="content/constituencies.js"></script>
+<script src="content/cabinet.js"></script>
+<script src="content/instruments.js"></script>
+<script src="content/functional.js"></script>
+<script src="content/names.js"></script>
+<script src="content/characters.js"></script>
+<script src="content/bills.js"></script>
+<script src="content/glossary.js"></script>
+<script src="content/events.js"></script>
+<script src="content/encyclopedia.js"></script>
+<script src="content/index.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/orbitchart.js"></script>
+<script src="js/encyclopedia.js"></script>
+<script src="js/ui.js"></script>
+<script>
+  const state = Engine.newGame(CONTENT);
+  UI.boot(state, CONTENT);
+  // mirror the indicator panel onto the Sitting screen
+  const mo = new MutationObserver(() => {
+    document.getElementById("gov-meters-mirror").innerHTML =
+      document.getElementById("gov-meters").innerHTML;
+  });
+  mo.observe(document.getElementById("gov-meters"), {childList:true, subtree:true});
+  document.getElementById("gov-meters-mirror").innerHTML =
+    document.getElementById("gov-meters").innerHTML;
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Content Editor — Circumterrestrial Commonwealth</title>
+<link rel="stylesheet" href="css/terminal.css">
+<link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+<div id="shell">
+  <div id="titlebar">
+    <span>Content Editor &mdash; Circumterrestrial Commonwealth</span>
+    <span class="sys" id="ed-file">local model</span>
+    <span class="boxes"><i></i><i></i><i></i></span>
+  </div>
+
+  <div id="tabstrip" role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-t="events">Events</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="bills">Bills</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="parties">Parties</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="stations">Stations</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="constituencies">Seats</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="functional">Functional</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="characters">Characters</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="concordance">Concordance</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="glossary">Glossary</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="images">Images</button>
+    <button class="tab" role="tab" aria-selected="false" data-t="graph">Branches</button>
+  </div>
+
+  <div id="viewport" style="padding:5px">
+    <div id="ed-main" class="ed-wrap">
+
+      <div class="panel ed-col">
+        <h2>Entries <em id="ed-count"></em></h2>
+        <div class="pbody" style="padding:4px 5px;border-bottom:1px solid var(--chrome-dk)">
+          <input type="text" id="ed-filter" class="ed-f" placeholder="Filter…" style="width:100%">
+        </div>
+        <div id="ed-list"></div>
+        <div class="pbody" style="border-top:1px solid var(--chrome-dk)">
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn" id="ed-new">New</button>
+            <button class="btn" id="ed-dup">Duplicate</button>
+            <button class="btn" id="ed-del">Delete</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="ed-undo" disabled>Undo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel ed-col">
+        <h2>Editor <em>changes are held in memory until exported</em></h2>
+        <div class="pbody ed-scroll" id="ed-form"></div>
+      </div>
+
+      <div class="panel ed-col">
+        <h2>What to do next</h2>
+        <div id="ed-coverage" class="ed-scroll"></div>
+      </div>
+
+      <div class="panel ed-col">
+        <h2>Validation</h2>
+        <div id="ed-status"></div>
+        <div class="pbody" style="border-top:1px solid var(--chrome-dk)">
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn" id="ed-previewbtn">Preview file</button>
+            <button class="btn" id="ed-exportone">Export this file</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="ed-export">Export all content files</button>
+          </div>
+          <div class="btnrow">
+            <button class="btn" id="ed-discard">Discard draft &amp; reload</button>
+          </div>
+          <div class="note" style="margin-top:6px">
+            Exported files land in <b>Downloads</b>. Move them into <b>content/</b>,
+            replacing what is there, then reload the game.<br><br>
+            A draft is kept in this browser so a closed tab does not lose work,
+            but <b>only exported files reach the game.</b><br><br>
+            After exporting, run <b>node tools/bundle.js</b> and upload
+            <b>orbital.bundle.md</b> to the project knowledge base.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="ed-graphwrap" style="display:none">
+      <div class="panel">
+        <h2>Branch structure <em>click a node to edit it</em></h2>
+        <div class="pbody">
+          <div class="ed-legend">
+            <span><i style="border-color:#8a3222"></i>queues directly</span>
+            <span><i style="border-color:#3d5c33"></i>unlocks via flag</span>
+            <span><i style="border-color:#9a9c92;border-top-style:dashed"></i>blocks via flag</span>
+          </div>
+          <div id="ed-graph"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statusbar">
+    <span id="sb-valid">VALID</span>
+    <span id="sb-dirty">SAVED</span>
+    <span id="sb-counts"></span>
+    <span class="grow">Editing in memory. Export writes content files in the same format you would hand-write.</span>
+  </div>
+</div>
+
+<div id="ed-previewwrap" style="display:none">
+  <div id="titlebar" style="position:static">
+    <span>File preview</span>
+    <span class="boxes"><button class="btn" id="ed-closepreview">Close</button></span>
+  </div>
+  <pre id="ed-preview"></pre>
+</div>
+
+<datalist id="ed-flags"></datalist>
+
+<script src="content/setup.js"></script>
+<script src="content/parties.js"></script>
+<script src="content/stations.js"></script>
+<script src="content/constituencies.js"></script>
+<script src="content/cabinet.js"></script>
+<script src="content/instruments.js"></script>
+<script src="content/functional.js"></script>
+<script src="content/archetypes.js"></script>
+<script src="content/names.js"></script>
+<script src="content/characters.js"></script>
+<script src="content/bills.js"></script>
+<script src="content/glossary.js"></script>
+<script src="content/events.js"></script>
+<script src="content/encyclopedia.js"></script>
+<script src="content/index.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/schema.js"></script>
+<script src="js/refs.js"></script>
+<script src="js/coverage.js"></script>
+<script src="js/serialise.js"></script>
+<script src="js/editor.js"></script>
+<script>Editor.boot();</script>
+</body>
+</html>
