@@ -64,4 +64,24 @@ The Act permits the Registry to set the lapse period. It does not require the Re
 
 I would ordinarily copy this to the Minister. I have not.` }
 
+,
+
+  { id:"min_130", file:"PM/4/2287/130", sitting:1,
+    classification:"Restricted — ministerial",
+    signedBy:"Marit Deshan MP · Prime Minister",
+    from:"The Prime Minister",
+    to:"Minister for Attestation and the Registry",
+    copy:["Cabinet Secretary"],
+    notCopied:["Chief Whip","Law Officer"],
+    subject:"Licensing boards — direction as to composition",
+    body:`You have the power to alter the composition of a licensing board by order. I am writing to say that I know that, and that you should not use it without writing to me first.
+
+1. No licensing order is to be laid without a minute to this office setting out the number of electors added or removed and the constituency affected.
+2. Where an order would move a functional seat, that fact is to be stated in terms. I do not want to read it in the Spindle.
+3. This direction is not a refusal. It is a record.
+
+I am aware of how this minute will read if it is ever produced. I would rather it read as caution than as ignorance.`,
+    onSign:[ { flag:"licensing_direction" }, { scalar:{ public_standing:2 } },
+             { relationship:{ gb_chair:6 } } ] }
+
 ];

@@ -107,11 +107,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
-.g-gov{grid-template-columns:250px minmax(0,1fr) 260px;}
+.g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
 .g-cham{grid-template-columns:minmax(0,1fr) 300px;}
 .g-orb{grid-template-columns:minmax(0,1fr) 330px;}
 .g-disp{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
-.g-pap{grid-template-columns:210px minmax(0,1fr);}
 .g-elec{grid-template-columns:290px minmax(0,1fr) 250px;}
 .stack{display:flex;flex-direction:column;gap:5px;min-width:0;}
 
@@ -265,9 +264,9 @@ tr.sel td{background:#dfe4d3;}
 .sigline .rule{border-bottom:1px solid #17140e;height:52px;position:relative;}
 .sigline svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
 .sigline .cap{font-family:var(--f-ui);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#4e4838;padding-top:3px;}
-#sigpath{fill:none;stroke:#1b2a5c;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-.sig-armed #sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
-.sig-draw #sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;transition:stroke-dashoffset 1.9s cubic-bezier(.55,.06,.3,1);}
+#sigpath,.sigpath{fill:none;stroke:#1b2a5c;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.sig-armed #sigpath,.sig-armed .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
+.sig-draw #sigpath,.sig-draw .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;transition:stroke-dashoffset 1.9s cubic-bezier(.55,.06,.3,1);}
 .stamp{
   border:2px solid #8a3222;color:#8a3222;padding:5px 12px;
   font-family:var(--f-ui);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
@@ -538,7 +537,7 @@ img.dith{
 .c-synthetic{background:#7a5c8c;}
 
 /* ---------- Papers register ---------- */
-.g-pap{grid-template-columns:290px minmax(0,1fr);}
+.g-pap{grid-template-columns:340px minmax(0,1fr);}
 #pp-doc{background:#f4f0e4;overflow:auto;max-height:640px;}
 #pp-doc .paper{min-height:0;}
 .madestamp{
@@ -548,4 +547,13 @@ img.dith{
 }
 .madestamp small{display:block;font-size:8px;letter-spacing:.11em;}
 /* the ceremony fires once and stays drawn */
-.paper.sig-done #sigpath{stroke-dasharray:none;stroke-dashoffset:0;}
+.paper.sig-done #sigpath,.paper.sig-done .sigpath{stroke-dasharray:none;stroke-dashoffset:0;}
+
+/* The sitting screen is where the game is actually read and played, so its
+   type is sized for reading rather than for a control panel. */
+#sitting-body .rulehead{font-size:10px;}
+#s-sit .panel > h2{font-size:11px;}
+.ed-none{}
+
+.signbtn{font-size:12px;padding:5px 14px;}
+.sigblock .rule svg{position:absolute;left:4px;bottom:1px;overflow:visible;}

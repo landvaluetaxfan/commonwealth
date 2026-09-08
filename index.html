@@ -6,11 +6,15 @@
 <title>Circumterrestrial Commonwealth — Executive Terminal</title>
 <link rel="stylesheet" href="css/terminal.css">
 <style>
-.prose p{font-size:12px;line-height:1.5;margin:0 0 8px;}
-.choice{width:100%;white-space:normal;line-height:1.35;padding:4px 8px;}
+.prose p{font-size:13.5px;line-height:1.62;margin:0 0 10px;max-width:66ch;}
+.choice{
+  width:100%;white-space:normal;text-align:left;
+  font-size:13px;line-height:1.4;padding:7px 10px;
+}
+.choice:hover{background:#dfe4d3;}
 #gov-wire .post{border-bottom:1px solid var(--chrome-dk);padding:4px 6px;background:var(--field);}
 #gov-wire .post p{margin:0;font-size:11px;}
-.g-sit{grid-template-columns:minmax(0,1fr) 300px;}
+.g-sit{grid-template-columns:minmax(0,1fr) 320px;}
 </style>
 </head>
 <body>
@@ -68,28 +72,6 @@
             </div>
           </div>
           <div class="panel">
-            <h2>Scarcity <em>index, 100 at series open</em></h2>
-            <div class="pbody" id="gov-prices"></div>
-          </div>
-          <div class="panel">
-            <h2>Order paper time</h2>
-            <div class="pbody" id="gov-slots"></div>
-          </div>
-          <div class="panel">
-            <h2>Instruments <em>fast, deniable, prayable</em></h2>
-            <div class="pbody flush">
-              <table id="gov-si"></table>
-              <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
-                An instrument needs no majority and can be revoked. A negative-procedure order is
-                in force the moment it is made and stands unless the House prays against it inside
-                the window.</div></div>
-            </div>
-          </div>
-          <div class="panel">
-            <h2>Cabinet</h2>
-            <div class="pbody flush"><table id="gov-cabinet"></table></div>
-          </div>
-          <div class="panel">
             <h2>Presidency</h2>
             <div class="pbody" id="gov-pres"></div>
           </div>
@@ -103,9 +85,21 @@
             <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
             <div class="pbody" id="bill-detail" data-bill="divergence"></div>
           </div>
+          <div class="panel">
+            <h2>Order paper time <em>the currency that buys partners</em></h2>
+            <div class="pbody" id="gov-slots"></div>
+          </div>
         </div>
         <div class="stack">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody" id="gov-meters"></div></div>
+          <div class="panel">
+            <h2>Scarcity <em>index, 100 at open</em></h2>
+            <div class="pbody" id="gov-prices"></div>
+          </div>
+          <div class="panel">
+            <h2>Cabinet</h2>
+            <div class="pbody flush"><table id="gov-cabinet"></table></div>
+          </div>
           <div class="panel">
             <h2>Files</h2>
             <div class="pbody">
@@ -162,10 +156,21 @@
 
     <section class="screen" id="s-pap">
       <div class="grid g-pap">
-        <div class="panel">
-          <h2>Register <em>acts, orders and minutes</em></h2>
-          <div class="pbody flush" style="max-height:640px;overflow:auto">
-            <table id="pp-list"></table>
+        <div class="stack">
+          <div class="panel">
+            <h2>Instruments <em>signed, not voted</em></h2>
+            <div class="pbody flush">
+              <table id="gov-si"></table>
+              <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
+                An order needs no majority and can be revoked. Signing one puts it in force at
+                once; it stands unless the House prays against it inside the window.</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Register <em>acts, orders and minutes</em></h2>
+            <div class="pbody flush" style="max-height:340px;overflow:auto">
+              <table id="pp-list"></table>
+            </div>
           </div>
         </div>
         <div class="panel">

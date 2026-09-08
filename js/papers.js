@@ -21,7 +21,7 @@
 const Papers = (function () {
   "use strict";
 
-  let st, C, sel = null, drawn = {};
+  let st, C, sel = null, drawn = {}, onChange = null;
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -128,6 +128,13 @@ const Papers = (function () {
       ${banner}${body}${sig}</div>`, ceremonial: ceremonial && !already };
   }
 
+  /* A minute is signed and served. Signing is the decision — the distribution
+     list is served the moment the pen leaves the paper, and who was on it
+     becomes a fact about the world. */
+  function minuteSignable(m) {
+    return !st.signedMinutes || !st.signedMinutes[m.id];
+  }
+
   function instrumentDoc(it) {
     const si = it.si, s = it.state;
     const post = (C.cabinetById || {})[si.author];
@@ -151,14 +158,29 @@ const Papers = (function () {
           "against it within " + (si.prayer_window || 6) + " sittings. A prayer requires a " +
           "simple majority of elected members only."}
       ${si.revocable ? " It may be revoked by a further instrument." : ""}</p>
-      <div class="sigblock"><div class="sigline"><div class="cap">Made by the Minister
-        &middot; no ceremony attaches to an instrument</div></div>
+      <div class="sigblock">
+        <div class="sigline"><div class="rule">
+          <svg width="228" height="52" viewBox="0 0 228 52" aria-hidden="true">
+            <path class="sigpath" d="${SIG_PATH}"/></svg></div>
+          <div class="cap">${esc(minister(si.author))} &middot; ${esc(postName(si.author))}</div></div>
         <div class="madestamp">Made<small>${esc(si.number)} &middot; SITTING ${s.madeAt}</small></div>
-      </div></div>`, ceremonial: false };
+      </div></div>`, ceremonial: false, drawSig: true };
+  }
+
+  function minister(postId) {
+    const p = st.cabinet[postId];
+    if (!p || !p.holder) return "vacant";
+    const ch = C.characterById[p.holder];
+    return ch ? ch.name.replace(/^Rt\. Hon\. /, "") : p.holder.replace(/_/g, " ");
+  }
+  function postName(postId) {
+    const p = (C.cabinetById || {})[postId];
+    return p ? "Minister for " + p.name : postId.replace(/_/g, " ");
   }
 
   function minuteDoc(it) {
     const m = it.minute;
+    const signed = st.signedMinutes && st.signedMinutes[m.id];
     const line = (label, v) => `<div class="row"><span>${label}</span><span>${v}</span></div>`;
     return { html: `<div class="paper">
       ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth &middot; Anselm Ring",
@@ -176,7 +198,16 @@ const Papers = (function () {
       ${m.body.split(/\n\n+/).map(p => p.trim().startsWith("1.")
         ? `<ol>${p.split(/\n(?=\d+\.)/).map(x => `<li>${esc(x.replace(/^\d+\.\s*/, ""))}</li>`).join("")}</ol>`
         : `<p>${esc(p)}</p>`).join("")}
-    </div>`, ceremonial: false };
+      <div class="sigblock">
+        <div class="sigline"><div class="rule">
+          ${signed ? `<svg width="228" height="52" viewBox="0 0 228 52" aria-hidden="true">
+            <path class="sigpath" d="${SIG_PATH}"/></svg>` : ""}</div>
+          <div class="cap">${esc(m.signedBy || "The Prime Minister")}</div></div>
+        ${signed
+          ? `<div class="madestamp">Served<small>${esc(m.file)} &middot; SITTING ${signed}</small></div>`
+          : `<button class="btn signbtn" data-sign="${m.id}">Sign and serve</button>`}
+      </div>
+    </div>`, ceremonial: false, drawSig: !!signed };
   }
 
   /* ---------- render ---------- */
@@ -205,13 +236,29 @@ const Papers = (function () {
               : it.kind === "instrument" ? instrumentDoc(it) : minuteDoc(it);
     box.innerHTML = doc.html;
 
-    if (doc.ceremonial) {
-      const path = box.querySelector("#sigpath"), paper = box.querySelector(".paper");
+    box.querySelectorAll("[data-sign]").forEach(btn => btn.addEventListener("click", () => {
+      st.signedMinutes = st.signedMinutes || {};
+      st.signedMinutes[btn.dataset.sign] = st.sitting;
+      const m = (C.minutes || []).find(x => x.id === btn.dataset.sign);
+      if (m) {
+        st.log.unshift({ sitting: st.sitting, text: "Minute signed and served: " + m.subject });
+        if (m.onSign) Engine.apply(st, C, m.onSign);
+      }
+      delete drawn[btn.dataset.sign];
+      if (onChange) onChange(); else render(st, C);
+    }));
+
+    /* Draw any signature on this document that has not been drawn before.
+       The stroke is the player's own hand, so it fires on the act rather
+       than on arriving at the page. */
+    if (doc.ceremonial || doc.drawSig) {
+      const paper = box.querySelector(".paper");
+      const path = box.querySelector("#sigpath") || box.querySelector(".sigpath");
       if (path && paper) {
         const len = path.getTotalLength();
         paper.style.setProperty("--len", len);
-        /* one frame, so the armed state applies before the transition */
-        requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (drawn[it.id]) paper.classList.add("sig-done");
+        else requestAnimationFrame(() => requestAnimationFrame(() => {
           paper.classList.add("sig-draw");
           drawn[it.id] = true;
         }));
@@ -220,6 +267,7 @@ const Papers = (function () {
   }
 
   function reset() { drawn = {}; sel = null; }
+  function onUpdate(fn) { onChange = fn; }
 
-  return { render, reset };
+  return { render, reset, onUpdate };
 })();
