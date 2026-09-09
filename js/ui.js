@@ -66,7 +66,7 @@ const UI = (function () {
   }
 
   function drawAll() {
-    drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawOrbit(); drawLog(); drawStatus();
+    drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
     if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
     if (typeof Papers !== "undefined") Papers.render(st, C);
   }
@@ -643,12 +643,15 @@ const UI = (function () {
       n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
     });
     const bands = [["ring", "Ring — geostationary"], ["far", "Far band"], ["middle", "Middle band"], ["low", "Low band — industrial"], ["external", "External"]];
+    /* Two columns. The band, ratio, closure and suspension figures moved to
+       the detail panel: six numeric columns crowded the chart off the screen
+       and were unreadable as a table anyway, being six unrelated scales. */
     $("#orbit-table").innerHTML =
-      "<thead><tr><th>Station</th><th>Band</th><th class='n'>Seats</th><th class='n'>Ratio</th><th class='n'>Clos.</th><th class='n'>Susp.</th></tr></thead><tbody>" +
+      "<thead><tr><th>Station</th><th class='n'>Seats</th></tr></thead><tbody>" +
       C.stations.map(s0 => { const s = st.stations[s0.id];
-        return `<tr data-station="${s.id}" style="cursor:pointer"><td>${s.name}</td><td>${s.band}</td>` +
-          `<td class="n">${s.seats}</td><td class="n">${stationRatio(s.id).toFixed(2)}</td>` +
-          `<td class="n">${s.closure.toFixed(2)}</td><td class="n">${s.suspended.toLocaleString()}</td></tr>`;
+        return `<tr data-station="${s.id}"${s.id === selId ? ' class="sel"' : ""} style="cursor:pointer">` +
+          `<td><b>${s.name}</b><i class="sub">${s.band}</i></td>` +
+          `<td class="n">${s.seats}</td></tr>`;
       }).join("") + "</tbody>";
     $("#orbit-table").querySelectorAll("tr[data-station]").forEach(tr =>
       tr.addEventListener("click", () => { drawStation(tr.dataset.station); drawOrbit(); }));
@@ -673,7 +676,10 @@ const UI = (function () {
       `<div class="kv">
         <dt>Population</dt><dd>${s.population.toLocaleString()}</dd>
         <dt>Seats</dt><dd>${s.seats}</dd>
-        <dt>Constituencies</dt><dd>${(C.constituencies||[]).filter(k=>k.station===s.id).length}</dd>
+        <dt>Band</dt><dd>${s.band}</dd>
+        <dt>Apportionment</dt><dd>${stationRatio(s.id).toFixed(2)} &mdash;
+          ${stationRatio(s.id) > 1.15 ? "over-represented" :
+            stationRatio(s.id) < 0.85 ? "under-represented" : "near parity"}</dd>
         <dt>Closure</dt><dd>${s.closure.toFixed(2)}</dd>
         <dt>Suspended</dt><dd>${s.suspended.toLocaleString()} (counted, non-voting)</dd>
         <dt>Attested</dt><dd>${(s.attested * 100).toFixed(1)}% of adult roll</dd>
@@ -687,9 +693,68 @@ const UI = (function () {
         emulation ${(s.composition.emulation*100).toFixed(0)}% &middot;
         uplift ${(s.composition.uplift*100).toFixed(0)}% &middot;
         synthetic ${(s.composition.synthetic*100).toFixed(0)}%</div>` : ""}
+      <div class="rulehead">Constituencies</div>
+      ${constituencyList(s.id)}
       <div class="rulehead">Material interest</div><div class="note">${s.material_interest.join(" &middot; ")}</div>
       <div class="rulehead">Dependency</div><div class="note">${s.dependency}</div>
       <div class="rulehead">Grievance</div><div class="note">${s.grievance}</div>`;
+  }
+
+  /* Every constituency returned by a station, with who holds it.
+
+     `held` is optional and currently absent from every district seat:
+     content/constituencies.js carries magnitude and electorate but no
+     holder, and the engine tracks seats per party per TIER rather than per
+     seat, so there is nothing to derive it from. The moment a constituency
+     gains held:{party:seats} this lights up without further work. Until
+     then it says so, rather than inventing a member. */
+  function constituencyList(sid) {
+    const mine = (C.constituencies || []).filter(k => k.station === sid);
+    if (!mine.length) return `<div class="note">No constituency returns this station directly.</div>`;
+    const ap = Engine.apportionment(C);
+    const rows = mine.map(k => {
+      const held = k.held ? Object.keys(k.held).sort((a, b) => k.held[b] - k.held[a]) : [];
+      return `<tr><td><b>${k.name}</b><i class="sub">${k.magnitude} seat${k.magnitude === 1 ? "" : "s"}` +
+        ` &middot; ${k.electorate.toLocaleString()} electors &middot; ratio ${ap[k.id].toFixed(2)}</i></td>` +
+        `<td class="n">${held.length
+          ? held.map(pid => `${mark(pid)}<span class="hn">${k.held[pid]}</span>`).join(" ")
+          : '<i class="sub">unrecorded</i>'}</td></tr>`;
+    }).join("");
+    return `<table class="conslist">${rows}</table>` +
+      (mine.some(k => k.held) ? "" :
+       `<div class="note dim">Holders are not recorded per constituency yet &mdash;
+        seats are tracked by party and tier. Adding <code>held</code> in
+        content/constituencies.js fills this in.</div>`);
+  }
+
+  /* The functional tier in full. Every seat here is held by a named party,
+     so unlike the district list this one is complete. */
+  function drawFunctional() {
+    const F = C.functional || [];
+    if (!F.length || !$("#func-table")) return;
+    const FR = { licensure:"licence", corporate:"companies", union_bloc:"union bloc", residual:"residual" };
+    $("#func-table").innerHTML =
+      "<thead><tr><th>Constituency</th><th class='n'>Seats</th><th>Held by</th></tr></thead><tbody>" +
+      F.map(f => {
+        const held = Object.keys(f.held || {}).sort((a, b) => f.held[b] - f.held[a]);
+        return `<tr><td><b>${f.name}</b><i class="sub">${FR[f.franchise] || f.franchise}` +
+          ` &middot; ${f.electorate.toLocaleString()} electors</i></td>` +
+          `<td class="n">${f.seats}</td><td class="hcell">${held.length
+            ? held.map(pid => `${mark(pid)}<span class="hn">${f.held[pid]}</span>`).join(" ")
+            : "&mdash;"}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    const seats = F.reduce((n, f) => n + f.seats, 0);
+    const licensed = F.filter(f => f.franchise !== "residual")
+                      .reduce((n, f) => n + f.electorate, 0);
+    const resid = F.filter(f => f.franchise === "residual")
+                   .reduce((n, f) => n + f.electorate, 0);
+    $("#func-note").innerHTML =
+      `${seats} seats. <b>${licensed.toLocaleString()}</b> electors hold a functional ` +
+      `franchise across ${F.length - 1} licensed constituencies; ` +
+      `<b>${resid.toLocaleString()}</b> sit in the residual constituency and return ` +
+      `${F.filter(f => f.franchise === "residual").reduce((n, f) => n + f.seats, 0)}. ` +
+      `A measure touching life-support integrity or the Charter must carry here separately.`;
   }
 
   /* ---------- log ---------- */
