@@ -12,7 +12,11 @@ const SETUP = {
          /* Bible 4.10: the divisor is a bill, not a constant. D'Hondt favours
             large parties, Sainte-Lague small ones, and the two tiers are two
             separate fights. Values: "dhondt" | "sainte_lague". */
-         district_divisor:"dhondt", list_divisor:"dhondt" },
+         /* Districts are single-member and returned by first past the post,
+            so no divisor applies: highest averages over one seat IS plurality.
+            The value is kept for the editor and for any future bill that
+            merges seats back into multi-member districts. */
+         district_divisor:"fptp", list_divisor:"dhondt" },
   slotsPerSession: 6,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },

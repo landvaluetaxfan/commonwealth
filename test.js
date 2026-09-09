@@ -77,7 +77,12 @@ console.log("\nTIER RECONCILIATION:");
   let bad = 0;
   const ok = (l,a,b)=>{ const g=a===b; if(!g)bad++;
     console.log((g?"  ok  ":"  FAIL")+" "+l+" = "+a+(g?"":" (want "+b+")")); };
-  ok("constituencies", K.length, 56);
+  /* 140 single-member seats. Every district returns one member by first
+     past the post; the multi-member constituencies they were subdivided
+     from survive as each seat's `parent`. */
+  ok("constituencies", K.length, 140);
+  ok("every district is single-member",
+     K.filter(k => k.magnitude !== 1).length, 0);
   ok("constituency seats", consSeats, 140);
   ok("party district seats", partyDist, 140);
   ok("station seats", stnSeats, 140);
@@ -164,7 +169,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
     /* a vacancy costs the government a vote and is not quietly absorbed */
     const conf0 = Engine.confidence(r);
-    Engine.vacateSeat(r, CONTENT, "ashfield_tier_four", "cu", "test");
+    Engine.vacateSeat(r, CONTENT, "tier_four", "cu", "test");
     ok("a vacancy costs a vote", Engine.confidence(r) === conf0 - 1,
        conf0 + " -> " + Engine.confidence(r));
     ok("a vacancy still counts toward the tier", Engine.tierCheck(r, CONTENT).ok,
@@ -172,13 +177,13 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("derived and cached district agree after a vacancy",
        Engine.partyDistrict(r, "cu") === r.parties.cu.seats.district);
 
-    const be = Engine.byElection(r, CONTENT, "ashfield_tier_four");
+    const be = Engine.byElection(r, CONTENT, "tier_four");
     ok("a by-election fills the vacancy", be.ok && Engine.vacantSeats(r) === 0);
     ok("the chamber is whole again", Engine.tierCheck(r, CONTENT).ok);
 
     /* crossing the floor moves a seat without changing the chamber size */
     const before = Engine.partyDistrict(r, "cu");
-    Engine.crossFloor(r, CONTENT, "ashfield_a_c", "cu", "hul", 1);
+    Engine.crossFloor(r, CONTENT, "ashfield_a", "cu", "hul", 1);
     ok("crossing the floor moves one seat",
        Engine.partyDistrict(r, "cu") === before - 1 && Engine.tierCheck(r, CONTENT).ok);
     ok("a refused crossing changes nothing",

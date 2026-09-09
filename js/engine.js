@@ -298,6 +298,9 @@ const Engine = (function () {
   }
 
   /* Highest averages. Ties break on party id so a rerun is identical. */
+  /* Highest averages. Over a single seat this is plurality — first past
+     the post — which is what every district now is, so "fptp" needs no
+     separate branch and is accepted as a name for that case. */
   function divisorAllocate(sh, seats, method) {
     const ids = Object.keys(sh).filter(i => sh[i] > 0).sort();
     const won = {}; ids.forEach(i => won[i] = 0);
