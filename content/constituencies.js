@@ -1,52 +1,58 @@
 /* =============================================================
-   CONSTITUENCIES — 140 single-member districts.
+   CONSTITUENCIES - 140 single-member districts, first past the post.
 
-   Every seat returns ONE member by first past the post. There is no
-   list, no quota and no divisor here: the list tier is a separate
-   ballot (bible 4.1, parallel and NOT compensatory — this is Japan,
-   not Germany).
+   No list, no quota, no divisor: the list tier is a separate ballot
+   (bible 4.1, parallel and NOT compensatory).
 
-   Subdivided from the 56 multi-member constituencies that preceded
-   them; `parent` records which, so nothing authored is lost. Station,
-   band and material interest are inherited; electorate is the parent's
-   split evenly with the remainder to the first child.
+   held - one party, one seat, and the CURRENT roll rather than the last
+   result. Every district total in the game derives from it; nothing is
+   stored twice. test.js reconciles both ways.
 
-   held — who sits for this seat right now. One party, one seat. It is
-   the CURRENT roll, not the last result: by-elections, vacancies and
-   floor crossings move it during play, and every district total in the
-   game is derived from it rather than stored twice (see the
-   apportionment_ratio entry in CLAUDE.md). test.js reconciles both ways.
+   NAMING (bible 10.1). Register follows band, so a name carries its
+   politics: civic and state vocabulary on the ring, trade in the middle,
+   ordinary town names in the low band, water and green on the
+   agricultural decks, plain and maritime outside.
 
-   NAMING (bible 10.1: village warmth, "corridors with names and graffiti
-   and a bakery on them"). Registers are assigned by band, so a name
-   carries its politics:
-     ring        civic and memorial, plus the state's own vocabulary
-     middle      trade and corridor
-     low         trade, and the two names that are not names at all
-     agricultural  water and green
-     external    maritime
-   Three devices are deliberately rationed, and should stay that way:
-     Coldharbour One and Coldharbour Three, with no Two. Nothing
-       explains the gap. Nothing should.
-     Ashfield A, Two, III, -04, Five, VI — six seats numbered in six
+   Double-barrelled names follow boundary-commission convention rather
+   than taste. An em dash joins places amalgamated into one seat
+   (Ellerby-Westmoor); an ampersand pairs two halves that kept their
+   own identity (Chancery & Bell Yard); a plain hyphen appears only
+   inside a single compound place name.
+
+   Deprivation is NOT signalled in the low band's names. Real poor places
+   are called Flint and Camden, not Slagworks; the poverty belongs in the
+   tier, the closure figure and the grievance, all of which are already
+   there. The exceptions are rationed and deliberate:
+     Coldwater One and Coldwater Three, with no Two. Unexplained.
+     Homestead A, Two, III, -04, Five, VI - six seats numbered in six
        systems because nobody ever agreed one.
-     Tier Four, which is a rationing tier and not a place name: the
-       district is known by the queue it is stuck in.
-   Space Elevator and The Beanstalk are the same structure, named
-   officially and colloquially, and they are adjacent on purpose.
+     Tier Four, a rationing tier rather than a place name. Halloran sits
+       for it, which is the tier her whole grievance is about.
+   Space Elevator and The Beanstalk are one structure named officially
+   and colloquially, adjacent on purpose. The Warrens carries an
+   `official` name nobody uses, from the suppression.
+
+   "Proper" (Anselm Proper, Meridian Proper) is the built-up core as
+   against the periphery - the orbital equivalent of a Metro riding.
    ============================================================= */
 
 const CONSTITUENCIES = [
 
-  { id:"charter_green", name:"Charter Green", station:"anselm", band:"ring",
+  { id:"anselm_proper", name:"Anselm Proper", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{cl:1},
     parent:"anselm_ring_north",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"concord", name:"Concord", station:"anselm", band:"ring",
+  { id:"charter_green", name:"Charter Green", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cl:1},
+    parent:"anselm_ring_north",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"concord_bellfield", name:"Concord—Bellfield", station:"anselm", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{rv:1},
     parent:"anselm_ring_north",
     material_interest:["tether_traffic", "volume_rationing"] },
 
@@ -58,18 +64,18 @@ const CONSTITUENCIES = [
 
   { id:"the_long_gallery", name:"The Long Gallery", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
-    held:{rv:1},
-    parent:"anselm_ring_north",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"assembly_walk", name:"Assembly Walk", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
     held:{sc:1},
     parent:"anselm_ring_north",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"allocation_square", name:"Allocation Square", station:"anselm", band:"ring",
+  { id:"assembly_walk", name:"Assembly Walk", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
+    held:{cl:1},
+    parent:"anselm_ring_central",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"allocation_square", name:"Allocation Square", station:"anselm", band:"ring",
+    magnitude:1, electorate:32333,
     held:{cl:1},
     parent:"anselm_ring_central",
     material_interest:["tether_traffic", "volume_rationing"] },
@@ -82,29 +88,29 @@ const CONSTITUENCIES = [
 
   { id:"registry_walk", name:"Registry Walk", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
-    held:{cl:1},
+    held:{cu:1},
     parent:"anselm_ring_central",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"chancery", name:"Chancery", station:"anselm", band:"ring",
+  { id:"chancery_and_bell_yard", name:"Chancery & Bell Yard", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_central",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"bell_yard", name:"Bell Yard", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
-    held:{cu:1},
-    parent:"anselm_ring_central",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"the_cisterns", name:"The Cisterns", station:"anselm", band:"ring",
+  { id:"quorum", name:"Quorum", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{rv:1},
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"cress_walk", name:"Cress Walk", station:"anselm", band:"ring",
+  { id:"the_cisterns", name:"The Cisterns", station:"anselm", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{rv:1},
+    parent:"anselm_ring_agricultural",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"cress_walk_wellhead", name:"Cress Walk—Wellhead", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{rv:1},
     parent:"anselm_ring_agricultural",
@@ -112,35 +118,29 @@ const CONSTITUENCIES = [
 
   { id:"the_beds", name:"The Beds", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
-    held:{rv:1},
-    parent:"anselm_ring_agricultural",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"orchard_deck", name:"Orchard Deck", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"wellhead", name:"Wellhead", station:"anselm", band:"ring",
+  { id:"orchard_deck_and_vine_end", name:"Orchard Deck & Vine End", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{sc:1},
     parent:"anselm_ring_agricultural",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"ropewalk", name:"Ropewalk", station:"anselm", band:"ring",
+  { id:"hollowmere", name:"Hollowmere", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{cu:1},
     parent:"anselm_ring_outer_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"kiln_end", name:"Kiln End", station:"anselm", band:"ring",
+  { id:"ropewalk", name:"Ropewalk", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_outer_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"cordage", name:"Cordage", station:"anselm", band:"ring",
+  { id:"kiln_end_cordage", name:"Kiln End—Cordage", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_outer_decks",
@@ -158,27 +158,21 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_outer_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"spinward_reach", name:"Spinward Reach", station:"anselm", band:"ring",
+  { id:"saltings_and_ferrylane", name:"Saltings & Ferrylane", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{cu:1},
     parent:"anselm_ring_spinward",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"windward", name:"Windward", station:"anselm", band:"ring",
+  { id:"spinward_reach", name:"Spinward Reach", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_spinward",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"leeside", name:"Leeside", station:"anselm", band:"ring",
+  { id:"windward_leeside", name:"Windward—Leeside", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cl:1},
-    parent:"anselm_ring_spinward",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"the_turn", name:"The Turn", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
-    held:{fh:1},
     parent:"anselm_ring_spinward",
     material_interest:["tether_traffic", "volume_rationing"] },
 
@@ -188,25 +182,25 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_spinward",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"space_elevator", name:"Space Elevator", station:"anselm", band:"ring",
+  { id:"marlowe_green", name:"Marlowe Green", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
+    held:{cl:1},
+    parent:"anselm_ring_tether_head",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"space_elevator", name:"Space Elevator", station:"anselm", band:"ring",
+    magnitude:1, electorate:32333,
     held:{cl:1},
     parent:"anselm_ring_tether_head",
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"the_beanstalk", name:"The Beanstalk", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
-    held:{cl:1},
-    parent:"anselm_ring_tether_head",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"anchor_head", name:"Anchor Head", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_tether_head",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"cable_row", name:"Cable Row", station:"anselm", band:"ring",
+  { id:"anchor_head_cable_row", name:"Anchor Head—Cable Row", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_tether_head",
@@ -218,13 +212,19 @@ const CONSTITUENCIES = [
     parent:"anselm_ring_tether_head",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"deep_deck", name:"Deep Deck", station:"anselm", band:"ring",
+  { id:"fetterlane", name:"Fetterlane", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{cu:1},
     parent:"anselm_ring_deep_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"underwall", name:"Underwall", station:"anselm", band:"ring",
+  { id:"deep_deck", name:"Deep Deck", station:"anselm", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{cu:1},
+    parent:"anselm_ring_deep_decks",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"underwall_and_lowwater", name:"Underwall & Lowwater", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_deep_decks",
@@ -232,71 +232,71 @@ const CONSTITUENCIES = [
 
   { id:"the_sinks", name:"The Sinks", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
-    held:{cu:1},
-    parent:"anselm_ring_deep_decks",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"candlewick", name:"Candlewick", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
-    held:{psa:1},
-    parent:"anselm_ring_deep_decks",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"blackfriars", name:"Blackfriars", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
     held:{sc:1},
     parent:"anselm_ring_deep_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"old_foundation", name:"Old Foundation", station:"anselm", band:"ring",
+  { id:"blackfriars", name:"Blackfriars", station:"anselm", band:"ring",
     magnitude:1, electorate:32337,
     held:{cl:1},
     parent:"anselm_ring_founders",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"charter_house", name:"Charter House", station:"anselm", band:"ring",
+  { id:"old_foundation", name:"Old Foundation", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cl:1},
     parent:"anselm_ring_founders",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"the_vestry", name:"The Vestry", station:"anselm", band:"ring",
+  { id:"charter_house_sessions", name:"Charter House—Sessions", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{fh:1},
     parent:"anselm_ring_founders",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"almshouse_row", name:"Almshouse Row", station:"anselm", band:"ring",
-    magnitude:1, electorate:32333,
-    held:{fh:1},
-    parent:"anselm_ring_founders",
-    material_interest:["tether_traffic", "volume_rationing"] },
-
-  { id:"quorum", name:"Quorum", station:"anselm", band:"ring",
+  { id:"ambrose_fields", name:"Ambrose Fields", station:"anselm", band:"ring",
     magnitude:1, electorate:32333,
     held:{cu:1},
     parent:"anselm_ring_founders",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"meridian_drum", name:"Meridian Drum", station:"meridian", band:"ring",
+  { id:"belvedere_centre", name:"Belvedere Centre", station:"belvedere", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{fh:1},
+    parent:"anselm_ring_spinward",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"kingsmere", name:"Kingsmere", station:"belvedere", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{psa:1},
+    parent:"anselm_ring_deep_decks",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"fallbrook_aldergate", name:"Fallbrook—Aldergate", station:"belvedere", band:"ring",
+    magnitude:1, electorate:32333,
+    held:{fh:1},
+    parent:"anselm_ring_founders",
+    material_interest:["tether_traffic", "volume_rationing"] },
+
+  { id:"meridian_proper", name:"Meridian Proper", station:"meridian", band:"ring",
     magnitude:1, electorate:27457,
+    held:{cu:1},
+    parent:"meridian_spindle_east",
+    material_interest:["tether_traffic", "substrate_supply"] },
+
+  { id:"meridian_drum", name:"Meridian Drum", station:"meridian", band:"ring",
+    magnitude:1, electorate:27454,
     held:{cu:1},
     parent:"meridian_spindle_east",
     material_interest:["tether_traffic", "substrate_supply"] },
 
   { id:"meridian_loop", name:"Meridian Loop", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
-    held:{cu:1},
-    parent:"meridian_spindle_east",
-    material_interest:["tether_traffic", "substrate_supply"] },
-
-  { id:"east_gallery", name:"East Gallery", station:"meridian", band:"ring",
-    magnitude:1, electorate:27454,
     held:{cl:1},
     parent:"meridian_spindle_east",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"saltings", name:"Saltings", station:"meridian", band:"ring",
+  { id:"east_gallery_and_sailmakers", name:"East Gallery & Sailmakers", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
     held:{sc:1},
     parent:"meridian_spindle_east",
@@ -314,13 +314,13 @@ const CONSTITUENCIES = [
     parent:"meridian_spindle_west",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"fetterlane", name:"Fetterlane", station:"meridian", band:"ring",
+  { id:"thrale_whitcomb", name:"Thrale—Whitcomb", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
     held:{cl:1},
     parent:"meridian_spindle_west",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"sailmakers", name:"Sailmakers", station:"meridian", band:"ring",
+  { id:"halyard_row", name:"Halyard Row", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
     held:{sc:1},
     parent:"meridian_spindle_west",
@@ -356,7 +356,7 @@ const CONSTITUENCIES = [
     parent:"meridian_underdecks",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"lowwater", name:"Lowwater", station:"meridian", band:"ring",
+  { id:"trentham_lowbay", name:"Trentham—Lowbay", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
     held:{cu:1},
     parent:"meridian_underdecks",
@@ -369,25 +369,25 @@ const CONSTITUENCIES = [
     parent:"meridian_underdecks",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"sub_four", name:"Sub-Four", station:"meridian", band:"ring",
+  { id:"ostler_green", name:"Ostler Green", station:"meridian", band:"ring",
     magnitude:1, electorate:27454,
     held:{sc:1},
     parent:"meridian_underdecks",
     material_interest:["tether_traffic", "substrate_supply"] },
 
-  { id:"rookery", name:"Rookery", station:"corvus", band:"ring",
+  { id:"rookworks_centre", name:"Rookworks Centre", station:"corvus", band:"ring",
     magnitude:1, electorate:30656,
     held:{cl:1},
     parent:"corvus_ring_inner",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"corvus_inner", name:"Corvus Inner", station:"corvus", band:"ring",
+  { id:"rookworks_east", name:"Rookworks East", station:"corvus", band:"ring",
     magnitude:1, electorate:30654,
     held:{cl:1},
     parent:"corvus_ring_inner",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"nestgate", name:"Nestgate", station:"corvus", band:"ring",
+  { id:"rookery_and_nestgate", name:"Rookery & Nestgate", station:"corvus", band:"ring",
     magnitude:1, electorate:30654,
     held:{cu:1},
     parent:"corvus_ring_inner",
@@ -399,55 +399,55 @@ const CONSTITUENCIES = [
     parent:"corvus_ring_outer",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"corvus_outer", name:"Corvus Outer", station:"corvus", band:"ring",
+  { id:"bellmouth_dunnock", name:"Bellmouth—Dunnock", station:"corvus", band:"ring",
     magnitude:1, electorate:30654,
     held:{cu:1},
     parent:"corvus_ring_outer",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"bellmouth", name:"Bellmouth", station:"corvus", band:"ring",
+  { id:"vesper_row", name:"Vesper Row", station:"corvus", band:"ring",
     magnitude:1, electorate:30654,
     held:{sc:1},
     parent:"corvus_ring_outer",
     material_interest:["tether_traffic", "volume_rationing"] },
 
-  { id:"sable_rim", name:"Sable Rim", station:"sable", band:"ring",
+  { id:"bondsville_centre", name:"Bondsville Centre", station:"sable", band:"ring",
     magnitude:1, electorate:32616,
+    held:{sc:1},
+    parent:"sable_drum_rim",
+    material_interest:["tether_traffic", "consumables_subsidy"] },
+
+  { id:"the_rim", name:"The Rim", station:"sable", band:"ring",
+    magnitude:1, electorate:32614,
     held:{sc:1},
     parent:"sable_drum_rim",
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
   { id:"drumhead", name:"Drumhead", station:"sable", band:"ring",
     magnitude:1, electorate:32614,
-    held:{sc:1},
-    parent:"sable_drum_rim",
-    material_interest:["tether_traffic", "consumables_subsidy"] },
-
-  { id:"the_rimwalk", name:"The Rimwalk", station:"sable", band:"ring",
-    magnitude:1, electorate:32614,
     held:{cu:1},
     parent:"sable_drum_rim",
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
-  { id:"leaseside", name:"Leaseside", station:"sable", band:"ring",
+  { id:"leaseside_rentfield", name:"Leaseside—Rentfield", station:"sable", band:"ring",
     magnitude:1, electorate:32616,
     held:{fh:1},
     parent:"sable_leaseside",
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
-  { id:"rentfield", name:"Rentfield", station:"sable", band:"ring",
+  { id:"tollgate", name:"Tollgate", station:"sable", band:"ring",
     magnitude:1, electorate:32614,
     held:{fh:1},
     parent:"sable_leaseside",
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
-  { id:"bondgate", name:"Bondgate", station:"sable", band:"ring",
+  { id:"marbury", name:"Marbury", station:"sable", band:"ring",
     magnitude:1, electorate:32614,
     held:{fh:1},
     parent:"sable_leaseside",
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
-  { id:"halvard_terrace", name:"Halvard Terrace", station:"halvard", band:"ring",
+  { id:"halvard_centre", name:"Halvard Centre", station:"halvard", band:"ring",
     magnitude:1, electorate:33555,
     held:{cl:1},
     parent:"halvard_terrace",
@@ -459,7 +459,7 @@ const CONSTITUENCIES = [
     parent:"halvard_terrace",
     material_interest:["volume_rationing", "tether_traffic"] },
 
-  { id:"parade_row", name:"Parade Row", station:"halvard", band:"ring",
+  { id:"parade_row_and_ivens", name:"Parade Row & Ivens", station:"halvard", band:"ring",
     magnitude:1, electorate:33554,
     held:{fh:1},
     parent:"halvard_terrace",
@@ -471,55 +471,55 @@ const CONSTITUENCIES = [
     parent:"the_bourse",
     material_interest:["risk_pricing", "substrate_supply"] },
 
-  { id:"exchange_alley", name:"Exchange Alley", station:"bourse", band:"ring",
+  { id:"exchange_alley_threadmarket", name:"Exchange Alley—Threadmarket", station:"bourse", band:"ring",
     magnitude:1, electorate:11205,
     held:{cl:1},
     parent:"the_bourse",
     material_interest:["risk_pricing", "substrate_supply"] },
 
-  { id:"northhollow", name:"Northhollow", station:"hollows", band:"far",
+  { id:"brant_north", name:"Brant North", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{rv:1},
     parent:"hollows_north",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"cold_row", name:"Cold Row", station:"hollows", band:"far",
+  { id:"brant_south", name:"Brant South", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{sc:1},
     parent:"hollows_north",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"southhollow", name:"Southhollow", station:"hollows", band:"far",
+  { id:"ellery", name:"Ellery", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{rv:1},
     parent:"hollows_south",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"thin_air", name:"Thin Air", station:"hollows", band:"far",
+  { id:"ellery_cross_thin_air", name:"Ellery Cross—Thin Air", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{sc:1},
     parent:"hollows_south",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"crosshollow", name:"Crosshollow", station:"hollows", band:"far",
+  { id:"kincaid", name:"Kincaid", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{rv:1},
     parent:"hollows_cross",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"the_cut", name:"The Cut", station:"hollows", band:"far",
+  { id:"merrow", name:"Merrow", station:"hollows", band:"far",
     magnitude:1, electorate:34943,
     held:{rv:1},
     parent:"hollows_cross",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"fadeyev_row", name:"Fadeyev Row", station:"tsiolkovsky", band:"far",
+  { id:"farstead_centre", name:"Farstead Centre", station:"tsiolkovsky", band:"far",
     magnitude:1, electorate:35853,
     held:{hul:1},
     parent:"tsiolkovsky_north",
     material_interest:["substrate_supply", "thermal_quota"] },
 
-  { id:"the_racks", name:"The Racks", station:"tsiolkovsky", band:"far",
+  { id:"the_rackworks", name:"The Rackworks", station:"tsiolkovsky", band:"far",
     magnitude:1, electorate:35853,
     held:{sc:1},
     parent:"tsiolkovsky_north",
@@ -531,31 +531,31 @@ const CONSTITUENCIES = [
     parent:"tsiolkovsky_substrate_quarter",
     material_interest:["substrate_supply", "thermal_quota"] },
 
-  { id:"cold_storage", name:"Cold Storage", station:"tsiolkovsky", band:"far",
+  { id:"cold_storage_and_dray_end", name:"Cold Storage & Dray End", station:"tsiolkovsky", band:"far",
     magnitude:1, electorate:35853,
     held:{psa:1},
     parent:"tsiolkovsky_substrate_quarter",
     material_interest:["substrate_supply", "thermal_quota"] },
 
-  { id:"coldharbour_one", name:"Coldharbour One", station:"coldharbour", band:"far",
+  { id:"coldwater_one", name:"Coldwater One", station:"coldharbour", band:"far",
     magnitude:1, electorate:30320,
     held:{psa:1},
     parent:"coldharbour_racks",
     material_interest:["substrate_supply", "thermal_quota", "shed_order_priority"] },
 
-  { id:"coldharbour_three", name:"Coldharbour Three", station:"coldharbour", band:"far",
+  { id:"coldwater_three", name:"Coldwater Three", station:"coldharbour", band:"far",
     magnitude:1, electorate:30320,
     held:{hul:1},
     parent:"coldharbour_shed",
     material_interest:["substrate_supply", "thermal_quota", "shed_order_priority"] },
 
-  { id:"erasmus_deck", name:"Erasmus Deck", station:"erasmus", band:"far",
+  { id:"amphitheatre", name:"Amphitheatre", station:"erasmus", band:"far",
     magnitude:1, electorate:27062,
     held:{psa:1},
     parent:"erasmus_deck",
     material_interest:["substrate_supply", "licensure_scope"] },
 
-  { id:"continuity", name:"Continuity", station:"erasmus", band:"far",
+  { id:"scholarsgate_quill", name:"Scholarsgate—Quill", station:"erasmus", band:"far",
     magnitude:1, electorate:27062,
     held:{sc:1},
     parent:"erasmus_deck",
@@ -567,13 +567,13 @@ const CONSTITUENCIES = [
     parent:"nasmyth_array",
     material_interest:["thermal_quota", "yard_contracts"] },
 
-  { id:"hammerside", name:"Hammerside", station:"nasmyth", band:"far",
+  { id:"hammerside_and_deverell", name:"Hammerside & Deverell", station:"nasmyth", band:"far",
     magnitude:1, electorate:11443,
     held:{sc:1},
     parent:"nasmyth_array",
     material_interest:["thermal_quota", "yard_contracts"] },
 
-  { id:"vantage", name:"Vantage", station:"vantage", band:"middle",
+  { id:"luminaire", name:"Luminaire", station:"vantage", band:"middle",
     magnitude:1, electorate:30251,
     held:{cu:1},
     parent:"vantage_high",
@@ -585,13 +585,13 @@ const CONSTITUENCIES = [
     parent:"vantage_high",
     material_interest:["thermal_quota", "shed_order_priority"] },
 
-  { id:"radiator_row", name:"Radiator Row", station:"vantage", band:"middle",
+  { id:"radiator_row_coldside", name:"Radiator Row—Coldside", station:"vantage", band:"middle",
     magnitude:1, electorate:30251,
     held:{cu:1},
     parent:"vantage_radiator_row",
     material_interest:["thermal_quota", "shed_order_priority"] },
 
-  { id:"coldside", name:"Coldside", station:"vantage", band:"middle",
+  { id:"selwyn_park", name:"Selwyn Park", station:"vantage", band:"middle",
     magnitude:1, electorate:30250,
     held:{sc:1},
     parent:"vantage_radiator_row",
@@ -603,7 +603,7 @@ const CONSTITUENCIES = [
     parent:"perigee_yards",
     material_interest:["tether_traffic", "yard_contracts"] },
 
-  { id:"dry_dock", name:"Dry Dock", station:"perigee", band:"middle",
+  { id:"dry_dock_and_marden", name:"Dry Dock & Marden", station:"perigee", band:"middle",
     magnitude:1, electorate:28981,
     held:{hul:1},
     parent:"perigee_yards",
@@ -621,13 +621,13 @@ const CONSTITUENCIES = [
     parent:"calloway_loop",
     material_interest:["shed_order_priority", "consumables_subsidy"] },
 
-  { id:"calloway_green", name:"Calloway Green", station:"calloway", band:"middle",
+  { id:"calloway_green_tewkes", name:"Calloway Green—Tewkes", station:"calloway", band:"middle",
     magnitude:1, electorate:31730,
     held:{sc:1},
     parent:"calloway_loop",
     material_interest:["shed_order_priority", "consumables_subsidy"] },
 
-  { id:"grimaldi", name:"Grimaldi", station:"grimaldi", band:"middle",
+  { id:"layover_centre", name:"Layover Centre", station:"grimaldi", band:"middle",
     magnitude:1, electorate:31162,
     held:{cl:1},
     parent:"grimaldi_station",
@@ -639,7 +639,7 @@ const CONSTITUENCIES = [
     parent:"grimaldi_station",
     material_interest:["transit_windows", "tether_traffic"] },
 
-  { id:"wickstead", name:"Wickstead", station:"wickstead", band:"middle",
+  { id:"passerine", name:"Passerine", station:"wickstead", band:"middle",
     magnitude:1, electorate:43261,
     held:{sc:1},
     parent:"wickstead",
@@ -657,97 +657,97 @@ const CONSTITUENCIES = [
     parent:"the_tannery",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
-  { id:"skinners_row", name:"Skinners Row", station:"tannery", band:"middle",
+  { id:"skinners_row_and_barkfield", name:"Skinners Row & Barkfield", station:"tannery", band:"middle",
     magnitude:1, electorate:11284,
     held:{rv:1},
     parent:"the_tannery",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
-  { id:"ashfield_a", name:"Ashfield A", station:"ashfield", band:"low",
+  { id:"homestead_a", name:"Homestead A", station:"ashfield", band:"low",
     magnitude:1, electorate:28041,
-    held:{cu:1},
+    held:{gb:1},
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"ashfield_two", name:"Ashfield Two", station:"ashfield", band:"low",
+  { id:"homestead_two", name:"Homestead Two", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{cu:1},
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"ashfield_iii", name:"Ashfield III", station:"ashfield", band:"low",
+  { id:"homestead_iii", name:"Homestead III", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{cu:1},
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"ashfield_04", name:"Ashfield-04", station:"ashfield", band:"low",
+  { id:"homestead_04", name:"Homestead-04", station:"ashfield", band:"low",
     magnitude:1, electorate:28041,
     held:{cu:1},
     parent:"ashfield_d_f",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"ashfield_five", name:"Ashfield Five", station:"ashfield", band:"low",
+  { id:"homestead_five", name:"Homestead Five", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{cu:1},
     parent:"ashfield_d_f",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"ashfield_vi", name:"Ashfield VI", station:"ashfield", band:"low",
+  { id:"homestead_vi", name:"Homestead VI", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{sc:1},
     parent:"ashfield_d_f",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
+  { id:"marchmont", name:"Marchmont", station:"ashfield", band:"low",
+    magnitude:1, electorate:28041,
+    held:{cu:1},
+    parent:"ashfield_g_j",
+    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
+
+  { id:"ellerby_westmoor", name:"Ellerby—Westmoor", station:"ashfield", band:"low",
+    magnitude:1, electorate:28039,
+    held:{cu:1},
+    parent:"ashfield_g_j",
+    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
+
+  { id:"norbury", name:"Norbury", station:"ashfield", band:"low",
+    magnitude:1, electorate:28039,
+    held:{cu:1},
+    parent:"ashfield_g_j",
+    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
+
   { id:"kiln_green", name:"Kiln Green", station:"ashfield", band:"low",
     magnitude:1, electorate:28041,
     held:{cu:1},
-    parent:"ashfield_g_j",
-    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
-
-  { id:"bellrow", name:"Bellrow", station:"ashfield", band:"low",
-    magnitude:1, electorate:28039,
-    held:{cu:1},
-    parent:"ashfield_g_j",
-    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
-
-  { id:"sootgate", name:"Sootgate", station:"ashfield", band:"low",
-    magnitude:1, electorate:28039,
-    held:{cu:1},
-    parent:"ashfield_g_j",
-    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
-
-  { id:"slagside", name:"Slagside", station:"ashfield", band:"low",
-    magnitude:1, electorate:28041,
-    held:{cu:1},
     parent:"ashfield_slagside",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"cinderbank", name:"Cinderbank", station:"ashfield", band:"low",
+  { id:"bellrow_and_lowgate", name:"Bellrow & Lowgate", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{cu:1},
-    parent:"ashfield_slagside",
-    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
-
-  { id:"the_tips", name:"The Tips", station:"ashfield", band:"low",
-    magnitude:1, electorate:28039,
-    held:{gb:1},
     parent:"ashfield_slagside",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"tier_four", name:"Tier Four", station:"ashfield", band:"low",
+    magnitude:1, electorate:28039,
+    held:{cu:1},
+    parent:"ashfield_slagside",
+    material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
+
+  { id:"the_cans", name:"The Cans", station:"ashfield", band:"low",
     magnitude:1, electorate:28041,
     held:{cu:1},
     parent:"ashfield_tier_four",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"the_cans", name:"The Cans", station:"ashfield", band:"low",
+  { id:"hetherleigh", name:"Hetherleigh", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{cu:1},
     parent:"ashfield_tier_four",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
-  { id:"lowgate", name:"Lowgate", station:"ashfield", band:"low",
+  { id:"padstow_deck", name:"Padstow Deck", station:"ashfield", band:"low",
     magnitude:1, electorate:28039,
     held:{sc:1},
     parent:"ashfield_tier_four",
@@ -759,97 +759,97 @@ const CONSTITUENCIES = [
     parent:"kepler_anchorage",
     material_interest:["tether_traffic", "anchor_concession"] },
 
-  { id:"anchor_row", name:"Anchor Row", station:"kepler", band:"low",
+  { id:"high_lagos", name:"High Lagos", station:"kepler", band:"low",
     magnitude:1, electorate:34543,
     held:{sc:1},
     parent:"kepler_anchorage",
     material_interest:["tether_traffic", "anchor_concession"] },
 
-  { id:"high_lagos", name:"High Lagos", station:"kepler", band:"low",
+  { id:"anchor_row_concession", name:"Anchor Row—Concession", station:"kepler", band:"low",
     magnitude:1, electorate:34543,
     held:{cl:1},
     parent:"kepler_concession",
     material_interest:["tether_traffic", "anchor_concession"] },
 
-  { id:"the_concession", name:"The Concession", station:"kepler", band:"low",
+  { id:"brightwell", name:"Brightwell", station:"kepler", band:"low",
     magnitude:1, electorate:34543,
     held:{des:1},
     parent:"kepler_concession",
     material_interest:["tether_traffic", "anchor_concession"] },
 
-  { id:"slagworks", name:"Slagworks", station:"slagworks", band:"low",
+  { id:"hardie_centre", name:"Hardie Centre", station:"slagworks", band:"low",
     magnitude:1, electorate:29875,
     held:{cu:1},
     parent:"slagworks",
     material_interest:["consumables_subsidy", "yard_contracts"] },
 
-  { id:"furnace_row", name:"Furnace Row", station:"slagworks", band:"low",
+  { id:"clearmont_and_sowerby", name:"Clearmont & Sowerby", station:"slagworks", band:"low",
     magnitude:1, electorate:29874,
     held:{gb:1},
     parent:"slagworks",
     material_interest:["consumables_subsidy", "yard_contracts"] },
 
-  { id:"bellows", name:"Bellows", station:"bellows", band:"low",
+  { id:"sunman_centre", name:"Sunman Centre", station:"bellows", band:"low",
     magnitude:1, electorate:26708,
     held:{cu:1},
     parent:"bellows",
     material_interest:["thermal_quota", "consumables_subsidy"] },
 
-  { id:"forge_end", name:"Forge End", station:"bellows", band:"low",
+  { id:"lindenhall_peck", name:"Lindenhall—Peck", station:"bellows", band:"low",
     magnitude:1, electorate:26707,
     held:{hul:1},
     parent:"bellows",
     material_interest:["thermal_quota", "consumables_subsidy"] },
 
-  { id:"cinder", name:"Cinder", station:"cinder", band:"low",
+  { id:"lantern", name:"Lantern", station:"cinder", band:"low",
     magnitude:1, electorate:36978,
     held:{cu:1},
     parent:"cinder",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
-  { id:"tallow", name:"Tallow", station:"tallow", band:"low",
+  { id:"pavilion", name:"Pavilion", station:"tallow", band:"low",
     magnitude:1, electorate:31361,
     held:{rv:1},
     parent:"tallow",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
-  { id:"quarry_reach", name:"Quarry Reach", station:"quarry", band:"low",
+  { id:"stanbridge", name:"Stanbridge", station:"quarry", band:"low",
     magnitude:1, electorate:29669,
     held:{gb:1},
     parent:"quarry_reach",
     material_interest:["yard_contracts", "transit_windows"] },
 
-  { id:"drift_north", name:"Drift North", station:"drift", band:"low",
+  { id:"verge_north", name:"Verge North", station:"drift", band:"low",
     magnitude:1, electorate:16854,
     held:{cu:1},
     parent:"drift_cans_north",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
-  { id:"drift_south", name:"Drift South", station:"drift", band:"low",
+  { id:"verge_south_and_halloway", name:"Verge South & Halloway", station:"drift", band:"low",
     magnitude:1, electorate:16854,
     held:{cu:1},
     parent:"drift_cans_south",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
-  { id:"sinter", name:"Sinter", station:"sinter", band:"low",
+  { id:"colonnade", name:"Colonnade", station:"sinter", band:"low",
     magnitude:1, electorate:10753,
     held:{gb:1},
     parent:"sinter",
     material_interest:["yard_contracts", "consumables_subsidy"] },
 
-  { id:"clinker", name:"Clinker", station:"sinter", band:"low",
+  { id:"wrenfield_aubrey", name:"Wrenfield—Aubrey", station:"sinter", band:"low",
     magnitude:1, electorate:10752,
     held:{gb:1},
     parent:"sinter",
     material_interest:["yard_contracts", "consumables_subsidy"] },
 
-  { id:"dredge", name:"Dredge", station:"dredge", band:"low",
+  { id:"john_henry", name:"John Henry", station:"dredge", band:"low",
     magnitude:1, electorate:15356,
     held:{gb:1},
     parent:"dredge",
     material_interest:["transit_windows", "yard_contracts"] },
 
-  { id:"longmoor", name:"Longmoor", station:"selene", band:"external",
+  { id:"groundside", name:"Groundside", station:"selene", band:"external",
     magnitude:1, electorate:37982,
     held:{des:1},
     parent:"selene_stations",
@@ -873,7 +873,7 @@ const CONSTITUENCIES = [
     parent:"achenar_point",
     material_interest:["transit_windows", "substrate_supply"] },
 
-  { id:"the_refuge", name:"The Refuge", station:"l5", band:"external",
+  { id:"sanctuary", name:"Sanctuary", station:"l5", band:"external",
     magnitude:1, electorate:7339,
     held:{rv:1},
     parent:"l5_refuge",

@@ -64,7 +64,7 @@ const ARCHETYPES = [
     grievance:"Tier four in the shed order, and the year it has been that way.",
     note:"Overrepresented, dependent, poorly attested, and full of people who cannot vote." },
 
-  { id:"drift_cans", name:"Drift cans",
+  { id:"drift_cans", name:"Verge cans",
     band:"low", form:"cluster", type:"bundled",
     pop:[80000, 180000], closure:[0.22, 0.34],
     suspPer10k:[380, 520], att:[0.56, 0.68], seatsPer:64000,

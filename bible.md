@@ -150,7 +150,7 @@ From Dorsa Brevia: the pre-independence congress produced a declaration that wor
 
 ## 2.6 Explanation cost is the real budget — LOCKED
 
-In a text game the economy is prose: how many words to establish a faction or a place before the player can decide about it. "The owl senator" costs three words; "the Kepler-cluster delegate, a third-generation fork on leased substrate" costs a paragraph and a glossary lookup. The orbital setting pays this cost hundreds of times, so glossary discipline and register discipline matter more here than they would elsewhere.
+In a text game the economy is prose: how many words to establish a faction or a place before the player can decide about it. "The owl senator" costs three words; "the Anchorage-cluster delegate, a third-generation fork on leased substrate" costs a paragraph and a glossary lookup. The orbital setting pays this cost hundreds of times, so glossary discipline and register discipline matter more here than they would elsewhere.
 
 ## 2.7 Generation drift is the main production risk — LOCKED
 
@@ -354,7 +354,7 @@ The House of Lords problem: abolishing the functional tier requires a charter am
 
 The gap is where the best fights are. Do suspended persons count for apportionment? Do instances?
 
-A station with a large suspended cohort gets seats for people who cannot vote, and whoever holds those seats is elected by a small active electorate. **This is prison gerrymandering, exactly.** Ashfield Cans is the worked example: 880k population, 11,400 suspended, ratio 1.88.
+A station with a large suspended cohort gets seats for people who cannot vote, and whoever holds those seats is elected by a small active electorate. **This is prison gerrymandering, exactly.** Homestead is the worked example: 880k population, 11,400 suspended, ratio 1.88.
 
 ## 4.8 Thresholds — LOCKED
 
@@ -378,7 +378,7 @@ A fast-running candidate campaigns more per realtime day. Spending caps are ther
 
 ## 4.12 Attestation as voter ID — LOCKED
 
-Unique-person attestation is required to vote and to participate in public discourse. Attestation infrastructure is therefore a civil-liberties fight with exactly the valence of voter ID: who runs the registry, who is excluded, what happens when attestation lapses. Ashfield Cans is at 68.2% attested on the adult roll.
+Unique-person attestation is required to vote and to participate in public discourse. Attestation infrastructure is therefore a civil-liberties fight with exactly the valence of voter ID: who runs the registry, who is excluded, what happens when attestation lapses. Homestead is at 68.2% attested on the adult roll.
 
 ## 4.13 Franchise weighting — OPEN
 
@@ -634,15 +634,15 @@ driven to upload is priced out of *volume*, which means **they are a ring-band o
 middle-band tenant, not a low-band one.**
 
 This is the correction that makes the geography work. Volume on Anselm Ring is
-astronomical because everyone wants to be there; volume on Ashfield Cans is cheap
+astronomical because everyone wants to be there; volume on Homestead is cheap
 because nobody does. Nobody uploads to escape a rent they are already paying
 cheaply.
 
 **And there is a physical reason the bands differ on substrate.** A habitat in
 low orbit is trying to reject heat while sitting in Earth's infrared glare.
 Far-band and Lagrange habitats have far better rejection geometry, so substrate
-is genuinely cheap out there. This is why Tsiolkovsky is 47% emulated and L5
-Refuge 51%, while Ashfield is 81% biological. Uploading on Ashfield would trade
+is genuinely cheap out there. This is why Farstead is 47% emulated and L5
+Refuge 51%, while Homestead is 81% biological. Uploading on Homestead would trade
 cheap volume you already have for tier-four substrate on a station shed eleven
 years running: a death sentence with extra steps.
 
@@ -683,14 +683,14 @@ Near-post-scarcity works only if you are precise. Material goods are cheap: aste
 
 - **Volume.** Pressurised cubic metres are the fundamental good. Anyone can have a thing; nobody has room for it. Housing is the defining domestic issue exactly as in rich countries today, but sharper — volume is hard-capped by construction schedule. Density regulation, minimum-volume standards, volume rationing for new arrivals, subletting black markets, a slumlord class partitioning a berth into six.
   **Volume scarcity is positional, not uniform.** Anselm Ring volume is
-  astronomical because everyone wants to be there; Ashfield volume is nearly free
+  astronomical because everyone wants to be there; Homestead volume is nearly free
   because nobody does. This is why the low band is embodied and the ring band is
   where people get priced out of their bodies (§6.10.3).
 - **Thermal rejection.** The constraint nobody uses and the best one available. **How many people can exist is a public works appropriation.** Thermal quota trading as a carbon-market analogue, complete with fraud.
   **Rejection geometry varies by band.** A habitat in low orbit rejects heat while
   sitting in Earth's infrared glare; far-band and Lagrange habitats have far
   better geometry, so substrate is genuinely cheap out there. This is the physical
-  reason Tsiolkovsky is 47% emulated and Ashfield 81% biological, and it means the
+  reason Farstead is 47% emulated and Homestead 81% biological, and it means the
   two scarcities run in opposite directions across the roster.
 - **Delta-v and launch windows.** Transport as a scheduled, rationed good.
 - **Substrate cycles.** The wage good for a large part of the population.
@@ -867,7 +867,7 @@ Stations answer to the substrate price weighted by exposure `0.75 − closure`, 
 poor habitats feel it first. A station that cannot pay does not economise; it
 sheds people, and the shed order says which.
 
-Worked, and in content: pass the Substrate (Public Stake) Bill and Ashfield has
+Worked, and in content: pass the Substrate (Public Stake) Bill and Homestead has
 roughly 1,400 fewer suspended residents twenty-six sittings later. Do nothing and
 the index climbs until the crisis event fires at about sitting 19. **Inaction is
 a decision** — the drift is upward by default.
@@ -1046,7 +1046,7 @@ Other ideologies are refracted through the player's party's view of them. Hullis
 | Deck cooperativists | 18 | 54 |
 | Halloran group | 11 | 12 |
 
-**Tarrin Halloran** (Ashfield Cans) has the signatures for a leadership ballot if she can find nine more.
+**Tarrin Halloran** (Homestead) has the signatures for a leadership ballot if she can find nine more.
 
 Composition by tier: 48 district, 25 list, 9 functional. The twenty-five list members hold no constituency and no independent base — they whip reliably and will not survive a leadership change that reorders the list. Nine members are revenants returned after losing a district.
 
@@ -1239,9 +1239,9 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 
 - **Rt. Hon. Adriana Flash MP** — Prime Minister. Commons Union. Member for Anselm Ring.
 - **President Osric Tenaya** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
-- **Tarrin Halloran MP** — Ashfield Cans. Commons Union. Leads the eleven-member Halloran group, loyalty 12. Needs nine more signatures for a leadership ballot.
+- **Tarrin Halloran MP** — Homestead. Commons Union. Leads the eleven-member Halloran group, loyalty 12. Needs nine more signatures for a leadership ballot.
 - **Iren Vellan MP** — Minister for Life Support. Commons Union, member for
-  Perigee Yards. Career maintenance union. The only member of Cabinet the Guild
+  Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
   Bench will take a meeting with.
 - **Desta Okarie MP** — Chief Whip. Commons Union, member for Anselm Ring Outer
   Decks. Reports that things went as well as they could have; reports this about
@@ -1260,54 +1260,56 @@ altitude is class.
 
 **33 stations, 56 constituencies, 140 district seats.** A station is a place; a
 constituency is a thing that returns members. Most stations are one constituency;
-Anselm Ring is divided into eight. Populations total 6.86M, unchanged from v3 —
+Anselm Ring is divided into thirty-seven; every station now returns
+single-member districts. Populations total 6.86M, unchanged from v3 —
 the roster expanded by adding small places, not by growing the federation.
 
 **Ring band (geostationary):**
-- **Anselm Ring** — 40 seats, 1,940,000, cylinder, closure 0.79, 2,100 suspended, attested 94%.
+- **Anselm Ring** — 37 seats, 1,940,000, cylinder, closure 0.79, 2,100 suspended, attested 94%.
+- **Belvedere** — 3 seats, 145,000, torus, closure 0.58, 1,180 suspended, attested 87%.
 - **Meridian Spindle** — 16 seats, 682,000, cylinder, closure 0.71, 2,110 suspended, attested 91%.
-- **Sable Drum** — 6 seats, 315,000, drum, closure 0.66, 1,800 suspended, attested 88%.
-- **Corvus Ring** — 6 seats, 293,000, torus, closure 0.68, 1,930 suspended, attested 89%.
-- **Halvard Terrace** — 3 seats, 153,000, torus, closure 0.72, 550 suspended, attested 93%.
+- **Bondsville** — 6 seats, 315,000, drum, closure 0.66, 1,800 suspended, attested 88%.
+- **Rookworks—Anselm** — 6 seats, 293,000, torus, closure 0.68, 1,930 suspended, attested 89%.
+- **Halvard Works** — 3 seats, 153,000, torus, closure 0.72, 550 suspended, attested 93%.
 - **The Bourse** — 2 seats, 33,000, sphere, closure 0.63, 120 suspended, attested 96%.
 
 **Far band:**
-- **The Hollows** — 6 seats, 378,000, cluster, closure 0.52, 4,210 suspended, attested 79%.
-- **Tsiolkovsky Deck** — 4 seats, 249,000, torus, closure 0.61, 5,640 suspended, attested 83%.
-- **Coldharbour** — 2 seats, 118,000, drum, closure 0.58, 5,620 suspended, attested 76%.
-- **Erasmus Deck** — 2 seats, 85,000, torus, closure 0.64, 1,230 suspended, attested 91%.
-- **Nasmyth Array** — 2 seats, 38,000, yard, closure 0.55, 950 suspended, attested 87%.
+- **Brant—Ellery—Kincaid** — 6 seats, 378,000, cluster, closure 0.52, 4,210 suspended, attested 79%.
+- **Farstead** — 4 seats, 249,000, torus, closure 0.61, 5,640 suspended, attested 83%.
+- **Coldwater** — 2 seats, 118,000, drum, closure 0.58, 5,620 suspended, attested 76%.
+- **The Rotunda** — 2 seats, 85,000, torus, closure 0.64, 1,230 suspended, attested 91%.
+- **Hammerstead** — 2 seats, 38,000, yard, closure 0.55, 950 suspended, attested 87%.
 
 **Middle band:**
-- **Vantage High** — 4 seats, 213,000, torus, closure 0.48, 2,600 suspended, attested 81%.
-- **Perigee Yards** — 3 seats, 144,000, yard, closure 0.57, 1,610 suspended, attested 86%.
+- **Ember Ridge** — 4 seats, 213,000, torus, closure 0.48, 2,600 suspended, attested 81%.
+- **Fore River Yards** — 3 seats, 144,000, yard, closure 0.57, 1,610 suspended, attested 86%.
 - **Calloway Loop** — 2 seats, 118,000, drum, closure 0.44, 1,920 suspended, attested 77%.
-- **Grimaldi Station** — 2 seats, 106,000, cylinder, closure 0.53, 1,500 suspended, attested 84%.
-- **Wickstead** — 1 seats, 70,000, torus, closure 0.69, 760 suspended, attested 88%.
-- **Oberth Approach** — 1 seats, 56,000, drum, closure 0.51, 870 suspended, attested 89%.
+- **Layover** — 2 seats, 106,000, cylinder, closure 0.53, 1,500 suspended, attested 84%.
+- **Harvest** — 1 seats, 70,000, torus, closure 0.69, 760 suspended, attested 88%.
+- **Bethesda** — 1 seats, 56,000, drum, closure 0.51, 870 suspended, attested 89%.
 - **The Tannery** — 2 seats, 47,000, cluster, closure 0.41, 2,230 suspended, attested 71%.
 
 **Low band (industrial):**
-- **Ashfield Cans** — 15 seats, 880,000, cluster, closure 0.31, 11,400 suspended, attested 68%.
-- **Kepler Anchorage** — 4 seats, 231,000, cylinder, closure 0.54, 2,050 suspended, attested 85%.
-- **Slagworks** — 2 seats, 120,000, drum, closure 0.37, 3,120 suspended, attested 72%.
-- **Bellows** — 2 seats, 101,000, cylinder, closure 0.44, 2,010 suspended, attested 76%.
-- **Drift Cans** — 2 seats, 79,000, cluster, closure 0.27, 3,640 suspended, attested 63%.
-- **Cinder** — 1 seats, 78,000, drum, closure 0.34, 2,520 suspended, attested 69%.
-- **Tallow** — 1 seats, 65,000, cluster, closure 0.39, 1,900 suspended, attested 70%.
-- **Quarry Reach** — 1 seats, 58,000, yard, closure 0.42, 1,530 suspended, attested 74%.
-- **Sinter** — 2 seats, 44,000, drum, closure 0.36, 1,340 suspended, attested 71%.
-- **Dredge** — 1 seats, 34,000, yard, closure 0.33, 1,230 suspended, attested 66%.
+- **Homestead** — 15 seats, 880,000, cluster, closure 0.31, 11,400 suspended, attested 68%.
+- **Anchorage** — 4 seats, 231,000, cylinder, closure 0.54, 2,050 suspended, attested 85%.
+- **Hardie** — 2 seats, 120,000, drum, closure 0.37, 3,120 suspended, attested 72%.
+- **Sunman** — 2 seats, 101,000, cylinder, closure 0.44, 2,010 suspended, attested 76%.
+- **The Verge** — 2 seats, 79,000, cluster, closure 0.27, 3,640 suspended, attested 63%.
+- **Lantern** — 1 seats, 78,000, drum, closure 0.34, 2,520 suspended, attested 69%.
+- **Pavilion** — 1 seats, 65,000, cluster, closure 0.39, 1,900 suspended, attested 70%.
+- **Stanbridge** — 1 seats, 58,000, yard, closure 0.42, 1,530 suspended, attested 74%.
+- **Colonnade** — 2 seats, 44,000, drum, closure 0.36, 1,340 suspended, attested 71%.
+- **John Henry** — 1 seats, 34,000, yard, closure 0.33, 1,230 suspended, attested 66%.
 
 **External:**
-- **Selene Stations** — 1 seats, 60,000, surface, closure 0.83, 560 suspended, attested 90%.
-- **L4 Yards** — 1 seats, 25,000, yard, closure 0.88, 240 suspended, attested 93%.
+- **The Lunar Territory** — 1 seats, 60,000, surface, closure 0.83, 560 suspended, attested 90%.
+- **Leadside** — 1 seats, 25,000, yard, closure 0.88, 240 suspended, attested 93%.
 - **The Bloomery** — 1 seats, 24,000, surface, closure 0.79, 430 suspended, attested 86%.
-- **Achenar Point** — 1 seats, 13,000, sphere, closure 0.86, 230 suspended, attested 92%.
-- **L5 Refuge** — 1 seats, 11,000, sphere, closure 0.91, 120 suspended, attested 95%.
+- **Outermost** — 1 seats, 13,000, sphere, closure 0.86, 230 suspended, attested 92%.
+- **Sanctuary** — 1 seats, 11,000, sphere, closure 0.91, 120 suspended, attested 95%.
 
 **Infrastructure:**
-- Tether 2 — Kepler. Tether 5 — Meridian. Tether 9 — Sable (leased).
+- Tether 2 — Anchorage. Tether 5 — Meridian. Tether 9 — Bondsville (leased).
 - Lofstrom Loop A, Loop C.
 
 ## 11.4 The functional roster — LOCKED
@@ -1344,7 +1346,7 @@ Corporate seats are controlled by whoever controls the companies (§4.6.2).
 ## 11.6 Other business on the order paper
 
 - Thermal Quota Allocation No. 2 — second reading, 147, simple majority.
-- Anchor Concession (Kepler) Ratification — Lords stage, 161, simple.
+- Anchor Concession (Anchorage) Ratification — Lords stage, 161, simple.
 - Substrate Insurance Uprating — drafting.
 - Shed Order (Civilian Oversight) — blocked. 134 popular, 9 functional. Dual test. Owner: Commons Union.
 - Substrate Insurance (Uprating) — drafting. Owner: Public Substrate Association.

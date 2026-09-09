@@ -11,7 +11,7 @@
    calls the office Secretary-General; nobody has used it in eighty years.
    seat — the constituency a member sits for. It must be a real one:
    two of these previously named constituencies that did not exist
-   ("Anselm Ring N & Central", "Ashfield Cans A-D"), each straddling two,
+   ("Anselm Ring N & Central", "Homestead A-D"), each straddling two,
    and nothing caught it because nothing linked a person to a seat.
 
    portrait: filename in img/portraits/ processed with the `registry` palette.

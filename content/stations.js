@@ -19,7 +19,7 @@
    apportionment_ratio is NOT here. It is derived per constituency by
    Engine.apportionment() from magnitude and electorate, because
    storing it beside seats and population let the three drift apart —
-   Ashfield was once recorded at 1.88 while its actual seats-per-head
+   Homestead was once recorded at 1.88 while its actual seats-per-head
    matched Anselm's 0.88.
 
    composition: share of adults by legal category. Commonwealth-wide
@@ -30,7 +30,7 @@
    and that is what sets composition:
 
      Volume is positional. Anselm Ring volume is astronomical because
-     everybody wants to be there; Ashfield volume is nearly free
+     everybody wants to be there; Homestead volume is nearly free
      because nobody does.
 
      Thermal rejection is geometric. A habitat in low orbit sheds heat
@@ -47,12 +47,20 @@
 const STATIONS = [
 
   { id:"anselm", name:"Anselm Ring", band:"ring", type:"single", form:"cylinder",
-    seats:40, population:1940000,
+    seats:37, population:1940000,
     closure:0.79, suspended:2100, attested:0.94,
     composition:{biological:0.61,emulation:0.31,uplift:0.04,synthetic:0.04},
     material_interest:["tether_traffic", "volume_rationing"],
     dependency:"Nothing it cannot buy.",
     grievance:"That everyone else resents it." },
+
+  { id:"belvedere", name:"Belvedere", band:"ring", type:"single", form:"torus",
+    seats:3, population:145000,
+    closure:0.58, suspended:1180, attested:0.87,
+    composition:{biological:0.51,emulation:0.42,uplift:0.04,synthetic:0.03},
+    material_interest:["substrate_supply", "risk_pricing"],
+    dependency:"Hosting it buys rather than owns, and the price of it.",
+    grievance:"The threshold, which decides whether its income is a wage or a person." },
 
   { id:"meridian", name:"Meridian Spindle", band:"ring", type:"single", form:"cylinder",
     seats:16, population:682000,
@@ -62,7 +70,7 @@ const STATIONS = [
     dependency:"Tether 5 traffic rights it does not own.",
     grievance:"Anselm sets the schedule." },
 
-  { id:"corvus", name:"Corvus Ring", band:"ring", type:"single", form:"torus",
+  { id:"corvus", name:"Rookworks—Anselm", band:"ring", type:"single", form:"torus",
     seats:6, population:293000,
     closure:0.68, suspended:1930, attested:0.89,
     composition:{biological:0.6,emulation:0.32,uplift:0.04,synthetic:0.04},
@@ -70,7 +78,7 @@ const STATIONS = [
     dependency:"Berth allocation at the Anselm locks.",
     grievance:"Being the second city of a federation that only counts to one." },
 
-  { id:"sable", name:"Sable Drum", band:"ring", type:"single", form:"drum",
+  { id:"sable", name:"Bondsville", band:"ring", type:"single", form:"drum",
     seats:6, population:315000,
     closure:0.66, suspended:1800, attested:0.88,
     composition:{biological:0.66,emulation:0.26,uplift:0.05,synthetic:0.03},
@@ -78,7 +86,7 @@ const STATIONS = [
     dependency:"Tether 9, which is leased rather than owned.",
     grievance:"The lease terms, signed when the station was smaller and worse advised." },
 
-  { id:"halvard", name:"Halvard Terrace", band:"ring", type:"single", form:"torus",
+  { id:"halvard", name:"Halvard Works", band:"ring", type:"single", form:"torus",
     seats:3, population:153000,
     closure:0.72, suspended:550, attested:0.93,
     composition:{biological:0.71,emulation:0.21,uplift:0.05,synthetic:0.03},
@@ -94,7 +102,7 @@ const STATIONS = [
     dependency:"Continuous access to every other station's figures.",
     grievance:"Attempts to place underwriting under statutory oversight." },
 
-  { id:"hollows", name:"The Hollows", band:"far", type:"bundled", form:"cluster", settlements:16,
+  { id:"hollows", name:"Brant—Ellery—Kincaid", band:"far", type:"bundled", form:"cluster", settlements:16,
     seats:6, population:378000,
     closure:0.52, suspended:4210, attested:0.79,
     composition:{biological:0.71,emulation:0.22,uplift:0.04,synthetic:0.03},
@@ -102,7 +110,7 @@ const STATIONS = [
     dependency:"The quarterly consumables lift.",
     grievance:"Bundled with people they did not choose." },
 
-  { id:"tsiolkovsky", name:"Tsiolkovsky Deck", band:"far", type:"single", form:"torus",
+  { id:"tsiolkovsky", name:"Farstead", band:"far", type:"single", form:"torus",
     seats:4, population:249000,
     closure:0.61, suspended:5640, attested:0.83,
     composition:{biological:0.44,emulation:0.47,uplift:0.04,synthetic:0.05},
@@ -110,7 +118,7 @@ const STATIONS = [
     dependency:"Thermal quota allocation.",
     grievance:"Substrate rents set on the ring." },
 
-  { id:"coldharbour", name:"Coldharbour", band:"far", type:"single", form:"drum",
+  { id:"coldharbour", name:"Coldwater", band:"far", type:"single", form:"drum",
     seats:2, population:118000,
     closure:0.58, suspended:5620, attested:0.76,
     composition:{biological:0.31,emulation:0.58,uplift:0.03,synthetic:0.08},
@@ -118,7 +126,7 @@ const STATIONS = [
     dependency:"It is a substrate farm. It depends on the price of what it sells.",
     grievance:"That its own residents are billed at the rate they generate." },
 
-  { id:"erasmus", name:"Erasmus Deck", band:"far", type:"single", form:"torus",
+  { id:"erasmus", name:"The Rotunda", band:"far", type:"single", form:"torus",
     seats:2, population:85000,
     closure:0.64, suspended:1230, attested:0.91,
     composition:{biological:0.48,emulation:0.42,uplift:0.04,synthetic:0.06},
@@ -126,7 +134,7 @@ const STATIONS = [
     dependency:"Endowments and licensing fees.",
     grievance:"That the licensing boards it staffs are appointed by ministers it did not elect." },
 
-  { id:"nasmyth", name:"Nasmyth Array", band:"far", type:"single", form:"yard",
+  { id:"nasmyth", name:"Hammerstead", band:"far", type:"single", form:"yard",
     seats:2, population:38000,
     closure:0.55, suspended:950, attested:0.87,
     composition:{biological:0.68,emulation:0.24,uplift:0.05,synthetic:0.03},
@@ -134,7 +142,7 @@ const STATIONS = [
     dependency:"It builds radiators. It depends on the appropriation that funds them.",
     grievance:"Eleven years of deferred maintenance on its own array." },
 
-  { id:"vantage", name:"Vantage High", band:"middle", type:"single", form:"torus",
+  { id:"vantage", name:"Ember Ridge", band:"middle", type:"single", form:"torus",
     seats:4, population:213000,
     closure:0.48, suspended:2600, attested:0.81,
     composition:{biological:0.52,emulation:0.4,uplift:0.04,synthetic:0.04},
@@ -142,7 +150,7 @@ const STATIONS = [
     dependency:"Radiator capacity. Below statutory reserve since 6 April.",
     grievance:"That the fault has not been repaired." },
 
-  { id:"perigee", name:"Perigee Yards", band:"middle", type:"single", form:"yard",
+  { id:"perigee", name:"Fore River Yards", band:"middle", type:"single", form:"yard",
     seats:3, population:144000,
     closure:0.57, suspended:1610, attested:0.86,
     composition:{biological:0.78,emulation:0.16,uplift:0.04,synthetic:0.02},
@@ -158,7 +166,7 @@ const STATIONS = [
     dependency:"The federal power interlink.",
     grievance:"Tier three and falling." },
 
-  { id:"grimaldi", name:"Grimaldi Station", band:"middle", type:"single", form:"cylinder",
+  { id:"grimaldi", name:"Layover", band:"middle", type:"single", form:"cylinder",
     seats:2, population:106000,
     closure:0.53, suspended:1500, attested:0.84,
     composition:{biological:0.66,emulation:0.27,uplift:0.04,synthetic:0.03},
@@ -166,7 +174,7 @@ const STATIONS = [
     dependency:"Traffic. It is a junction and nothing else.",
     grievance:"Every schedule change is decided by people who do not use it." },
 
-  { id:"wickstead", name:"Wickstead", band:"middle", type:"single", form:"torus",
+  { id:"wickstead", name:"Harvest", band:"middle", type:"single", form:"torus",
     seats:1, population:70000,
     closure:0.69, suspended:760, attested:0.88,
     composition:{biological:0.83,emulation:0.11,uplift:0.04,synthetic:0.02},
@@ -174,7 +182,7 @@ const STATIONS = [
     dependency:"Water allocation and light hours.",
     grievance:"Imported consumables undercutting its own decks." },
 
-  { id:"oberth", name:"Oberth Approach", band:"middle", type:"single", form:"drum",
+  { id:"oberth", name:"Bethesda", band:"middle", type:"single", form:"drum",
     seats:1, population:56000,
     closure:0.51, suspended:870, attested:0.89,
     composition:{biological:0.74,emulation:0.18,uplift:0.05,synthetic:0.03},
@@ -190,7 +198,7 @@ const STATIONS = [
     dependency:"It processes what other stations will not.",
     grievance:"That the work is essential and the station is tier four." },
 
-  { id:"ashfield", name:"Ashfield Cans", band:"low", type:"bundled", form:"cluster", settlements:10,
+  { id:"ashfield", name:"Homestead", band:"low", type:"bundled", form:"cluster", settlements:10,
     seats:15, population:880000,
     closure:0.31, suspended:11400, attested:0.682,
     composition:{biological:0.81,emulation:0.13,uplift:0.04,synthetic:0.02},
@@ -198,7 +206,7 @@ const STATIONS = [
     dependency:"Federal consumables lift, three deliveries weekly. Fourteen days of stored margin.",
     grievance:"Tier four in the shed order for eleven consecutive years." },
 
-  { id:"kepler", name:"Kepler Anchorage", band:"low", type:"single", form:"cylinder",
+  { id:"kepler", name:"Anchorage", band:"low", type:"single", form:"cylinder",
     seats:4, population:231000,
     closure:0.54, suspended:2050, attested:0.85,
     composition:{biological:0.74,emulation:0.19,uplift:0.04,synthetic:0.03},
@@ -206,7 +214,7 @@ const STATIONS = [
     dependency:"Tether 2, whose anchor stands on foreign soil.",
     grievance:"That the lifeline is in another state's jurisdiction." },
 
-  { id:"slagworks", name:"Slagworks", band:"low", type:"single", form:"drum",
+  { id:"slagworks", name:"Hardie", band:"low", type:"single", form:"drum",
     seats:2, population:120000,
     closure:0.37, suspended:3120, attested:0.72,
     composition:{biological:0.85,emulation:0.09,uplift:0.04,synthetic:0.02},
@@ -214,7 +222,7 @@ const STATIONS = [
     dependency:"Feedstock contracts and the consumables lift.",
     grievance:"Essential-services legislation, which its unions read as a muzzle." },
 
-  { id:"bellows", name:"Bellows", band:"low", type:"single", form:"cylinder",
+  { id:"bellows", name:"Sunman", band:"low", type:"single", form:"cylinder",
     seats:2, population:101000,
     closure:0.44, suspended:2010, attested:0.76,
     composition:{biological:0.86,emulation:0.08,uplift:0.04,synthetic:0.02},
@@ -222,7 +230,7 @@ const STATIONS = [
     dependency:"It runs an atmosphere plant serving four stations. It depends on power.",
     grievance:"That it can suffocate its neighbours and is paid as though it cannot." },
 
-  { id:"cinder", name:"Cinder", band:"low", type:"single", form:"drum",
+  { id:"cinder", name:"Lantern", band:"low", type:"single", form:"drum",
     seats:1, population:78000,
     closure:0.34, suspended:2520, attested:0.69,
     composition:{biological:0.87,emulation:0.07,uplift:0.04,synthetic:0.02},
@@ -230,7 +238,7 @@ const STATIONS = [
     dependency:"Refining contracts and everything else.",
     grievance:"The shed order, and the smell, in that order." },
 
-  { id:"tallow", name:"Tallow", band:"low", type:"single", form:"cluster",
+  { id:"tallow", name:"Pavilion", band:"low", type:"single", form:"cluster",
     seats:1, population:65000,
     closure:0.39, suspended:1900, attested:0.7,
     composition:{biological:0.84,emulation:0.1,uplift:0.04,synthetic:0.02},
@@ -238,7 +246,7 @@ const STATIONS = [
     dependency:"Consumables processing quotas.",
     grievance:"That it makes the food and cannot afford the volume to eat it in." },
 
-  { id:"quarry", name:"Quarry Reach", band:"low", type:"single", form:"yard",
+  { id:"quarry", name:"Stanbridge", band:"low", type:"single", form:"yard",
     seats:1, population:58000,
     closure:0.42, suspended:1530, attested:0.74,
     composition:{biological:0.86,emulation:0.08,uplift:0.04,synthetic:0.02},
@@ -246,7 +254,7 @@ const STATIONS = [
     dependency:"Construction demand, which is set by the volume appropriation.",
     grievance:"Boom and bust on a schedule someone else publishes." },
 
-  { id:"drift", name:"Drift Cans", band:"low", type:"bundled", form:"cluster", settlements:11,
+  { id:"drift", name:"The Verge", band:"low", type:"bundled", form:"cluster", settlements:11,
     seats:2, population:79000,
     closure:0.27, suspended:3640, attested:0.63,
     composition:{biological:0.83,emulation:0.11,uplift:0.04,synthetic:0.02},
@@ -254,7 +262,7 @@ const STATIONS = [
     dependency:"Everything.",
     grievance:"Everything." },
 
-  { id:"sinter", name:"Sinter", band:"low", type:"single", form:"drum",
+  { id:"sinter", name:"Colonnade", band:"low", type:"single", form:"drum",
     seats:2, population:44000,
     closure:0.36, suspended:1340, attested:0.71,
     composition:{biological:0.85,emulation:0.09,uplift:0.04,synthetic:0.02},
@@ -262,7 +270,7 @@ const STATIONS = [
     dependency:"Fabrication orders from the yards.",
     grievance:"That the yards are three bands up and do not visit." },
 
-  { id:"dredge", name:"Dredge", band:"low", type:"single", form:"yard",
+  { id:"dredge", name:"John Henry", band:"low", type:"single", form:"yard",
     seats:1, population:34000,
     closure:0.33, suspended:1230, attested:0.66,
     composition:{biological:0.88,emulation:0.06,uplift:0.04,synthetic:0.02},
@@ -270,7 +278,7 @@ const STATIONS = [
     dependency:"Debris salvage contracts and the Kessler appropriation.",
     grievance:"That the work is dangerous, necessary, and treated as scavenging." },
 
-  { id:"selene", name:"Selene Stations", band:"external", type:"external", form:"surface",
+  { id:"selene", name:"The Lunar Territory", band:"external", type:"external", form:"surface",
     seats:1, population:60000,
     closure:0.83, suspended:560, attested:0.9,
     composition:{biological:0.69,emulation:0.23,uplift:0.04,synthetic:0.04},
@@ -286,7 +294,7 @@ const STATIONS = [
     dependency:"Lunar feedstock contracts.",
     grievance:"That it is legislated for by a chamber none of whose members have visited." },
 
-  { id:"l4", name:"L4 Yards", band:"external", type:"external", form:"yard",
+  { id:"l4", name:"Leadside", band:"external", type:"external", form:"yard",
     seats:1, population:25000,
     closure:0.88, suspended:240, attested:0.93,
     composition:{biological:0.47,emulation:0.42,uplift:0.03,synthetic:0.08},
@@ -294,7 +302,7 @@ const STATIONS = [
     dependency:"Almost none. That is the point.",
     grievance:"Federal oversight of a station that funds itself." },
 
-  { id:"achenar", name:"Achenar Point", band:"external", type:"external", form:"sphere",
+  { id:"achenar", name:"Outermost", band:"external", type:"external", form:"sphere",
     seats:1, population:13000,
     closure:0.86, suspended:230, attested:0.92,
     composition:{biological:0.42,emulation:0.48,uplift:0.03,synthetic:0.07},
@@ -302,7 +310,7 @@ const STATIONS = [
     dependency:"Nothing it will concede.",
     grievance:"Being counted in an apportionment it regards as a courtesy." },
 
-  { id:"l5", name:"L5 Refuge", band:"external", type:"external", form:"sphere",
+  { id:"l5", name:"Sanctuary", band:"external", type:"external", form:"sphere",
     seats:1, population:11000,
     closure:0.91, suspended:120, attested:0.95,
     composition:{biological:0.38,emulation:0.51,uplift:0.03,synthetic:0.08},

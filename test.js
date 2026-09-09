@@ -183,7 +183,7 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
 
     /* crossing the floor moves a seat without changing the chamber size */
     const before = Engine.partyDistrict(r, "cu");
-    Engine.crossFloor(r, CONTENT, "ashfield_a", "cu", "hul", 1);
+    Engine.crossFloor(r, CONTENT, "the_cans", "cu", "hul", 1);
     ok("crossing the floor moves one seat",
        Engine.partyDistrict(r, "cu") === before - 1 && Engine.tierCheck(r, CONTENT).ok);
     ok("a refused crossing changes nothing",
@@ -193,6 +193,18 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     /* a district seats effect must be refused, not silently undone */
     const d0 = Engine.partyDistrict(r, "cu");
     Engine.apply(r, CONTENT, [{ seats: { cu: { district: 5 } } }]);
+    /* a member and their seat must agree, in both directions. The seat has to
+       exist on the roll and the roll has to show their party holding it — a
+       renamed constituency otherwise leaves a member sitting for nowhere. */
+    let seatBad = [];
+    CONTENT.characters.filter(c => c.seat).forEach(c => {
+      const k = CONTENT.constituencies.find(x => x.name === c.seat);
+      if (!k) seatBad.push(`${c.name}: no seat "${c.seat}"`);
+      else if (!k.held[c.party]) seatBad.push(`${c.name} (${c.party}) sits for ${c.seat}, held by ${Object.keys(k.held)[0]}`);
+    });
+    ok("every member sits for a seat their party holds",
+       seatBad.length === 0, seatBad.join("; "));
+
     ok("a seats effect cannot write district seats",
        Engine.partyDistrict(r, "cu") === d0 &&
        r.parties.cu.seats.district === d0);

@@ -19,8 +19,8 @@ const MINUTES = [
     copy:["Chief Whip","Law Officer","Cabinet Secretary"],
     struck:["Minister for Substrate and Thermal"],
     notCopied:["Coalition liaison (Public Substrate Association)"],
-    subject:"Shed order priority — Ashfield Cans",
-    body:`I have seen the engineering authority's published order for the current quarter. Ashfield Cans is placed in the fourth tier for the eleventh consecutive year, and eleven thousand four hundred suspended residents are held in that tier.
+    subject:"Shed order priority — Homestead",
+    body:`I have seen the engineering authority's published order for the current quarter. Homestead is placed in the fourth tier for the eleventh consecutive year, and eleven thousand four hundred suspended residents are held in that tier.
 
 1. I want the statutory basis for the authority's discretion set out in writing, and specifically whether the order is made under s.12 or under the residual emergency power. The distinction has never been tested and I should like to know why not.
 2. The delegation will be received at sixteen fifteen. They should not be told anything I have not first put in front of the Law Officer.
@@ -56,7 +56,7 @@ It went as well as it could have.` },
     subject:"Attestation (Lapse and Restoration) Order 2287 — vires",
     body:`You have asked whether the Order is within the powers conferred by the Attestation Act. My view is that it is, narrowly, and that this is not the question you should be asking.
 
-The Act permits the Registry to set the lapse period. It does not require the Registry to consider the distribution of the effect. The effect is nonetheless distributed: on the Bureau's own figures the Order removes electors from Drift, Cinder, Ashfield and the Tannery at between three and four times the rate at which it removes them from Anselm Ring.
+The Act permits the Registry to set the lapse period. It does not require the Registry to consider the distribution of the effect. The effect is nonetheless distributed: on the Bureau's own figures the Order removes electors from the Verge, Lantern, Homestead and the Tannery at between three and four times the rate at which it removes them from Anselm Ring.
 
 1. The Order is lawful.
 2. A challenge on the ground of improper purpose would probably fail, because purpose is hard to prove and the stated purpose is administrative.

@@ -50,7 +50,7 @@ const ENCYCLOPEDIA = {
     sections:[
       { h:"Distribution", body:
         "Biological 64 per cent, emulation 28, uplift 4, synthetic 4. The figures vary sharply by "+
-        "band. Ashfield Cans is 81 per cent biological; L5 Refuge is 51 per cent emulated.\n\n"+
+        "band. Homestead is 81 per cent biological; Sanctuary is 51 per cent emulated.\n\n"+
         "The two scarcities run in opposite directions across the roster. Volume is positional and "+
         "dearest where everyone wishes to be; thermal rejection is geometric and best far from "+
         "Earth's infrared glare, so substrate is cheapest where fewest people live. A station's "+
@@ -353,7 +353,7 @@ const ENCYCLOPEDIA = {
       { h:"Apportionment", body:
         "Suspended persons are counted for the apportionment of seats and cannot vote. A " +
         "station with a large suspended cohort therefore returns members elected by a small " +
-        "active electorate. Ashfield Cans holds 11,400 suspended residents against a " +
+        "active electorate. Homestead holds 11,400 suspended residents against a " +
         "population of 880,000." }
     ],
     see:["shed_order","substrate","ashfield"] },

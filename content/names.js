@@ -52,32 +52,32 @@ const NAMELISTS = {
   /* ---- stations ---- */
   /* The founding generation named habitats for people and instruments. */
   station_founding: [
-    "Anselm","Meridian","Tsiolkovsky","Kepler","Perigee","Vantage","Calloway","Sable",
-    "Hollis","Brenner","Achenar","Corvus","Delphine","Erasmus","Fournier","Grimaldi",
-    "Hypatia","Isidore","Janszoon","Kirchhoff","Lagrange","Messier","Nasmyth","Oberth"
+    "Anselm","Meridian","Farstead","Anchorage","Perigee","Ember Ridge","Calloway","Bondsville",
+    "Hollis","Brenner","Outermost","Rookworks","Delphine","The Rotunda","Fournier","Layover",
+    "Hypatia","Isidore","Janszoon","Kirchhoff","Lagrange","Messier","Hammerstead","Bethesda"
   ],
   /* The industrial expansion named them for what they did. */
   station_industrial: [
-    "Ashfield","Drift","Slagworks","Coldharbour","Tallow","Ferrous","Cinder","Bellows",
-    "Quarry","Reclaim","Sinter","Tannery","Wickstead","Bloomery","Cordage","Dredge"
+    "Homestead","Verge","Hardie","Coldwater","Pavilion","Ferrous","Lantern","Sunman",
+    "Stanbridge","Reclaim","Colonnade","Tannery","Harvest","Bloomery","Cordage","John Henry"
   ],
   /* Suffixes. A can is a cheap pressurised cylinder and the word is a slight. */
   station_suffix: [
     "Ring","Spindle","Drum","Deck","Cans","Yards","High","Loop","Anchorage","Reach",
-    "Hollows","Refuge","Stations","Works","Terrace","Warren"
+    "Brant","Refuge","Stations","Works","Terrace","Warren"
   ],
 
   /* ---- organisations ---- */
   consortium: [
-    "Anselm Elevator","Kepler Anchor","Tether Nine","Loop Combine","Vantage Thermal",
-    "Sable Substrate","Perigee Fabrication","Meridian Transit","Cold Harbour Underwriting",
+    "Anselm Elevator","Anchorage Anchor","Tether Nine","Loop Combine","Ember Thermal",
+    "Bondsville Substrate","Fore River Fabrication","Meridian Transit","Coldwater Underwriting",
     "First Circumterrestrial","Halshaw Reclamation","Orbit Provident","Drum Line",
     "Bellweather Consumables","Tenmile Rejection","Standard Substrate"
   ],
 
   press: [
     "The Spindle","Ring Network","The Perigee Review","Low Band Notice","The Attested",
-    "Deckside","The Quarterly Register","Freefall","The Common Watch","Sable Herald"
+    "Deckside","The Quarterly Register","Freefall","The Common Watch","Bondsville Herald"
   ],
 
   /* ---- bills ---- */

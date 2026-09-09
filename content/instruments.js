@@ -50,12 +50,12 @@ const INSTRUMENTS = [
     prayer_stances:{ cu:"against", psa:"against", rv:{}, gb:"for", hul:"for", fh:"for", cl:"for" } },
 
   { id:"si_2287_51",
-    title:"Thermal Allocation (Vantage High) Emergency Order 2287",
+    title:"Thermal Allocation (Ember Ridge) Emergency Order 2287",
     number:"SI 2287/51",
     author:"life_support",
     procedure:"affirmative",
     revocable:true,
-    summary:"Diverts thermal quota from Anselm Ring to Vantage High for the duration of the "+
+    summary:"Diverts thermal quota from Anselm Ring to Ember Ridge for the duration of the "+
             "radiator fault. Touches life-support integrity, so the affirmative procedure "+
             "applies and the House must approve it before it takes effect.",
     effect_note:"Anselm Ring pays for it, and Anselm Ring notices.",
@@ -77,7 +77,7 @@ const INSTRUMENTS = [
     summary:"Shortens the period before an unrenewed attestation lapses from four years to "+
             "eighteen months, and simplifies restoration for those who apply in person.",
     effect_note:"Attestation gates the vote. Shortening the lapse period removes electors, "+
-                "and it removes them unevenly: from Drift, Cinder and Ashfield first.",
+                "and it removes them unevenly: from the Verge, Lantern and Homestead first.",
     effects:[ { station:{ ashfield:{attested:-0.03}, drift:{attested:-0.04},
                           cinder:{attested:-0.035}, tannery:{attested:-0.03} } },
               { flag:"attestation_tightened" },

@@ -134,17 +134,17 @@ The ballot is called for the week after next.`,
 
 { id:"vantage_radiator", prologue:3,
   when:{ scalarBelow:{thermal_margin:22}, flagsAbsent:["vantage_handled"] },
-  title:"Vantage High, third day below reserve",
+  title:"Ember Ridge, third day below reserve",
   speaker:null,
   image:{ src:"vantage_radiator.png", palette:"broadcast",
-          caption:"Radiator array 4, Vantage High", credit:"Ring Network" },
+          caption:"Radiator array 4, Ember Ridge", credit:"Ring Network" },
   body:`The fault is in a radiator array, the array is twenty-two years old, and
 the replacement is in a procurement queue behind a loop upgrade nobody has ever
 been able to explain. Under the Allocation Act the engineering authority may
 suspend the tier-four register on that station without notice and without a
 minister being told first.
 
-There are four thousand two hundred suspended persons on Vantage High.`,
+There are four thousand two hundred suspended persons on Ember Ridge.`,
   choices:[
     { label:"Authorise emergency thermal transfer from Anselm Ring",
       effects:[{scalar:{thermal_margin:11,treasury:-9,public_standing:-4}},
@@ -162,7 +162,7 @@ There are four thousand two hundred suspended persons on Vantage High.`,
   ]},
 
 { id:"vantage_cascade", queuedOnly:true, once:true,
-  title:"Tier four, Vantage High",
+  title:"Tier four, Ember Ridge",
   speaker:null,
   body:`The authority shed the register at 04:12 without notifying the Ministry.
 Four thousand two hundred people stopped running. Under the Act this was lawful.
@@ -312,7 +312,7 @@ coalition. It is not binding. Nothing at a conference ever is.`,
   speaker:"ansar",
   body:`Nobody legislated for this. The substrate index has been above a hundred
 and twelve for three weeks and the low band is doing what the low band does
-when it cannot pay: the tier-four register on Ashfield has grown by four figures
+when it cannot pay: the tier-four register on Homestead has grown by four figures
 and nobody has announced anything, because nothing was announced. The price went
 up and people stopped running.
 

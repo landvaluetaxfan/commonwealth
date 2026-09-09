@@ -90,7 +90,7 @@ sustain without imports. A station at 0.95 recycles nearly everything and could,
 if it chose, close its locks and continue. A station at 0.31 has fourteen days of
 stored margin and then begins to die.
 
-Ashfield Cans is at 0.31. Anselm Ring is at 0.79. L5 Refuge is at 0.91 and does
+Homestead is at 0.31. Anselm Ring is at 0.79. Sanctuary is at 0.91 and does
 not let anyone forget it.
 
 I want the student to sit with the implication rather than move past it. Most
@@ -491,7 +491,7 @@ Two political facts follow.
 The suspended are **counted for apportionment and cannot vote**. A station with a
 large suspended cohort therefore returns members elected by a much smaller active
 electorate, and those members represent, in the formal sense, people who have no
-means of holding them to anything. Ashfield Cans has eleven thousand four hundred
+means of holding them to anything. Homestead has eleven thousand four hundred
 suspended residents against fifteen seats.
 
 And they are a bloc that can be suppressed **by choosing when to hold the
@@ -581,7 +581,7 @@ This single fact organises more of our class politics than any doctrine does.
 
 **They pay for substrate and do not use it.** Thermal taxation funds the
 insurance that keeps emulated citizens running. From the perspective of an
-embodied maintenance worker on Perigee Yards, the transfer runs one way: from
+embodied maintenance worker on Fore River Yards, the transfer runs one way: from
 people who work with their hands toward people who do not have hands, some of
 whom are simultaneously undercutting his wage by being forked at a hundred and
 sixty-eight hours. I do not endorse this framing. I record that it is not
@@ -605,7 +605,7 @@ voting at near-universal rates, with unlimited time to attend every hearing and
 every selection contest — is an *emulated* gerontocracy. Biological political
 generations turn over at the old rate. The emulated ones do not turn over at all.
 
-A biological citizen of thirty on Ashfield Cans is contesting the future of this
+A biological citizen of thirty on Homestead is contesting the future of this
 Commonwealth against an electorate that will still be voting in ninety years, and
 that has already voted, consistently, for a settlement which serves it. There is
 no constitutional remedy for this. There is not even a proposal for one that has
@@ -657,19 +657,19 @@ dearer on thermal. So the household driven to upload is one that cannot make its
 is a ring-band or middle-band household. Not a low-band one.
 
 Volume on Anselm Ring is astronomical because everybody wishes to be there.
-Volume on Ashfield Cans is nearly free because nobody does. Nobody uploads to
+Volume on Homestead is nearly free because nobody does. Nobody uploads to
 escape a rent they are already paying cheaply.
 
 There is a physical reason the bands differ on the other side of the ledger, and
 it is worth a paragraph. A habitat in low orbit attempts to reject heat while
 sitting in the infrared glare of the Earth. The far band and the Lagrange
 settlements have far better rejection geometry, and their substrate is genuinely
-cheap. This is why Tsiolkovsky Deck is forty-seven per cent emulated and L5
-Refuge fifty-one, while Ashfield Cans is eighty-one per cent biological. The two
+cheap. This is why Farstead is forty-seven per cent emulated and L5
+Refuge fifty-one, while Homestead is eighty-one per cent biological. The two
 scarcities run in opposite directions across the roster, and a household's
 decision is made where they cross.
 
-To upload on Ashfield would be to surrender cheap volume one already holds in
+To upload on Homestead would be to surrender cheap volume one already holds in
 exchange for tier-four substrate on a station that has been shed for eleven
 consecutive years. It is a death sentence with an additional step.
 

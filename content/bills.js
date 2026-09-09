@@ -41,7 +41,7 @@ const BILLS = [
 
   { id:"thermal2", ref:"HC 4/094", stage:"second_reading", owner:"cu",
     title:"Thermal Quota Allocation (No. 2) Bill",
-    summary:"Reallocates radiator capacity toward the middle band. Vantage High has been "+
+    summary:"Reallocates radiator capacity toward the middle band. Ember Ridge has been "+
             "below statutory reserve since the radiator fault of 6 April.",
     dualMajority:false,
     axes:{ownership:"public",personhood:null,sovereignty:"federal",closure:"integrationist"},
@@ -63,7 +63,7 @@ const BILLS = [
     onFail:[{loyalty:{cu_halloran:-8}}] },
 
   { id:"anchor_kepler", ref:"HC 4/103", stage:"upper_house", owner:null,
-    title:"Anchor Concession (Kepler) Ratification Bill",
+    title:"Anchor Concession (Anchorage) Ratification Bill",
     summary:"Ratifies renewed terms for the Tether 2 anchor, which stands on the sovereign "+
             "territory of an Earth state.",
     dualMajority:false,
