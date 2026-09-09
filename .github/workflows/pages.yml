@@ -1,0 +1,59 @@
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One in-flight deployment at a time; let a newer push supersede an older one
+# rather than queueing behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm install
+
+      # Nothing ships that does not pass. The site is the game.
+      - name: Checks
+        run: npm run check
+
+      - name: Build the downloadable single file
+        run: npm run build
+
+      # The repo IS the site — no build step, by design — so this is a copy,
+      # not a bundle. Only the files a browser actually requests.
+      - name: Assemble
+        run: |
+          mkdir -p _site
+          cp index.html editor.html _site/
+          cp -r css js content img _site/
+          cp dist/ways-and-means.html _site/
+          # Pages runs Jekyll by default, which drops files it does not
+          # recognise. We are plain static; opt out.
+          touch _site/.nojekyll
+          echo "--- deploying ---"
+          find _site -type f | sort | sed 's/^/  /'
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

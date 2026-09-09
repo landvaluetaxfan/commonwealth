@@ -18,8 +18,11 @@ defeat something you can trace backwards.
 
 ## Play it
 
-**Download the single file from [Releases](../../releases)** and open it in a
-browser. No install, no server, works offline.
+**[Play in your browser](https://landvaluetaxfan.github.io/commonwealth/)** —
+no download, nothing to install. Saves live in that browser, per slot.
+
+Or **download the single file from [Releases](../../releases)** and open it
+offline; it is the same build with everything inlined.
 
 From a clone, open `index.html` directly — `file://` is a supported way to run
 this, not a fallback. Content lives in `content/*.js` rather than `.json`
