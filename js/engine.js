@@ -114,18 +114,11 @@ const Engine = (function () {
   function migrate(st) {
     if (!st.version) st.version = 1;
     if (st.chapter == null) st.chapter = 1;   // saves from before chapters existed
-    if (st.version < 4) {                     // cabinet and instruments
-      st.cabinet = st.cabinet || {};
-      st.instruments = st.instruments || {};
-      if (st.signatures == null) st.signatures = 0;
-      st.version = 4;
-    }
-    if (st.version < 3) {                     // scarcity prices
-      st.prices = st.prices || { thermal:100, substrate:100, volume:100, transit:100 };
-      st.priceHistory = st.priceHistory ||
-        { thermal:[100], substrate:[100], volume:[100], transit:[100] };
-      st.version = 3;
-    }
+
+    /* ASCENDING, one block per bump, each stamping only its own version.
+       Descending order silently skips every earlier block: a v1 save hits
+       `< 4`, is stamped 4, and never gets prices, capital, slots or whips,
+       so the first division throws. Keep these in order and never delete one. */
     if (st.version < 2) {                     // capital, slots and whipping
       st.capital = st.capital || {};
       st.coalition.concat(st.confidenceSupply).forEach(p => {
@@ -135,7 +128,18 @@ const Engine = (function () {
       st.whips = st.whips || {};
       st.version = 2;
     }
-    // while (st.version < STATE_VERSION) { switch (st.version) { case 1: ...; st.version = 2; break; } }
+    if (st.version < 3) {                     // scarcity prices
+      st.prices = st.prices || { thermal:100, substrate:100, volume:100, transit:100 };
+      st.priceHistory = st.priceHistory ||
+        { thermal:[100], substrate:[100], volume:[100], transit:[100] };
+      st.version = 3;
+    }
+    if (st.version < 4) {                     // cabinet and instruments
+      st.cabinet = st.cabinet || {};
+      st.instruments = st.instruments || {};
+      if (st.signatures == null) st.signatures = 0;
+      st.version = 4;
+    }
     return st;
   }
 

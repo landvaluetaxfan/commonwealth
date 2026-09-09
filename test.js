@@ -1,6 +1,7 @@
 /* Headless check: does the division calculator reproduce the bible's numbers? */
 const fs = require("fs"), vm = require("vm");
 const files = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js",
+               "content/functional.js","content/labour.js",
                "content/characters.js","content/bills.js","content/events.js","content/glossary.js","content/encyclopedia.js","content/index.js"];
 const src = files.map(f => fs.readFileSync(f,"utf8")).join("\n") + "\n;globalThis.__C = CONTENT;";
 vm.runInThisContext(src);
@@ -141,6 +142,67 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   ok("cabinet is data", Object.keys(Engine.newGame(CONTENT).cabinet).length === 9);
   ok("state version is current", Engine.newGame(CONTENT).version === Engine.STATE_VERSION,
      "v" + Engine.STATE_VERSION);
+
+  /* SAVE MIGRATION (bible 15.3.2, sweep brief Part H).
+     Every version bump adds fields; a save written before that bump must come
+     back with all of them. This regressed once: the guards were written in
+     descending order, so a v1 save hit `< 4` first, was stamped 4, and skipped
+     the blocks that add prices, capital, slots and whips. It loaded, then threw
+     on the first division. Walk every old version forward, not just the newest. */
+  const FIELDS_BY_VERSION = {
+    2: ["capital", "slots", "whips"],
+    3: ["prices", "priceHistory"],
+    4: ["cabinet", "instruments", "signatures"]
+  };
+  const ALL_ADDED = Object.values(FIELDS_BY_VERSION).flat();
+
+  for (let from = 1; from < Engine.STATE_VERSION; from++) {
+    const old = JSON.parse(Engine.save(Engine.newGame(CONTENT)));
+    old.version = from;
+    /* strip everything introduced after `from`, as a real save of that age would lack */
+    Object.keys(FIELDS_BY_VERSION).forEach(v => {
+      if (Number(v) > from) FIELDS_BY_VERSION[v].forEach(f => delete old[f]);
+    });
+
+    const m = Engine.load(JSON.stringify(old));
+    const missing = ALL_ADDED.filter(f => m[f] === undefined);
+    ok(`v${from} save migrates to v${Engine.STATE_VERSION}`,
+       m.version === Engine.STATE_VERSION && missing.length === 0,
+       missing.length ? "missing " + missing.join(", ") : "all fields present");
+
+    /* and it must actually be playable, not merely well-shaped */
+    let played = true, why = "";
+    try {
+      Engine.division(m, CONTENT, "divergence");
+      Engine.whipCost(m, CONTENT, "divergence");
+    } catch (e) { played = false; why = e.message; }
+    ok(`v${from} migrated save is playable`, played, why);
+  }
+
+  /* LABOUR RECONCILIATION.
+     content/labour.js says the licensed counts in functional.js "are the hard
+     constraint" and derives everything from population, adult roll and the
+     franchise split. Nothing loaded the file, so nothing enforced that. These
+     three sums are the whole claim; if a content pass edits an electorate,
+     this is what notices. */
+  if (typeof LABOUR !== "undefined" && typeof FUNCTIONAL !== "undefined") {
+    const T = LABOUR.totals;
+    const licensed = FUNCTIONAL.filter(f => f.franchise !== "residual")
+                               .reduce((n, f) => n + (f.electorate || 0), 0);
+    const residual = FUNCTIONAL.filter(f => f.franchise === "residual")
+                               .reduce((n, f) => n + (f.electorate || 0), 0);
+    ok("functional electorates sum to the franchise total",
+       licensed === T.functionalFranchise, licensed + " vs " + T.functionalFranchise);
+    ok("residual constituency matches the labour table",
+       residual === T.residual, residual + " vs " + T.residual);
+    ok("franchise + residual = adult roll",
+       licensed + residual === T.adultRoll, (licensed + residual) + " vs " + T.adultRoll);
+    ok("adult roll is a plausible share of population",
+       T.adultRoll < T.population && T.adultRoll / T.population > 0.5,
+       (100 * T.adultRoll / T.population).toFixed(1) + "% of " + T.population);
+  } else {
+    ok("labour table is loaded", false, "LABOUR or FUNCTIONAL missing from the harness");
+  }
 
   if (bad) { console.log("\n" + bad + " ACCEPTANCE FAILURES"); process.exitCode = 1; }
 })();

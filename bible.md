@@ -1,7 +1,7 @@
 # THE ORBITAL POLITICAL THRILLER — PROJECT BIBLE
 
-**Version 3 · 31 August 2026**
-Supersedes v2. `vault.md` retained separately as raw append-only source material.
+**Version 4 · 9 September 2026**
+Supersedes v3. `vault.md` retained separately as raw append-only source material.
 Companion: `textbook.md`, an in-world socioeconomic primer — canon, but written
 in-fiction and not a spec.
 
@@ -12,6 +12,10 @@ rather than a scalar (§7.6); order-paper time is the currency that generates it
 carry the consequence chain (§7.9); chapters exist (§1.7); the economy is
 specified (Part VII); labour and non-participation are quantified (§10.3, §10.4);
 fork-rentiers are a new bloc (§10.5); the tooling section is rewritten (§15.5).
+
+**What changed in v4:** the file lives in the repository and is edited in place
+rather than re-uploaded (§0.3); cabinet-as-data is built and has left the open
+list (§16); §12.12 notes that `terminal.html` is not in the repository.
 
 ---
 
@@ -39,7 +43,20 @@ Keep the briefing tight and scannable. It is a pre-flight check, not an essay.
 
 ## 0.3 Maintaining this file
 
-Claude cannot write to project knowledge. At the end of a working chat, Claude should output a revised full file (or a clearly-marked patch section) for Harper to re-upload, replacing the old version. Version number at the top increments each time.
+This file lives in the repository and is edited in place, in the same commit as
+the change it describes. Increment the version at the top and add a line to the
+"what changed" block when a decision moves.
+
+The older convention — Claude outputs a revised full file for Harper to
+re-upload to project knowledge — is retired. It was a workaround for an agent
+that could not write to the repo, and it is how §16 came to list cabinet-as-data
+as an open question for a phase that had already built it. **Canon and code move
+together or canon rots.**
+
+Two failure modes to watch, both seen: a decision gets built and the bible keeps
+calling it OPEN; and the bible acquires material the code has no counterpart for
+(§15.3.6, the named risk). When you close a decision, move it out of §16 in the
+same commit.
 
 ## 0.4 Status legend
 
@@ -1445,6 +1462,12 @@ all emerge looking as though they came from the same place.
 
 `terminal.html` — a complete self-contained mockup of all six screens. Serves as the visual spec.
 
+**It is not in this repository** and never has been; it exists only as an
+artifact in the originating chat. Treat this section, §12.10 and the `.sig-*`
+rules in `css/terminal.css` as the surviving specification. If the file is
+recovered, commit it under `docs/` so the spec stops living somewhere the
+repository cannot see.
+
 ---
 
 # PART XIII — SCANDAL AND THE THRILLER SPINE
@@ -1606,8 +1629,11 @@ reads that as a bug.
   interest in the threshold, no expression in the chamber.
 - **Lobbying** — moving benches outside the coalition. Currently impossible by
   design; the whip panel says so. Needs its own currency.
-- **Cabinet as data** — the Ministries exist in canon but not in the state object,
-  so the President's appointment-refusal power has nothing to refuse.
+- ~~**Cabinet as data**~~ — **CLOSED, built.** The Ministries are in the state
+  object as of `STATE_VERSION` 4; a post with no holder cannot make a statutory
+  instrument, which is what the President's appointment-refusal power now bites
+  on. See the sweep brief, Part C, and the `cabinet is data` assertion in
+  `test.js`.
 
 ---
 

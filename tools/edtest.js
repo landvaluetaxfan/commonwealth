@@ -15,19 +15,37 @@ catch (e) {
   catch (e2) { console.log("SKIP: jsdom not installed  (npm install jsdom)"); process.exit(0); }
 }
 
-const dom = new JSDOM(fs.readFileSync(path.join(root, "editor.html"), "utf8"),
-  { runScripts: "dangerously", pretendToBeVisual: true, url: "file:///x/" });
+/* editor.html ends with an inline `Editor.boot()`. jsdom does not fetch the
+   external <script src> tags above it, so that call runs against an undefined
+   Editor at parse time and throws — before any listener we could attach, and
+   into the virtual console rather than anywhere we check. It printed a stack
+   trace on every run while the suite still reported "editor is healthy", which
+   is the exact shape of the bug this file exists to catch.
+
+   Strip the bootstrap (we call boot() ourselves below, after injecting the
+   real scripts) and register the error sinks through beforeParse, so they are
+   live before the first byte of script runs. */
+const errs = [];
+const html = fs.readFileSync(path.join(root, "editor.html"), "utf8")
+  .replace(/<script>\s*Editor\.boot\(\);?\s*<\/script>/, "");
+
+const { VirtualConsole } = require("jsdom");
+const vc = new VirtualConsole();
+vc.on("jsdomError", e => errs.push(e.message));
+
+const dom = new JSDOM(html, {
+  runScripts: "dangerously", pretendToBeVisual: true, url: "file:///x/",
+  virtualConsole: vc,
+  beforeParse(win) { win.addEventListener("error", e => errs.push(e.message)); }
+});
 const w = dom.window;
 w.alert = () => {}; w.confirm = () => true; w.prompt = () => null;
 w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = function () {};
 
-const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
+const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js","content/labour.js",
   "content/characters.js","content/bills.js","content/glossary.js","content/archetypes.js","content/names.js",
   "content/events.js","content/encyclopedia.js","content/index.js",
   "js/engine.js","js/schema.js","js/refs.js","js/coverage.js","js/serialise.js","js/editor.js"];
-
-const errs = [];
-w.addEventListener("error", e => errs.push(e.message));
 
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -92,6 +110,7 @@ try {
 } catch (e) { ok("export runs", false, e.message); }
 
 console.log("");
-if (errs.length) { console.log("WINDOW ERRORS:"); errs.forEach(e => console.log("  " + e)); fail += errs.length; }
+const uniq = [...new Set(errs.map(e => String(e).replace(/^Uncaught \[?|\]$/g, "")))];
+if (uniq.length) { console.log("WINDOW ERRORS:"); uniq.forEach(e => console.log("  " + e)); fail += uniq.length; }
 console.log(fail ? fail + " FAILURES" : "editor is healthy");
 process.exit(fail ? 1 : 0);
