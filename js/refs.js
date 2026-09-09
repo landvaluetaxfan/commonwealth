@@ -50,6 +50,13 @@ const Refs = (function () {
       if (f.held && f.held[id] !== undefined)
         H(`functional ${f.id} · held`, to => renameKey(f.held, id, to));
     });
+    /* District constituencies carry the roll — who sits for each seat — with
+       party ids as keys. Missing these left a renamed party as a dead id in
+       the roll, so its seats vanished from every district total silently. */
+    (M.constituencies || []).forEach(k => {
+      if (k.held && k.held[id] !== undefined)
+        H(`constituency ${k.id} · held`, to => renameKey(k.held, id, to));
+    });
     M.stations.forEach(s => {
       if (s.party_leans && s.party_leans[id] !== undefined)
         H(`station ${s.id} · party_leans`, to => renameKey(s.party_leans, id, to));

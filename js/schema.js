@@ -60,7 +60,23 @@ const SCHEMA = {
     queue:       { label:"Queue a later event", args:[
                    {k:"value", type:"enum", src:"events", label:"Event"},
                    {k:"delta", type:"int", label:"After N sittings", def:1}],
-                   shape:"queue" }
+                   shape:"queue" },
+    /* Seats move only by these. A district count is derived from the roll,
+       so writing one directly is refused by the engine. */
+    cross:       { label:"Cross the floor", args:[
+                   {k:"constituency", type:"enum", src:"constituencies", label:"Constituency"},
+                   {k:"from", type:"enum", src:"parties", label:"From"},
+                   {k:"to", type:"enum", src:"parties", label:"To"},
+                   {k:"seats", type:"int", label:"Seats", def:1}], shape:"list" },
+    vacate_seat: { label:"Vacate a seat", args:[
+                   {k:"constituency", type:"enum", src:"constituencies", label:"Constituency"},
+                   {k:"party", type:"enum", src:"parties", label:"Held by"},
+                   {k:"why", type:"text", label:"Reason"}], shape:"list" },
+    byelection:  { label:"Hold a by-election", args:[
+                   {k:"value", type:"enum", src:"constituencies", label:"Constituency"}],
+                   shape:"listVal" },
+    election:    { label:"Hold a general election", args:[
+                   {k:"value", type:"bool", label:"Dissolve"}], shape:"scalarVal" }
   },
 
   /* ---------- condition keys ---------- */

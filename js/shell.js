@@ -171,7 +171,7 @@ const Shell = (function () {
   /* ---------- starting and saving ---------- */
   function start(n, name, stateStr) {
     let state;
-    try { state = stateStr ? Engine.load(stateStr) : Engine.newGame(C); }
+    try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(C); }
     catch (e) { alert("That save could not be read: " + e.message); return; }
     current = { n: n, name: name };
     document.getElementById("menu").classList.remove("on");
@@ -277,7 +277,7 @@ const Shell = (function () {
       const r = new FileReader();
       r.onload = () => {
         try {
-          const state = Engine.load(r.result);
+          const state = Engine.load(r.result, C);
           if (typeof Papers !== "undefined") Papers.reset();
           document.getElementById("menu").classList.remove("on");
           document.body.classList.remove("menu-on");

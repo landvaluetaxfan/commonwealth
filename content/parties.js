@@ -58,12 +58,23 @@ const PARTIES = [
   { id:"geo", name:"Georgists",                    short:"GEO", colour:"var(--p-geo)",
     seats:{district:0,list:3,functional:0}, loyalty:66,
     axes:{ownership:null,personhood:null,sovereignty:"federal",closure:null},
-    note:"Volume tax. Land value tax. Nothing else. Correct." },
+    /* No carve-out: a national ideological party with no district roots and
+       no category to protect. It lives or dies on the threshold every time,
+       which is exactly the party 4.8 says will agonise just below the line. */
+    note:"Volume tax. Land value tax. Nothing else. Correct. Three seats and "+
+         "always within a point of the threshold." },
 
   { id:"upl", name:"Uplift Caucus",                short:"UPL", colour:"var(--p-upl)",
     seats:{district:0,list:2,functional:0}, loyalty:58,
+    /* Bible 4.8: the list threshold exempts a party representing a single
+       legal-person category, as minority protection. The Uplift Caucus is
+       the case that carve-out was written for — and the exemption is itself
+       permanently contested, which is the point of having it. */
+    carve_out:"category",
     axes:{ownership:"public",personhood:"expansionist",sovereignty:null,closure:null},
-    note:"Two seats. Permanently kingmaker-adjacent. Price is always the same thing." }
+    note:"Two seats. Permanently kingmaker-adjacent. Price is always the same thing. "+
+         "Exempt from the list threshold under the single-category carve-out, which "+
+         "half the chamber would repeal tomorrow." }
 ];
 
 /* CURRENTS — factions inside a party. Same four axes; a current that

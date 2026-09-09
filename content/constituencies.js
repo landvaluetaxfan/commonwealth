@@ -23,230 +23,292 @@
    the electoral one are the same fight.
    ============================================================= */
 
+/* held — who sits for this constituency right now, party id to seat count,
+   summing to `magnitude`. It is the CURRENT roll, not the last election
+   result: by-elections, vacancies and floor crossings move these numbers
+   during play, and the engine derives every district seat total from them
+   rather than storing a second copy (see the apportionment_ratio entry in
+   CLAUDE.md for why). test.js reconciles the sums both ways. */
 const CONSTITUENCIES = [
 
   { id:"anselm_ring_north", name:"Anselm Ring North", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cu:1,cl:2,rv:1,sc:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_central", name:"Anselm Ring Central", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cl:3,cu:2},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_agricultural", name:"Anselm Ring Agricultural", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{rv:3,cu:1,sc:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_outer_decks", name:"Anselm Ring Outer Decks", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cu:3,sc:1,fh:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_spinward", name:"Anselm Ring Spinward", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cu:2,cl:1,sc:1,fh:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_tether_head", name:"Anselm Ring Tether Head", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cl:2,cu:2,hul:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_deep_decks", name:"Anselm Ring Deep Decks", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cu:3,psa:1,sc:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"anselm_ring_founders", name:"Anselm Ring Founders'", station:"anselm", band:"ring",
     magnitude:5, electorate:161669,
+    held:{cl:2,fh:2,cu:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"meridian_spindle_east", name:"Meridian Spindle East", station:"meridian", band:"ring",
     magnitude:4, electorate:109819,
+    held:{cu:2,cl:1,sc:1},
     material_interest:["tether_traffic", "substrate_supply"] },
 
   { id:"meridian_spindle_west", name:"Meridian Spindle West", station:"meridian", band:"ring",
     magnitude:4, electorate:109819,
+    held:{cu:2,sc:1,cl:1},
     material_interest:["tether_traffic", "substrate_supply"] },
 
   { id:"meridian_tether_head", name:"Meridian Tether Head", station:"meridian", band:"ring",
     magnitude:4, electorate:109819,
+    held:{cl:2,cu:1,hul:1},
     material_interest:["tether_traffic", "substrate_supply"] },
 
   { id:"meridian_underdecks", name:"Meridian Underdecks", station:"meridian", band:"ring",
     magnitude:4, electorate:109819,
+    held:{cu:2,psa:1,sc:1},
     material_interest:["tether_traffic", "substrate_supply"] },
 
   { id:"corvus_ring_inner", name:"Corvus Ring Inner", station:"corvus", band:"ring",
     magnitude:3, electorate:91964,
+    held:{cl:2,cu:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"corvus_ring_outer", name:"Corvus Ring Outer", station:"corvus", band:"ring",
     magnitude:3, electorate:91964,
+    held:{cu:2,sc:1},
     material_interest:["tether_traffic", "volume_rationing"] },
 
   { id:"sable_drum_rim", name:"Sable Drum Rim", station:"sable", band:"ring",
     magnitude:3, electorate:97844,
+    held:{sc:2,cu:1},
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
   { id:"sable_leaseside", name:"Sable Leaseside", station:"sable", band:"ring",
     magnitude:3, electorate:97844,
+    held:{fh:3},
     material_interest:["tether_traffic", "consumables_subsidy"] },
 
   { id:"halvard_terrace", name:"Halvard Terrace", station:"halvard", band:"ring",
     magnitude:3, electorate:100663,
+    held:{cl:2,fh:1},
     material_interest:["volume_rationing", "tether_traffic"] },
 
   { id:"the_bourse", name:"The Bourse", station:"bourse", band:"ring",
     magnitude:2, electorate:22411,
+    held:{cl:2},
     material_interest:["risk_pricing", "substrate_supply"] },
 
   { id:"hollows_north", name:"Hollows North", station:"hollows", band:"far",
     magnitude:2, electorate:69886,
+    held:{sc:1,rv:1},
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
   { id:"hollows_south", name:"Hollows South", station:"hollows", band:"far",
     magnitude:2, electorate:69886,
+    held:{sc:1,rv:1},
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
   { id:"hollows_cross", name:"Hollows Cross", station:"hollows", band:"far",
     magnitude:2, electorate:69886,
+    held:{rv:2},
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
   { id:"tsiolkovsky_north", name:"Tsiolkovsky North", station:"tsiolkovsky", band:"far",
     magnitude:2, electorate:71706,
+    held:{sc:1,hul:1},
     material_interest:["substrate_supply", "thermal_quota"] },
 
   { id:"tsiolkovsky_substrate_quarter", name:"Tsiolkovsky Substrate Quarter", station:"tsiolkovsky", band:"far",
     magnitude:2, electorate:71706,
+    held:{psa:2},
     material_interest:["substrate_supply", "thermal_quota"] },
 
   { id:"coldharbour_racks", name:"Coldharbour Racks", station:"coldharbour", band:"far",
     magnitude:1, electorate:30320,
+    held:{psa:1},
     material_interest:["substrate_supply", "thermal_quota", "shed_order_priority"] },
 
   { id:"coldharbour_shed", name:"Coldharbour Shed Row", station:"coldharbour", band:"far",
     magnitude:1, electorate:30320,
+    held:{hul:1},
     material_interest:["substrate_supply", "thermal_quota", "shed_order_priority"] },
 
   { id:"erasmus_deck", name:"Erasmus Deck", station:"erasmus", band:"far",
     magnitude:2, electorate:54124,
+    held:{sc:1,psa:1},
     material_interest:["substrate_supply", "licensure_scope"] },
 
   { id:"nasmyth_array", name:"Nasmyth Array", station:"nasmyth", band:"far",
     magnitude:2, electorate:22886,
+    held:{hul:1,sc:1},
     material_interest:["thermal_quota", "yard_contracts"] },
 
   { id:"vantage_high", name:"Vantage High", station:"vantage", band:"middle",
     magnitude:2, electorate:60501,
+    held:{cu:1,hul:1},
     material_interest:["thermal_quota", "shed_order_priority"] },
 
   { id:"vantage_radiator_row", name:"Vantage Radiator Row", station:"vantage", band:"middle",
     magnitude:2, electorate:60501,
+    held:{cu:1,sc:1},
     material_interest:["thermal_quota", "shed_order_priority"] },
 
   { id:"perigee_yards", name:"Perigee Yards", station:"perigee", band:"middle",
     magnitude:3, electorate:86943,
+    held:{hul:2,cu:1},
     material_interest:["tether_traffic", "yard_contracts"] },
 
   { id:"calloway_loop", name:"Calloway Loop", station:"calloway", band:"middle",
     magnitude:2, electorate:63461,
+    held:{cu:1,sc:1},
     material_interest:["shed_order_priority", "consumables_subsidy"] },
 
   { id:"grimaldi_station", name:"Grimaldi Station", station:"grimaldi", band:"middle",
     magnitude:2, electorate:62324,
+    held:{sc:1,cl:1},
     material_interest:["transit_windows", "tether_traffic"] },
 
   { id:"wickstead", name:"Wickstead", station:"wickstead", band:"middle",
     magnitude:1, electorate:43261,
+    held:{sc:1},
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
   { id:"oberth_approach", name:"Oberth Approach", station:"oberth", band:"middle",
     magnitude:1, electorate:34837,
+    held:{rv:1},
     material_interest:["embodiment_access", "bone_density_standards"] },
 
   { id:"the_tannery", name:"The Tannery", station:"tannery", band:"middle",
     magnitude:2, electorate:22569,
+    held:{cu:1,rv:1},
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
   { id:"ashfield_a_c", name:"Ashfield A–C", station:"ashfield", band:"low",
     magnitude:3, electorate:84119,
+    held:{cu:3},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"ashfield_d_f", name:"Ashfield D–F", station:"ashfield", band:"low",
     magnitude:3, electorate:84119,
+    held:{cu:2,sc:1},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"ashfield_g_j", name:"Ashfield G–J", station:"ashfield", band:"low",
     magnitude:3, electorate:84119,
+    held:{cu:3},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"ashfield_slagside", name:"Ashfield Slagside", station:"ashfield", band:"low",
     magnitude:3, electorate:84119,
+    held:{cu:2,gb:1},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"ashfield_tier_four", name:"Ashfield Tier Four", station:"ashfield", band:"low",
     magnitude:3, electorate:84119,
+    held:{cu:2,sc:1},
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
   { id:"kepler_anchorage", name:"Kepler Anchorage", station:"kepler", band:"low",
     magnitude:2, electorate:69086,
+    held:{des:1,sc:1},
     material_interest:["tether_traffic", "anchor_concession"] },
 
   { id:"kepler_concession", name:"Kepler Concession", station:"kepler", band:"low",
     magnitude:2, electorate:69086,
+    held:{cl:1,des:1},
     material_interest:["tether_traffic", "anchor_concession"] },
 
   { id:"slagworks", name:"Slagworks", station:"slagworks", band:"low",
     magnitude:2, electorate:59749,
+    held:{gb:1,cu:1},
     material_interest:["consumables_subsidy", "yard_contracts"] },
 
   { id:"bellows", name:"Bellows", station:"bellows", band:"low",
     magnitude:2, electorate:53415,
+    held:{cu:1,hul:1},
     material_interest:["thermal_quota", "consumables_subsidy"] },
 
   { id:"cinder", name:"Cinder", station:"cinder", band:"low",
     magnitude:1, electorate:36978,
+    held:{cu:1},
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
   { id:"tallow", name:"Tallow", station:"tallow", band:"low",
     magnitude:1, electorate:31361,
+    held:{rv:1},
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
   { id:"quarry_reach", name:"Quarry Reach", station:"quarry", band:"low",
     magnitude:1, electorate:29669,
+    held:{gb:1},
     material_interest:["yard_contracts", "transit_windows"] },
 
   { id:"drift_cans_north", name:"Drift Cans North", station:"drift", band:"low",
     magnitude:1, electorate:16854,
+    held:{cu:1},
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
   { id:"drift_cans_south", name:"Drift Cans South", station:"drift", band:"low",
     magnitude:1, electorate:16854,
+    held:{cu:1},
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
   { id:"sinter", name:"Sinter", station:"sinter", band:"low",
     magnitude:2, electorate:21505,
+    held:{gb:2},
     material_interest:["yard_contracts", "consumables_subsidy"] },
 
   { id:"dredge", name:"Dredge", station:"dredge", band:"low",
     magnitude:1, electorate:15356,
+    held:{gb:1},
     material_interest:["transit_windows", "yard_contracts"] },
 
   { id:"selene_stations", name:"Selene Stations", station:"selene", band:"external",
     magnitude:1, electorate:37982,
+    held:{des:1},
     material_interest:["transit_windows"] },
 
   { id:"the_bloomery", name:"The Bloomery", station:"bloomery", band:"external",
     magnitude:1, electorate:14392,
+    held:{sc:1},
     material_interest:["transit_windows", "yard_contracts"] },
 
   { id:"l4_yards", name:"L4 Yards", station:"l4", band:"external",
     magnitude:1, electorate:16349,
+    held:{sc:1},
     material_interest:["transit_windows", "substrate_supply"] },
 
   { id:"achenar_point", name:"Achenar Point", station:"achenar", band:"external",
     magnitude:1, electorate:8341,
+    held:{sc:1},
     material_interest:["transit_windows", "substrate_supply"] },
 
   { id:"l5_refuge", name:"L5 Refuge", station:"l5", band:"external",
     magnitude:1, electorate:7339,
+    held:{rv:1},
     material_interest:["transit_windows"] }
 
 ];

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 4;   // 3 added prices, 4 adds cabinet and instruments
+  const STATE_VERSION = 5;   // 3 prices, 4 cabinet and instruments, 5 the district roll
 
   /* ---------------------------------------------------------
      1. STATE
@@ -107,6 +107,7 @@ const Engine = (function () {
       if (p !== st.playerParty) st.capital[p] = (C.setup.capital || {})[p] || 0;
     });
 
+    seedRoll(st, C);
     return st;
   }
 
@@ -140,7 +141,266 @@ const Engine = (function () {
       if (st.signatures == null) st.signatures = 0;
       st.version = 4;
     }
+    if (st.version < 5) {                     // the district roll
+      /* Saves from before the roll existed carry only a district count per
+         party. There is no way to recover which constituency each seat was,
+         so the roll is reseeded from content and the count is whatever the
+         roll says. A pre-roll save therefore returns to the authored map,
+         which is the only honest reconstruction available. */
+      st.rollReseeded = true;
+      st.electionsHeld = st.electionsHeld || 0;
+      st.version = 5;
+    }
     return st;
+  }
+
+  /* ---------------------------------------------------------
+     1b. THE DISTRICT ROLL — who sits for which constituency
+
+     Every district seat lives here, in one place, and every district
+     total in the game is DERIVED from it. Storing a party's district
+     count alongside the roll is the apportionment_ratio mistake in
+     CLAUDE.md: two numbers for one fact, drifting quietly apart. The
+     count on st.parties[id].seats.district is a projection refreshed
+     by syncRoll() after every change, and test.js asserts the two
+     agree in both directions.
+
+     A seat moves in exactly four ways, which is the whole point:
+       vacateSeat   a member dies, resigns or is disqualified
+       byElection   the vacancy is filled, on current opinion
+       crossFloor   a member changes party without an election
+       generalElection  everything is returned at once
+
+     Vacancies are real. The chamber stays 280 seats and the majority
+     stays 141, so an empty seat is a vote you do not have.
+     --------------------------------------------------------- */
+
+  function seedRoll(st, C) {
+    st.roll = {};
+    (C.constituencies || []).forEach(k => {
+      st.roll[k.id] = { held: Object.assign({}, k.held || {}), vacant: 0 };
+    });
+    syncRoll(st, C);
+  }
+
+  /* Refresh the derived district counts. The only writer. */
+  function syncRoll(st, C) {
+    Object.keys(st.parties).forEach(id => { st.parties[id].seats.district = 0; });
+    Object.keys(st.roll).forEach(cid => {
+      const h = st.roll[cid].held;
+      Object.keys(h).forEach(pid => {
+        if (st.parties[pid]) st.parties[pid].seats.district += h[pid];
+      });
+    });
+    return st;
+  }
+
+  function partyDistrict(st, id) {
+    return Object.keys(st.roll || {}).reduce(
+      (n, cid) => n + (st.roll[cid].held[id] || 0), 0);
+  }
+  function vacantSeats(st) {
+    return Object.keys(st.roll || {}).reduce((n, cid) => n + st.roll[cid].vacant, 0);
+  }
+  function seatsFor(st, cid) { return st.roll[cid] || { held: {}, vacant: 0 }; }
+
+  function vacateSeat(st, C, cid, party, why) {
+    const r = st.roll[cid];
+    if (!r || !r.held[party]) return { ok: false, reason: "no such seat" };
+    r.held[party] -= 1;
+    if (!r.held[party]) delete r.held[party];
+    r.vacant += 1;
+    syncRoll(st, C);
+    const k = C.constituencyById[cid];
+    st.log.unshift({ sitting: st.sitting,
+      text: `Seat vacated: ${k ? k.name : cid} (${party})${why ? " — " + why : ""}` });
+    return { ok: true };
+  }
+
+  function crossFloor(st, C, cid, from, to, n) {
+    n = n || 1;
+    const r = st.roll[cid];
+    if (!r || (r.held[from] || 0) < n) return { ok: false, reason: "seats not held" };
+    if (!st.parties[to]) return { ok: false, reason: "no such party" };
+    r.held[from] -= n;
+    if (!r.held[from]) delete r.held[from];
+    r.held[to] = (r.held[to] || 0) + n;
+    syncRoll(st, C);
+    const k = C.constituencyById[cid];
+    st.log.unshift({ sitting: st.sitting,
+      text: `Crossed the floor: ${n} seat${n === 1 ? "" : "s"} for ` +
+            `${k ? k.name : cid}, ${from} to ${to}` });
+    return { ok: true, seats: n };
+  }
+
+  /* ---- votes ----------------------------------------------------
+
+     Deterministic, per 1.5. A constituency's strength is its current
+     roll; a party's national strength is its list bench. Blending the
+     two means a party holding nothing here still has a floor to grow
+     from, which is what makes a by-election worth watching rather
+     than a foregone conclusion. */
+  function shares(st, C, cons) {
+    const roll = seatsFor(st, cons.id);
+    const natTotal = Object.values(st.parties)
+      .reduce((n, p) => n + (p.seats.list || 0), 0) || 1;
+    const out = {};
+    C.parties.forEach(p => {
+      const local = (roll.held[p.id] || 0) / cons.magnitude;
+      const nat = (st.parties[p.id].seats.list || 0) / natTotal;
+      out[p.id] = 0.68 * local + 0.32 * nat;
+    });
+    return out;
+  }
+
+  /* Swing. Government carries the standing of the government; the
+     opposition picks up a fraction of what it drops. */
+  function swing(st) { return (st.scalars.public_standing - 50) / 100; }
+
+  function swungShares(st, C, cons) {
+    const s = shares(st, C, cons), k = swing(st);
+    const gov = st.coalition.concat(st.confidenceSupply);
+    let tot = 0;
+    Object.keys(s).forEach(id => {
+      s[id] *= gov.includes(id) ? (1 + k) : (1 - k * 0.4);
+      if (s[id] < 0) s[id] = 0;
+      tot += s[id];
+    });
+    if (tot > 0) Object.keys(s).forEach(id => s[id] /= tot);
+    return s;
+  }
+
+  /* THE LIST IS A SECOND BALLOT (4.1), not a projection of the first.
+
+     Deriving it from constituency strength quietly makes a pure-list party
+     impossible — and 4.3 states the opposite, that a party strong nationally
+     with no roots is viable and is the shape of the Public Substrate
+     Association and the Georgists. So national standing carries the list,
+     with a quarter weight on district strength to represent ticket-splitting
+     in the other direction (4.3 puts it at 21.4%), which is also what lets a
+     district-rooted party with no list bench win one. */
+  function nationalShares(st, C) {
+    const listTot = Object.values(st.parties)
+      .reduce((n, p) => n + (p.seats.list || 0), 0) || 1;
+    const distTot = Object.values(st.parties)
+      .reduce((n, p) => n + (p.seats.district || 0), 0) || 1;
+    const gov = st.coalition.concat(st.confidenceSupply), k = swing(st);
+    const out = {}; let sum = 0;
+    C.parties.forEach(p => {
+      const nat = (st.parties[p.id].seats.list || 0) / listTot;
+      const loc = (st.parties[p.id].seats.district || 0) / distTot;
+      let v = 0.75 * nat + 0.25 * loc;
+      v *= gov.includes(p.id) ? (1 + k) : (1 - k * 0.4);
+      out[p.id] = v < 0 ? 0 : v; sum += out[p.id];
+    });
+    if (sum > 0) Object.keys(out).forEach(i => out[i] /= sum);
+    return out;
+  }
+
+  /* Highest averages. Ties break on party id so a rerun is identical. */
+  function divisorAllocate(sh, seats, method) {
+    const ids = Object.keys(sh).filter(i => sh[i] > 0).sort();
+    const won = {}; ids.forEach(i => won[i] = 0);
+    for (let n = 0; n < seats; n++) {
+      let best = null, bestQ = -Infinity;
+      ids.forEach(i => {
+        const d = method === "sainte_lague" ? (2 * won[i] + 1) : (won[i] + 1);
+        const q = sh[i] / d;
+        if (q > bestQ + 1e-12) { bestQ = q; best = i; }
+      });
+      if (best === null) break;
+      won[best] += 1;
+    }
+    Object.keys(won).forEach(i => { if (!won[i]) delete won[i]; });
+    return won;
+  }
+
+  /* A by-election fills every vacancy in one constituency on current
+     opinion. The seat is not returned to whoever lost it. */
+  function byElection(st, C, cid) {
+    const r = st.roll[cid];
+    const k = C.constituencyById[cid];
+    if (!r || !k) return { ok: false, reason: "no such constituency" };
+    if (!r.vacant) return { ok: false, reason: "no vacancy" };
+    const before = Object.assign({}, r.held);
+    const won = divisorAllocate(swungShares(st, C, k), r.vacant,
+                                st.law.district_divisor);
+    Object.keys(won).forEach(pid => r.held[pid] = (r.held[pid] || 0) + won[pid]);
+    const filled = r.vacant; r.vacant = 0;
+    syncRoll(st, C);
+    const gains = Object.keys(won).filter(p => (before[p] || 0) === 0);
+    st.log.unshift({ sitting: st.sitting,
+      text: `By-election, ${k.name}: ${filled} seat${filled === 1 ? "" : "s"} filled` +
+            (gains.length ? ` — gain for ${gains.join(", ")}` : " — no change of hands") });
+    st.wire.unshift({ sitting: st.sitting,
+      text: `BY-ELECTION ${k.name.toUpperCase()} — ` +
+            Object.keys(won).map(p => `${p.toUpperCase()} ${won[p]}`).join(", ") });
+    return { ok: true, filled: filled, won: won, gains: gains };
+  }
+
+  /* The general election. District races run constituency by
+     constituency; the list runs once, nationally, and does not
+     compensate for district results (4.1, parallel not MMP).
+
+     The threshold (4.8) bites on the list only, and exempts a party
+     that won a district seat — the German carve-out canon adopts. */
+  function generalElection(st, C) {
+    const districtResults = {};
+    Object.keys(st.roll).forEach(cid => {
+      const k = C.constituencyById[cid];
+      const won = divisorAllocate(swungShares(st, C, k), k.magnitude,
+                                  st.law.district_divisor);
+      districtResults[cid] = won;
+    });
+
+    const before = {};
+    C.parties.forEach(p => before[p.id] = {
+      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list || 0
+    });
+
+    Object.keys(districtResults).forEach(cid => {
+      st.roll[cid] = { held: Object.assign({}, districtResults[cid]), vacant: 0 };
+    });
+
+    const nat = nationalShares(st, C);
+
+    /* The threshold (4.8) bites on the list only. Two exemptions, both canon:
+       a party that won a district seat (the German carve-out), and a party
+       representing a single station or a single legal-person category, as
+       minority protection. The second is declared in content, because which
+       parties qualify is a political question and not the engine's to decide. */
+    const cut = (st.law.threshold_pct || 0) / 100;
+    const wonDistrict = id => Object.keys(districtResults)
+      .some(cid => districtResults[cid][id]);
+    const carved = id => !!(C.partyById[id] && C.partyById[id].carve_out);
+    const eligibleList = {};
+    Object.keys(nat).forEach(id => {
+      if (nat[id] >= cut || wonDistrict(id) || carved(id)) eligibleList[id] = nat[id];
+    });
+    const listSeats = st.law.tier_ratio_list || 100;
+    const listWon = divisorAllocate(eligibleList, listSeats, st.law.list_divisor);
+    C.parties.forEach(p => st.parties[p.id].seats.list = listWon[p.id] || 0);
+
+    syncRoll(st, C);
+    st.lastElection = { sitting: st.sitting, nat: nat, threshold: cut,
+                        barred: Object.keys(nat).filter(id => !eligibleList[id] && nat[id] > 0),
+                        saved: Object.keys(eligibleList).filter(id =>
+                          nat[id] < cut && (wonDistrict(id) || carved(id))) };
+    st.electionsHeld = (st.electionsHeld || 0) + 1;
+
+    const after = {};
+    C.parties.forEach(p => after[p.id] = {
+      district: partyDistrict(st, p.id), list: st.parties[p.id].seats.list
+    });
+    st.log.unshift({ sitting: st.sitting, text: "GENERAL ELECTION" });
+    C.parties.forEach(p => {
+      const d = (after[p.id].district + after[p.id].list) -
+                (before[p.id].district + before[p.id].list);
+      if (d) st.log.unshift({ sitting: st.sitting,
+        text: `  ${p.id}: ${d > 0 ? "+" : ""}${d} (${after[p.id].district} district, ${after[p.id].list} list)` });
+    });
+    return { ok: true, before: before, after: after, national: nat,
+             barred: st.lastElection.barred };
   }
 
   /* ---------------------------------------------------------
@@ -640,7 +900,8 @@ const Engine = (function () {
      Nothing checked this before and the two had drifted by 84 seats. */
   function tierCheck(st, C) {
     const cons = (C.constituencies || []).reduce((n, c) => n + c.magnitude, 0);
-    const party = Object.values(st.parties).reduce((n, p) => n + (p.seats.district || 0), 0);
+    const party = Object.values(st.parties).reduce((n, p) => n + (p.seats.district || 0), 0)
+                + vacantSeats(st);   /* an empty seat is still a seat in the tier */
     return { constituencies: cons, party: party, ok: cons === party };
   }
 
@@ -746,7 +1007,17 @@ const Engine = (function () {
       });
     }),
     seats: (st, C, v) => Object.keys(v).forEach(pid => {
-      Object.keys(v[pid]).forEach(t => st.parties[pid].seats[t] += v[pid][t]);
+      Object.keys(v[pid]).forEach(t => {
+        /* district is derived from the roll; setting it here would be undone
+           by the next syncRoll without saying so. Use cross/vacate_seat. */
+        if (t === "district") {
+          st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: a seats effect tried to set district seats for " + pid +
+            ". District seats live in the roll — use cross or vacate_seat." });
+          return;
+        }
+        st.parties[pid].seats[t] += v[pid][t];
+      });
     }),
     flag:   (st, C, v) => [].concat(v).forEach(f => st.flags[f] = true),
     unflag: (st, C, v) => [].concat(v).forEach(f => delete st.flags[f]),
@@ -779,6 +1050,16 @@ const Engine = (function () {
       if (v.total != null) st.slots.total += v.total;
       if (v.refill) { st.slots.used = 0; }
     },
+    /* Seats move by these four verbs and no other. Writing a district count
+       directly would desynchronise it from the roll on the next syncRoll,
+       silently, which is the failure this whole section exists to prevent. */
+    cross: (st, C, v) => [].concat(v).forEach(x =>
+      crossFloor(st, C, x.constituency, x.from, x.to, x.seats || 1)),
+    vacate_seat: (st, C, v) => [].concat(v).forEach(x =>
+      vacateSeat(st, C, x.constituency, x.party, x.why)),
+    byelection: (st, C, v) => [].concat(v).forEach(cid => byElection(st, C, cid)),
+    election: (st, C, v) => { if (v) generalElection(st, C); },
+
     chapter: (st, C, v) => {
       if (v === st.chapter) return;
       st.chapter = v;
@@ -945,7 +1226,13 @@ const Engine = (function () {
 
   function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
   function save(st) { return JSON.stringify(st); }
-  function load(str) { return migrate(JSON.parse(str)); }
+  /* load takes content so a migration that needs it can run. Pre-roll saves
+     have no constituency map to restore and must be reseeded from content. */
+  function load(str, C) {
+    const st = migrate(JSON.parse(str));
+    if (C && (st.rollReseeded || !st.roll)) { seedRoll(st, C); delete st.rollReseeded; }
+    return st;
+  }
 
   /* Every chapter referenced by content, in order. */
   function chapters(C) {
@@ -962,6 +1249,9 @@ const Engine = (function () {
     partyPopular, partyFunctional, partyTotal,
     division, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
+    seedRoll, syncRoll, partyDistrict, nationalShares, vacantSeats, seatsFor,
+    vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
+    divisorAllocate,
     assent, presidentDecides, referralRisk, reviewReturns,
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,

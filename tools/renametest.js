@@ -8,9 +8,15 @@ const CF=["setup","parties","stations","constituencies","cabinet","instruments",
 const src=CF.map(f=>fs.readFileSync(path.join(root,"content",f+".js"),"utf8")).join("\n");
 
 function loadModel(){
-  const c={}; vm.runInNewContext(src+";__={SETUP,PARTIES,CURRENTS,STATIONS,FUNCTIONAL,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA};",c);
+  /* CONSTITUENCIES was missing here, so this check proved renames safe over a
+     model that did not contain them — and the district roll lives in them, as
+     party ids used as keys. A renamed party left dead ids in the roll and its
+     seats vanished from every district total, silently, with this reporting
+     "behaviour-preserving". */
+  const c={}; vm.runInNewContext(src+";__={SETUP,PARTIES,CURRENTS,STATIONS,CONSTITUENCIES,FUNCTIONAL,CHARACTERS,BILLS,EVENTS,GLOSSARY,ENCYCLOPEDIA};",c);
   const G=c.__;
-  return {setup:G.SETUP,parties:G.PARTIES,currents:G.CURRENTS,stations:G.STATIONS,functional:G.FUNCTIONAL,
+  return {setup:G.SETUP,parties:G.PARTIES,currents:G.CURRENTS,stations:G.STATIONS,
+    constituencies:G.CONSTITUENCIES,functional:G.FUNCTIONAL,
     characters:G.CHARACTERS,bills:G.BILLS,glossary:G.GLOSSARY,events:G.EVENTS,encyclopedia:G.ENCYCLOPEDIA};
 }
 const r={}; vm.runInNewContext(fs.readFileSync(path.join(root,"js/refs.js"),"utf8")+";__R=Refs;",r);
@@ -20,8 +26,10 @@ function content(M){
   const idx=a=>a.reduce((m,o)=>(m[o.id]=o,m),{});
   return {setup:M.setup,parties:M.parties,currents:M.currents,stations:M.stations,characters:M.characters,
     bills:M.bills,events:M.events,glossary:M.glossary,functional:M.functional,
+    constituencies:M.constituencies,
     partyById:idx(M.parties),currentById:idx(M.currents),stationById:idx(M.stations),
-    characterById:idx(M.characters),billById:idx(M.bills),eventById:idx(M.events)};
+    characterById:idx(M.characters),billById:idx(M.bills),eventById:idx(M.events),
+    constituencyById:idx(M.constituencies)};
 }
 function play(M,n){
   const C=content(M); let s=Engine.newGame(C), out=[], k=0;

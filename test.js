@@ -139,6 +139,94 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   ok("a slot cannot advance a bill awaiting a division",
      !Engine.grantSlot(g, CONTENT, "divergence").ok);
 
+  /* THE DISTRICT ROLL. Every district seat lives in st.roll and every
+     district total is derived from it. Two numbers for one fact is the
+     apportionment_ratio mistake; these assertions are what stop it. */
+  {
+    const r = Engine.newGame(CONTENT);
+
+    /* content side: held must sum to magnitude, and to each party's total */
+    let magBad = [];
+    CONTENT.constituencies.forEach(k => {
+      const sum = Object.values(k.held || {}).reduce((a, b) => a + b, 0);
+      if (sum !== k.magnitude) magBad.push(`${k.id} ${sum}/${k.magnitude}`);
+    });
+    ok("every constituency is fully returned", magBad.length === 0, magBad.join(", "));
+
+    let partyBad = [];
+    CONTENT.parties.forEach(p => {
+      const rolled = Engine.partyDistrict(r, p.id);
+      if (rolled !== p.seats.district) partyBad.push(`${p.id} ${rolled}/${p.seats.district}`);
+    });
+    ok("the roll reproduces every authored district total",
+       partyBad.length === 0, partyBad.join(", "));
+    ok("the roll reconciles both ways", Engine.tierCheck(r, CONTENT).ok);
+
+    /* a vacancy costs the government a vote and is not quietly absorbed */
+    const conf0 = Engine.confidence(r);
+    Engine.vacateSeat(r, CONTENT, "ashfield_tier_four", "cu", "test");
+    ok("a vacancy costs a vote", Engine.confidence(r) === conf0 - 1,
+       conf0 + " -> " + Engine.confidence(r));
+    ok("a vacancy still counts toward the tier", Engine.tierCheck(r, CONTENT).ok,
+       JSON.stringify(Engine.tierCheck(r, CONTENT)));
+    ok("derived and cached district agree after a vacancy",
+       Engine.partyDistrict(r, "cu") === r.parties.cu.seats.district);
+
+    const be = Engine.byElection(r, CONTENT, "ashfield_tier_four");
+    ok("a by-election fills the vacancy", be.ok && Engine.vacantSeats(r) === 0);
+    ok("the chamber is whole again", Engine.tierCheck(r, CONTENT).ok);
+
+    /* crossing the floor moves a seat without changing the chamber size */
+    const before = Engine.partyDistrict(r, "cu");
+    Engine.crossFloor(r, CONTENT, "ashfield_a_c", "cu", "hul", 1);
+    ok("crossing the floor moves one seat",
+       Engine.partyDistrict(r, "cu") === before - 1 && Engine.tierCheck(r, CONTENT).ok);
+    ok("a refused crossing changes nothing",
+       !Engine.crossFloor(r, CONTENT, "the_bourse", "cu", "hul", 1).ok &&
+       Engine.tierCheck(r, CONTENT).ok);
+
+    /* a district seats effect must be refused, not silently undone */
+    const d0 = Engine.partyDistrict(r, "cu");
+    Engine.apply(r, CONTENT, [{ seats: { cu: { district: 5 } } }]);
+    ok("a seats effect cannot write district seats",
+       Engine.partyDistrict(r, "cu") === d0 &&
+       r.parties.cu.seats.district === d0);
+  }
+
+  /* THE GENERAL ELECTION. Deterministic (1.5), parallel not compensatory
+     (4.1), and the list threshold has both of 4.8's carve-outs. */
+  {
+    const a = Engine.load(Engine.save(Engine.newGame(CONTENT)), CONTENT);
+    const b = Engine.load(Engine.save(Engine.newGame(CONTENT)), CONTENT);
+    const r1 = Engine.generalElection(a, CONTENT);
+    Engine.generalElection(b, CONTENT);
+    ok("the same state elects the same chamber twice",
+       JSON.stringify(a.roll) === JSON.stringify(b.roll) &&
+       JSON.stringify(a.parties) === JSON.stringify(b.parties));
+
+    ok("the chamber is still 280", Engine.chamberTotal(a) === 280,
+       String(Engine.chamberTotal(a)));
+    ok("the election reconciles the tiers", Engine.tierCheck(a, CONTENT).ok,
+       JSON.stringify(Engine.tierCheck(a, CONTENT)));
+    ok("the district tier is still the authored size",
+       Engine.partyDistrict(a, "cu") + CONTENT.parties.filter(p => p.id !== "cu")
+         .reduce((n, p) => n + Engine.partyDistrict(a, p.id), 0) === a.law.tier_ratio_district);
+    const listTot = Object.values(a.parties).reduce((n, p) => n + p.seats.list, 0);
+    ok("the list tier is still the authored size", listTot === a.law.tier_ratio_list,
+       listTot + "/" + a.law.tier_ratio_list);
+
+    /* 4.3: a pure-list party must survive. Deriving the list vote from
+       district strength once wiped the PSA, which is the opposite of canon. */
+    ok("a pure-list party survives the election", a.parties.psa.seats.list > 10,
+       "PSA list " + a.parties.psa.seats.list);
+    /* 4.8: the single-category carve-out saves a party under the threshold */
+    ok("the carve-out saves a sub-threshold party",
+       a.parties.upl.seats.list > 0 && r1.barred.indexOf("upl") < 0,
+       "UPL " + a.parties.upl.seats.list + ", barred: " + (r1.barred.join(",") || "none"));
+    ok("a party with no carve-out and no district seat is barred",
+       r1.barred.indexOf("geo") >= 0, r1.barred.join(",") || "none");
+  }
+
   /* ORDER-PAPER TIME. Slots are the scarce good that generates capital
      (bible 7.7), so granting one must always move a bill. A stage the engine
      did not recognise fell through every branch and burned the slot in
