@@ -1,7 +1,7 @@
 /* SETUP — the opening state. Change a number here and the game starts differently. */
 const SETUP = {
   startDate: "2287-04-11", session: 4, sitting: 1,
-  pm: "deshan", playerParty: "cu",
+  pm: "flash", playerParty: "cu",
   coalition: ["cu","psa","rv"],
   confidenceSupply: ["upl","geo"],
   scalars: { party_loyalty:38, public_standing:44, consumables:71,

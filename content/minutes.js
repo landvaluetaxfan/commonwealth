@@ -68,7 +68,7 @@ I would ordinarily copy this to the Minister. I have not.` }
 
   { id:"min_130", file:"PM/4/2287/130", sitting:1,
     classification:"Restricted — ministerial",
-    signedBy:"Marit Deshan MP · Prime Minister",
+    signedBy:"Adriana Flash MP · Prime Minister",
     from:"The Prime Minister",
     to:"Minister for Attestation and the Registry",
     copy:["Cabinet Secretary"],

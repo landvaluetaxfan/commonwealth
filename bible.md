@@ -1235,7 +1235,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 
 ## 11.2 Persons
 
-- **Rt. Hon. Marit Deshan MP** — Prime Minister. Commons Union. Member for Anselm Ring.
+- **Rt. Hon. Adriana Flash MP** — Prime Minister. Commons Union. Member for Anselm Ring.
 - **President Osric Tenaya** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
 - **Tarrin Halloran MP** — Ashfield Cans. Commons Union. Leads the eleven-member Halloran group, loyalty 12. Needs nine more signatures for a leadership ballot.
 - **Iren Vellan MP** — Minister for Life Support. Commons Union, member for

@@ -12,7 +12,7 @@
    portrait: filename in img/portraits/ processed with the `registry` palette.
    Omit it and the UI simply renders no portrait. */
 const CHARACTERS = [
-  { id:"deshan", portrait:"deshan.png",   name:"Rt. Hon. Marit Deshan MP", role:"Prime Minister",
+  { id:"flash", portrait:"flash.png",   name:"Rt. Hon. Adriana Flash MP", role:"Prime Minister",
     party:"cu", seat:"Anselm Ring N & Central", relationship:100,
     note:"Liabilities, not buffs. Her record is the thing that can be dug up." },
   { id:"tenaya", portrait:"tenaya.png",   name:"President Osric Tenaya", role:"President",
