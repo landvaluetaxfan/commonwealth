@@ -202,6 +202,19 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
       if (!k) seatBad.push(`${c.name}: no seat "${c.seat}"`);
       else if (!k.held[c.party]) seatBad.push(`${c.name} (${c.party}) sits for ${c.seat}, held by ${Object.keys(k.held)[0]}`);
     });
+    /* Every district electorate is its station's share of the adult roll, so
+       the 140 must sum back to it exactly. They were uniform at ~28,040 once,
+       which made every apportionment ratio ~1.04 and quietly deleted the
+       malapportionment that bible 4.7 and 4.10 are about. */
+    const districtRoll = CONTENT.constituencies.reduce((n, k) => n + k.electorate, 0);
+    ok("district electorates sum to the adult roll", districtRoll === 4149803,
+       districtRoll + " vs 4149803");
+
+    const ratios = Object.values(Engine.apportionment(CONTENT));
+    const spread = Math.max(...ratios) / Math.min(...ratios);
+    ok("apportionment is not flat", spread > 2,
+       "ratio " + Math.min(...ratios) + " to " + Math.max(...ratios));
+
     ok("every member sits for a seat their party holds",
        seatBad.length === 0, seatBad.join("; "));
 

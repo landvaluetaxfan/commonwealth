@@ -645,29 +645,46 @@ const UI = (function () {
   }
 
   /* ---------- orbit ---------- */
+  /* Three levels — band, station, constituency — and previously two panels,
+     so stations and constituencies competed for the same slot. That is why a
+     panel headed "Constituencies" listed stations while constituencies sat
+     beside it. The levels are separated now: the LIST holds both navigable
+     levels, a station expanding to show the seats it returns, and the panel
+     beside it is a station dossier and nothing else. */
   function drawOrbit() {
-    const selId = $("#station-detail").dataset.station || "ashfield";
+    /* No hardcoded content id here: the engine names no station and neither
+       should the renderer. */
+    const selId = $("#station-detail").dataset.station || C.stations[0].id;
     $("#orbit-chart").innerHTML = OrbitChart.render(st, C, selId);
     $("#orbit-key").innerHTML = OrbitChart.key();
-    $("#orbit-chart").querySelectorAll("[data-station]").forEach(n => {
-      const go = () => { drawStation(n.dataset.station); drawOrbit(); };
-      n.addEventListener("click", go);
-      n.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
-    });
-    const bands = [["ring", "Ring — geostationary"], ["far", "Far band"], ["middle", "Middle band"], ["low", "Low band — industrial"], ["external", "External"]];
-    /* Two columns. The band, ratio, closure and suspension figures moved to
-       the detail panel: six numeric columns crowded the chart off the screen
-       and were unreadable as a table anyway, being six unrelated scales. */
+    $("#orbit-chart").querySelectorAll("[data-station]").forEach(n =>
+      n.addEventListener("click", () => pickStation(n.dataset.station)));
+
+    /* One accordion, not a list plus a separate disclosure control:
+       selecting a station and opening it are the same act, so there is only
+       ever one thing to click and one station open. */
     $("#orbit-table").innerHTML =
       "<thead><tr><th>Station</th><th class='n'>Seats</th></tr></thead><tbody>" +
-      C.stations.map(s0 => { const s = st.stations[s0.id];
-        return `<tr data-station="${s.id}"${s.id === selId ? ' class="sel"' : ""} style="cursor:pointer">` +
-          `<td><b>${s.name}</b><i class="sub">${s.band}</i></td>` +
-          `<td class="n">${s.seats}</td></tr>`;
+      C.stations.map(s0 => {
+        const s = st.stations[s0.id];
+        const on = s.id === selId;
+        return `<tr data-station="${s.id}"${on ? ' class="sel"' : ""} style="cursor:pointer">` +
+            `<td><b>${esc(s.name)}</b><i class="sub">${esc(s.band)}</i></td>` +
+            `<td class="n">${s.seats}</td></tr>` +
+          (on ? `<tr class="oexp"><td colspan="2">${constituencyList(s.id)}</td></tr>` : "");
       }).join("") + "</tbody>";
     $("#orbit-table").querySelectorAll("tr[data-station]").forEach(tr =>
-      tr.addEventListener("click", () => { drawStation(tr.dataset.station); drawOrbit(); }));
+      tr.addEventListener("click", () => pickStation(tr.dataset.station)));
     drawStation(selId);
+  }
+
+  /* Selecting scrolls the chosen station into view rather than leaving it
+     wherever the redraw put it — the list is thirty-four rows and the
+     expansion can be fifteen more. */
+  function pickStation(id) {
+    drawStation(id); drawOrbit();
+    const row = $(`#orbit-table tr[data-station="${id}"]`);
+    if (row && row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
   }
 
   /* population-weighted mean of a station's constituency ratios */
@@ -679,37 +696,40 @@ const UI = (function () {
     return mine.reduce((n, k) => n + ap[k.id] * k.magnitude, 0) / seats;
   }
 
+  /* The station dossier. No constituency table: that level lives in the list
+     now, which is also what stops this panel changing height with the seat
+     count and shoving the chart around underneath it. */
   function drawStation(id) {
     const s = st.stations[id];
     const d = $("#station-detail"); d.dataset.station = id;
     $("#station-hdr").textContent = s.name;
-    $("#station-sub").textContent = s.type === "bundled" ? `bundled, ${s.settlements} settlements` : s.type;
+    $("#station-sub").textContent =
+      (s.type === "bundled" ? `bundled, ${s.settlements} settlements` : s.type) +
+      ` \u00b7 ${s.form} \u00b7 ${s.band} band`;
+    const r = stationRatio(s.id);
+    /* A stat strip rather than eight rows of label over value. The same
+       figures, a quarter of the height, and the ones that carry an argument
+       (closure, apportionment) get the emphasis. */
     d.innerHTML =
-      `<div class="kv">
-        <dt>Population</dt><dd>${s.population.toLocaleString()}</dd>
-        <dt>Seats</dt><dd>${s.seats}</dd>
-        <dt>Band</dt><dd>${s.band}</dd>
-        <dt>Apportionment</dt><dd>${stationRatio(s.id).toFixed(2)} &mdash;
-          ${stationRatio(s.id) > 1.15 ? "over-represented" :
-            stationRatio(s.id) < 0.85 ? "under-represented" : "near parity"}</dd>
-        <dt>Closure</dt><dd>${s.closure.toFixed(2)}</dd>
-        <dt>Suspended</dt><dd>${s.suspended.toLocaleString()} (counted, non-voting)</dd>
-        <dt>Attested</dt><dd>${(s.attested * 100).toFixed(1)}% of adult roll</dd>
-        <dt>Form</dt><dd>${s.form || "—"}</dd>
+      `<div class="ostats">
+        <span><b>${s.population.toLocaleString()}</b><i>population</i></span>
+        <span><b>${s.seats}</b><i>seats</i></span>
+        <span><b>${s.closure.toFixed(2)}</b><i>closure</i></span>
+        <span><b>${r.toFixed(2)}</b><i>${r > 1.15 ? "over-represented" :
+            r < 0.85 ? "under-represented" : "near parity"}</i></span>
+        <span><b>${s.suspended.toLocaleString()}</b><i>suspended, non-voting</i></span>
+        <span><b>${(s.attested * 100).toFixed(1)}%</b><i>attested</i></span>
       </div>
-      ${s.composition ? `<div class="rulehead">Composition</div>
-      <div class="compbar">${["biological","emulation","uplift","synthetic"].map(k =>
+      ${s.composition ? `<div class="compbar">${["biological","emulation","uplift","synthetic"].map(k =>
         s.composition[k] ? `<i class="c-${k}" style="width:${s.composition[k]*100}%" title="${k} ${(s.composition[k]*100).toFixed(0)}%"></i>` : ""
       ).join("")}</div>
       <div class="note">biological ${(s.composition.biological*100).toFixed(0)}% &middot;
         emulation ${(s.composition.emulation*100).toFixed(0)}% &middot;
         uplift ${(s.composition.uplift*100).toFixed(0)}% &middot;
         synthetic ${(s.composition.synthetic*100).toFixed(0)}%</div>` : ""}
-      <div class="rulehead">Constituencies</div>
-      ${constituencyList(s.id)}
-      <div class="rulehead">Material interest</div><div class="note">${s.material_interest.join(" &middot; ")}</div>
-      <div class="rulehead">Dependency</div><div class="note">${s.dependency}</div>
-      <div class="rulehead">Grievance</div><div class="note">${s.grievance}</div>`;
+      <div class="rulehead">Material interest</div><div class="note">${esc(s.material_interest.join(" \u00b7 "))}</div>
+      <div class="rulehead">Dependency</div><div class="note">${esc(s.dependency)}</div>
+      <div class="rulehead">Grievance</div><div class="note">${esc(s.grievance)}</div>`;
   }
 
   /* Every constituency returned by a station, with who holds it NOW.
@@ -718,27 +738,26 @@ const UI = (function () {
      Content is the state of the map at the opening of play; the roll is
      what by-elections, floor-crossings and the general election have made
      of it since, and it is the only thing the chamber arithmetic reads.
-     Showing the authored value here would quietly contradict the chamber
-     the moment a member crossed the floor.
+     Showing the authored value would quietly contradict the chamber the
+     moment a member crossed the floor.
 
-     A vacant seat is shown as vacant rather than omitted. The chamber
-     stays 280 and the majority stays 141, so an empty seat is a vote the
+     A vacant seat is shown as vacant rather than omitted. The chamber stays
+     280 and the majority stays 141, so an empty seat is a vote the
      government does not have, and the map should say so. */
   function constituencyList(sid) {
     const mine = (C.constituencies || []).filter(k => k.station === sid);
     if (!mine.length) return `<div class="note">No constituency returns this station directly.</div>`;
     const ap = Engine.apportionment(C);
-    const rows = mine.map(k => {
+    return `<table class="conslist">` + mine.map(k => {
       const r = Engine.seatsFor(st, k.id);
       const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
       const member = (C.characters || []).find(c => c.seat === k.name);
       return `<tr><td><b>${esc(k.name)}</b><i class="sub">` +
         (member ? esc(member.name) + " &middot; " : "") +
         `${k.electorate.toLocaleString()} electors &middot; ratio ${ap[k.id].toFixed(2)}</i></td>` +
-        `<td class="n">${held.map(pid => `${mark(pid)}<span class="hn">${r.held[pid]}</span>`).join(" ")}` +
-        `${r.vacant ? `<span class="hn vac" title="vacant">vacant</span>` : ""}</td></tr>`;
-    }).join("");
-    return `<table class="conslist">${rows}</table>`;
+        `<td class="n">${held.map(pid => mark(pid)).join(" ")}` +
+        `${r.vacant ? `<span class="hn vac">vacant</span>` : ""}</td></tr>`;
+    }).join("") + `</table>`;
   }
 
   /* The functional tier in full. Every seat here is held by a named party,

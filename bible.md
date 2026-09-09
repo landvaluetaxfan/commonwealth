@@ -159,43 +159,43 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 - §11.1 · L1395 — The polity
 - §11.2 · L1416 — Persons
 - §11.3 · L1433 — Stations and constituencies
-- §11.4 · L1493 — The functional roster  *LOCKED*
-- §11.5 · L1515 — The live bill
-- §11.6 · L1524 — Other business on the order paper
+- §11.4 · L1501 — The functional roster  *LOCKED*
+- §11.5 · L1523 — The live bill
+- §11.6 · L1532 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1537
-- §12.1 · L1539 — The core principle  *LOCKED*
-- §12.2 · L1543 — Split visual language  *LOCKED*
-- §12.3 · L1550 — Chrome direction  *LOCKED*
-- §12.4 · L1556 — Screens  *LOCKED*
-- §12.5 · L1560 — Election night  *LOCKED*
-- §12.6 · L1569 — The orbital map  *LOCKED*
-- §12.7 · L1597 — The parliament diagram  *LOCKED*
-- §12.8 · L1623 — Documents  *LOCKED*
-- §12.9 · L1629 — The feed  *LOCKED*
-- §12.10 · L1633 — Build cost  *LOCKED*
-- §12.11 · L1637 — Images  *LOCKED*
-- §12.12 · L1665 — Existing artifact
+**Part XII — UI AND PRESENTATION** · L1545
+- §12.1 · L1547 — The core principle  *LOCKED*
+- §12.2 · L1551 — Split visual language  *LOCKED*
+- §12.3 · L1558 — Chrome direction  *LOCKED*
+- §12.4 · L1564 — Screens  *LOCKED*
+- §12.5 · L1568 — Election night  *LOCKED*
+- §12.6 · L1577 — The orbital map  *LOCKED*
+- §12.7 · L1605 — The parliament diagram  *LOCKED*
+- §12.8 · L1631 — Documents  *LOCKED*
+- §12.9 · L1637 — The feed  *LOCKED*
+- §12.10 · L1641 — Build cost  *LOCKED*
+- §12.11 · L1645 — Images  *LOCKED*
+- §12.12 · L1673 — Existing artifact
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1677
-- §13.1 · L1679 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1692 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1685
+- §13.1 · L1687 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1700 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1698
-- §14.1 · L1700 — The gap  *LOCKED*
-- §14.2 · L1704 — Works
-- §14.3 · L1712 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1706
+- §14.1 · L1708 — The gap  *LOCKED*
+- §14.2 · L1712 — Works
+- §14.3 · L1720 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L1725
-- §15.1 · L1727 — Team  *LOCKED*
-- §15.2 · L1733 — Documentation  *LOCKED*
-- §15.3 · L1749 — Where this gets hard  *LOCKED*
-- §15.5 · L1760 — The build  *LOCKED*
-- §15.4 · L1794 — What would justify bringing in a person  *LOCKED*
+**Part XV — PRODUCTION** · L1733
+- §15.1 · L1735 — Team  *LOCKED*
+- §15.2 · L1741 — Documentation  *LOCKED*
+- §15.3 · L1757 — Where this gets hard  *LOCKED*
+- §15.5 · L1768 — The build  *LOCKED*
+- §15.4 · L1802 — What would justify bringing in a person  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L1813
+**Part XVI — OPEN DECISIONS** · L1821
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1844
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1852
 
 <!-- /TOC -->
 
@@ -1436,11 +1436,19 @@ Stations carry a `form` — cylinder, torus, drum, sphere, cluster, yard,
 surface — which drives the glyph on the orbital chart. Bands are altitude, and
 altitude is class.
 
-**33 stations, 56 constituencies, 140 district seats.** A station is a place; a
-constituency is a thing that returns members. Most stations are one constituency;
-Anselm Ring is divided into thirty-seven; every station now returns
-single-member districts. Populations total 6.86M, unchanged from v3 —
-the roster expanded by adding small places, not by growing the federation.
+**34 stations, 140 constituencies, 140 district seats.** A station is a place; a
+constituency is a thing that returns members. Every station now returns
+single-member districts, so the two counts are equal: Anselm Ring is divided
+into thirty-seven, and the smallest stations return one seat each.
+Populations total 7.01M, up from 6.86M at v3 by the addition of Belvedere.
+
+**Apportionment is real and it is severe.** Each district's electorate is its
+station's share of the 4,149,803 adult roll, divided among that station's
+seats. Seats per station are fixed by the roster rather than by population, so
+the ratio runs from **4.55 in Sanctuary to 0.64 in Lantern** — a seven-to-one
+spread between the best and worst represented elector in the federation. Every
+figure in §4.7 and §4.10 rests on that spread being in the data rather than
+asserted in prose. It was flat at ~1.04 across all 140 seats until v4.
 
 **Ring band (geostationary):**
 - **Anselm Ring** — 37 seats, 1,940,000, cylinder, closure 0.79, 2,100 suspended, attested 94%.

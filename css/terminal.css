@@ -111,19 +111,64 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .grid{display:grid;gap:5px;}
 .g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
 .g-cham{grid-template-columns:minmax(0,1fr) 300px;}
-.g-orb{grid-template-columns:260px minmax(0,1fr);align-items:stretch;}
-/* The station list and the station detail sit ABOVE the schematic, so they
-   share one band of height and scroll independently inside it. Without the
-   cap the two columns are as tall as the longer one — a 37-seat station
-   leaves a column of dead grey beside the list — and the schematic is
-   pushed off the bottom of the screen entirely. */
-.g-orb>.panel{display:flex;flex-direction:column;min-height:0;max-height:44vh;}
+.g-orb{grid-template-columns:300px minmax(0,1fr);align-items:stretch;}
+/* The list and the dossier sit ABOVE the schematic and share one band of
+   height, FIXED rather than capped. A max-height still lets the panel grow
+   with its content, so choosing a one-seat station and then a thirty-seven
+   seat one moved the chart underneath by hundreds of pixels. A fixed height
+   pins the chart where it is and lets each panel scroll inside itself. */
+/* The orbit screen is a column: the list-and-dossier band takes whatever
+   height is left over, and the schematic keeps its natural size at the
+   bottom. Sizing the band off the viewport rather than off its contents is
+   what stops the chart moving when you select a station with more seats. */
+#s-orb.screen{display:flex;flex-direction:column;height:100%;min-height:0;}
+#s-orb>.g-orb{flex:1 1 auto;min-height:0;}
+#s-orb>.panel{flex:0 0 auto;}
+.g-orb>.panel{display:flex;flex-direction:column;min-height:0;height:100%;}
 .g-orb>.panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
-/* The chart is a 1.94:1 SVG that scales to its container, so capping the
-   height rather than the width keeps it legible and keeps the whole tab on
-   one screen. */
-#orbit-chart{max-height:46vh;}
-#orbit-chart svg{display:block;width:100%;max-height:46vh;}
+
+/* ---- the schematic: five band rows of chips ---- */
+.obands{padding:5px 7px 6px;}
+.oaxis{display:flex;align-items:center;gap:6px;margin:0 0 5px 118px;
+  font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#7c8474;}
+.oaxis i{flex:1 1 auto;height:1px;background:linear-gradient(90deg,#8a5a44,#6f8a5c);}
+.oband{display:flex;align-items:flex-start;gap:8px;padding:4px 0;
+  border-top:1px solid #23281d;}
+.oband:first-of-type{border-top:0;}
+.obandlbl{width:110px;flex:0 0 110px;padding-top:3px;}
+.obandlbl b{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#aeb8a0;}
+.obandlbl i{display:block;font-style:normal;font-size:8.5px;color:#6d7566;font-family:var(--f-data);}
+.ochips{display:flex;flex-wrap:wrap;gap:3px;flex:1 1 auto;min-width:0;}
+.ochip{display:inline-flex;align-items:center;gap:4px;position:relative;
+  padding:2px 6px 4px;border:1px solid #2f3529;background:#1a1f16;
+  color:#d7dccb;font:inherit;font-size:10.5px;cursor:pointer;text-align:left;}
+.ochip:hover{border-color:#6d7566;background:#212719;}
+.ochip.on{border-color:var(--alert-lt,#c9a227);background:#272d1d;}
+.ochip:focus-visible{outline:2px solid #c9a227;outline-offset:-2px;}
+/* .plate svg is width:100% for the full-bleed diagrams; a chip glyph is a
+   13px icon and must win that. */
+.plate .oglyph,.okey .oglyph{display:block;flex:0 0 13px;width:13px;height:13px;}
+.oname{white-space:nowrap;}
+.oseats{font-family:var(--f-data);font-size:9px;color:#8d9683;}
+.otier{position:absolute;top:2px;right:2px;width:4px;height:4px;background:#c07a5a;}
+.obar{position:absolute;left:0;bottom:0;width:100%;height:2px;}
+.oearth{margin-top:5px;padding-top:4px;border-top:1px solid #2f3529;
+  font-size:8.5px;letter-spacing:.09em;color:#6d7566;text-align:center;}
+.okey .obar.demo{position:static;width:18px;height:3px;}
+.okey .otier.demo{position:static;width:6px;height:6px;}
+
+/* ---- the dossier's stat strip ---- */
+.ostats{display:flex;flex-wrap:wrap;gap:1px;margin-bottom:5px;}
+.ostats span{flex:1 1 auto;min-width:86px;background:var(--field);
+  border:1px solid var(--chrome-dk);padding:3px 5px;}
+.ostats b{display:block;font-family:var(--f-data);font-size:13px;line-height:1.15;}
+.ostats i{display:block;font-style:normal;font-size:8.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-soft);}
+
+/* ---- a station's seats, opened inside the list ---- */
+.oexp>td{padding:0 0 4px 8px !important;background:var(--chrome-lt);
+  border-left:2px solid var(--chrome-dkr);}
+.oexp .conslist td{font-size:10.5px;}
 .g-disp{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
 .g-elec{grid-template-columns:290px minmax(0,1fr) 250px;}
 .stack{display:flex;flex-direction:column;gap:5px;min-width:0;}
