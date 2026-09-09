@@ -689,9 +689,8 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 .note.dim{color:var(--ink-soft);font-size:10px;line-height:1.4;margin-top:2px;}
 .note code{font-family:var(--f-data);font-size:10px;}
 
-/* The schematic is an infographic, not a map: at full height it pushed the
-   station list below the fold entirely. Capping the height is a stopgap — it
-   letterboxes slightly, because the chart's own viewBox is taller than it
-   needs to be. The real fix is the chart's aspect ratio in orbitchart.js. */
-#orbit-chart{max-height:400px;overflow:hidden;}
-#orbit-chart svg{width:100%;height:400px;display:block;}
+/* No height cap. Squashing a 1.68:1 chart into a fixed 400px letterboxed it
+   into a small centred picture with dead space either side. The chart's own
+   proportions were the problem and were fixed in orbitchart.js; this just lets
+   it scale to the panel width. */
+#orbit-chart svg{width:100%;height:auto;display:block;}

@@ -26,13 +26,18 @@ const OrbitChart = (function () {
        gets a different one, so no two bands stack their habitats in the same
        column — otherwise tethers to different stations overlap and the chart
        reads as a grid rather than a set of orbits. */
-    { id: "external", label: "Lagrange and lunar", sub: "external constituencies",   y: 52,  nudge: -0.24 },
-    { id: "far",      label: "Far band",           sub: "100 000 km +",              y: 182, nudge:  0.12 },
-    { id: "ring",     label: "Ring",               sub: "geostationary, 35 786 km",  y: 312, nudge: -0.10 },
-    { id: "middle",   label: "Middle band",        sub: "8 000 – 35 785 km",         y: 442, nudge:  0.26 },
-    { id: "low",      label: "Low band",           sub: "industrial, 400 – 8 000 km", y: 572, nudge:  0.04 }
+    { id: "external", label: "Lagrange and lunar", sub: "external constituencies",   y: 46,  nudge: -0.24 },
+    { id: "far",      label: "Far band",           sub: "100 000 km +",              y: 158, nudge:  0.12 },
+    { id: "ring",     label: "Ring",               sub: "geostationary, 35 786 km",  y: 270, nudge: -0.10 },
+    { id: "middle",   label: "Middle band",        sub: "8 000 – 35 785 km",         y: 382, nudge:  0.26 },
+    { id: "low",      label: "Low band",           sub: "industrial, 400 – 8 000 km", y: 494, nudge:  0.04 }
   ];
-  const W = 1280, H = 760, LEFT = 132, RIGHT = 1262, LANE = 98;
+  /* H is the whole reason this chart used to eat the viewport. The 98px a
+     band needs for its content is fixed — a second row of marks sits 42 down,
+     plus glyph radius, plus two lines of label — so the saving comes from the
+     dead gap between bands, cut from 32 to 14. 1280x660 is a ~1.94:1 chart
+     that scales to its container without needing a CSS height cap. */
+  const W = 1280, H = 660, LEFT = 132, RIGHT = 1262, LANE = 98;
 
   /* SVG is XML: a bare & is a parse error, even where a browser forgives it. */
   const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -126,7 +131,7 @@ const OrbitChart = (function () {
         const col = twoRow ? Math.floor(i / 2) : i;
         out[s.id] = {
           x: LEFT + step * (col + 1) + shift + (row ? step * 0.5 : 0),
-          y: b.y + (row ? 46 : 0),
+          y: b.y + (row ? 42 : 0),
           s: s
         };
       });
