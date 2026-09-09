@@ -1,410 +1,287 @@
-# SWEEP BRIEF — INSTRUMENTS, CABINET, INDUCTION, CHAPTERS 1–2
+# SWEEP BRIEF — THE SEAT SYSTEM, AND WHAT IS STILL MISSING
 
-**For execution in Claude Code against the repo. Companion to `bible.md` v3.**
+**For execution against the repo. Companion to `bible.md` v4.**
 Where this brief and the bible disagree on a number, the bible wins and this
 brief is wrong — raise it rather than silently diverging.
 
-This is one bounded phase. The closed list is: **instruments (bills + SIs),
-the effect system, cabinet, induction, and chapters 1–2 content.** Nothing
-else is in scope. Items deliberately excluded are listed in Part G.
+This supersedes the instruments/cabinet/induction brief, which is closed out in
+Part A. Read Part 0 first: it is the honest state of the build, including the
+parts of the last brief that were never delivered.
 
 ---
 
-## PART 0 — PRECONDITIONS
+## PART 0 — WHERE THE BUILD ACTUALLY IS
 
-Before writing anything, read in this order and report what is actually there,
-because this brief was written without sight of the code:
+| | |
+|---|---|
+| Engine | Substantially complete for governing. Divisions with dual majority, whipping against a per-partner capital ledger, statutory instruments with prayer windows and reversal, cabinet vacancies gating instruments, scarcity prices, order-paper slots, save migration, and now the district roll and elections. |
+| Content | **12 events.** Chapter one is playable, chapter two is four events. This is the project, and it is barely begun. |
+| Canon | ~2,400 lines across `bible.md` and `textbook.md`. |
 
-1. `js/engine.js` — current state object, tick loop, effect application
-2. `content/bills.js` (or equivalent) — how bills are currently shaped
-3. `content/events.js` — the current event schema and how choices resolve
-4. `tools/lint.js` — how terms-taught tracking currently works
-5. `test.js` — what chamber arithmetic is already asserted
+**The ratio is the risk.** §15.3.6 names it: a magnificent setting document
+attached to nothing. Every engine system added without content widens that gap.
+Nothing in Part C should be built as a block before Part D is under way.
 
-**Report before implementing:** which of the five systems below already exist
-in some form, and where this brief contradicts what the code actually does.
-Do not begin until that reconciliation is done.
-
----
-
-## PART A — INSTRUMENTS
-
-Two kinds. The distinction is the point: a bill needs a majority and cannot be
-undone; an instrument needs no majority and can be revoked. The player learns
-that the fast tool is the deniable one and the slow tool is the permanent one.
-
-### A.1 Bills
-
-```
-{
-  id:            "hc_4_117",
-  short_title:   "Divergence Threshold (Amendment)",
-  number:        "HC 4/117",
-  owner:         "commons_union",        // party id; drives capital on slots
-  priority:      false,                  // partner flagged priority -> +3 not +2
-  stage:         "committee",
-  test:          "dual",                 // "simple" | "dual" | "charter"
-  threshold:     121,                    // popular seats needed
-  functional_threshold: 21,              // only if test !== "simple"
-  effects_on_assent: [ ... ],            // effect objects, see Part B
-  stances:       { party_id: "for" | "against" | "abstain" | {for: n} },
-  referrable:    true                    // president may refer for review
-}
-```
-
-**Stage ladder.** `drafting → first_reading → committee → report →
-third_reading → upper_house → assent`. One order-paper slot advances one
-stage. Divisions occur at `third_reading` only; earlier stages are procedural
-and consume a slot without a vote. `upper_house` is a delay stage of 1–3
-sittings (upper house powers are THIN in the bible — implement as pure delay
-and leave a TODO).
-
-**Division resolution.** Per §7.8, unchanged:
-
-```
-delivered(party) = seats * (0.75 + 0.25 * loyalty/100)
-```
-
-rounded down. An explicit `{for: n}` stance is a stated count, taken at face
-value, not scaled. Whipping commits members before the division using the
-alignment table in §7.8 — movable fraction and cost per seat by axis distance.
-Own party costs `party_loyalty`, not capital. Parties outside the coalition
-cannot be whipped at all.
-
-**Dual majority.** A `dual` bill must carry separately among the 240 popular
-and the 40 functional members. Both counts are shown side by side at all times
-(§4.6.7). A `charter` test is dual plus a two-thirds popular requirement.
-
-**Assent.** On carrying the final division, the bill goes to the President.
-The President either signs — which fires the signature ceremony, see A.3 — or
-refers it for constitutional review under §3.3. Referral is not a veto: it
-delays by 4–8 sittings and returns a verdict. Osric Tenaya has privately
-indicated a threshold bill carried on a contested dual majority would be
-referred (§11.2); implement that as a condition on referral probability, not a
-random roll.
-
-Once assented, `effects_on_assent` apply and the bill is **irreversible**.
-There is no repeal mechanic in this phase.
-
-### A.2 Statutory instruments
-
-```
-{
-  id:              "si_2287_44",
-  title:           "Life Support Engineering (Licensing) Order 2287",
-  author:          "minister_attestation",   // a cabinet post id — required
-  procedure:       "negative",               // "negative" | "affirmative"
-  effects:         [ ... ],
-  revocable:       true,
-  prayer_window:   6,                        // sittings, negative procedure only
-  political_cost:  { ... }                   // capital/loyalty deltas on making
-}
-```
-
-**Negative procedure** (the default, and the interesting one): the instrument
-takes effect **immediately** on being made. It stands unless the House prays
-against it within `prayer_window` sittings. A prayer is a motion needing a
-simple popular majority — no functional test, no dual majority. So an
-instrument is fast, unilateral, and vulnerable to a chamber that notices.
-
-**Affirmative procedure**: requires a simple popular majority *before* taking
-effect. Reserve for instruments touching life-support integrity.
-
-**Revocation** is itself an instrument, so an SI can be undone by a successor —
-which is exactly why it does not get the signature ceremony.
-
-**The licensing board instrument is the spine of chapter one.** Board
-composition under §4.6.4 is set by negative-procedure SI made by the Minister
-for Attestation and the Registry. Widening the Life Support Engineering
-electorate (4,100 licensed) or the Legal electorate (5,200) shifts functional
-seats without legislation. This is the only available answer to the HC 4/117
-functional trap and it must be discoverable, costly, and ugly:
-
-- it moves functional seats over 2–4 sittings, not instantly
-- it costs Guild Bench relations permanently (they will not divide with a
-  government that has done this — see §11.5)
-- it hands Halloran a weapon: +signatures toward the leadership ballot
-- it is prayable, so the opposition gets one chance to kill it in the open
-
-### A.3 The signature ceremony
-
-Per §12.8, reserve it. Fires **only** on presidential assent to a bill, and
-only for bills with `test !== "simple"` — so roughly six to eight times a
-playthrough. A single `stroke-dashoffset` animation over the in-world document
-in the Papers register, with the file number and routing stamps visible.
-
-Statutory instruments get a **made stamp** instead: a dated, numbered block,
-no animation. The visual asymmetry is the teaching device — the player learns
-which acts are permanent by which ones are ceremonious.
+`js/coverage.js` reports what to write next from the content itself. Run it
+rather than guessing. As of this brief: chapter two is thin, **31 of 33 stations
+appear in no event**, and six of eleven parties never appear — including the
+Commons Union, which the player leads.
 
 ---
 
-## PART B — THE EFFECT SYSTEM
+## PART A — WHAT THE LAST SWEEP CLOSED
 
-**Decisions must move variables. A choice with no declared effect is a bug.**
+Delivered and asserted by the checks:
 
-### B.1 Effect vocabulary
+- **Bills and statutory instruments**, with the made/in-force/prayed/revoked
+  lifecycle, prayer windows, and reversal of effects on revocation.
+- **The effect and condition vocabulary**, now 23 effect verbs and 25
+  conditions. Approaching the twenty-verb line §15.5 warns about; the next
+  addition should displace one rather than extend the list.
+- **Cabinet as data.** A post with no holder cannot make an instrument, which
+  is what the President's appointment-refusal power bites on. Left §16 in
+  bible v4.
+- **The signature ceremony**, reserved by §12.8 for acts that cannot be undone.
+- **Chapters one and two** exist as a mechanism; chapter two lacks content.
 
-Declarative objects, applied in list order, no scripting in content files:
-
-```
-{ meter: "public_standing", delta: -4 }
-{ meter: "party_loyalty",   delta: -6 }
-{ capital: { public_substrate_association: +2 } }
-{ loyalty: { root_and_vessel: -5 } }
-{ current: { halloran_group: -8 } }        // internal faction loyalty
-{ price:  { substrate: +6 } }              // index points, pre-drift
-{ station: { ashfield_cans: { suspended: +900 } } }
-{ flag:   { board_packed: true } }
-{ bill:   { hc_4_117: "committee" } }      // force a stage
-{ si:     "si_2287_44" }                   // make an instrument
-{ signatures: +2 }                          // Halloran's ballot counter
-{ chapter: 2 }
-```
-
-### B.2 Condition vocabulary
-
-Mirror image, used for event gating and choice availability:
-
-```
-{ flag: "board_packed" }
-{ price: { substrate: { gt: 118 } } }
-{ meter: { thermal_margin: { lt: 30 } } }
-{ chapter: 2 }
-{ bill_stage: { hc_4_117: "assented" } }
-{ not: { ... } }
-{ any: [ ... ] }   { all: [ ... ] }
-```
-
-### B.3 The consequence chain
-
-§7.9, unchanged and now actually wired:
-
-```
-decision  ->  price  ->  station conditions  ->  event
-```
-
-Prices drift one fifth per sitting toward the policy-implied value. Stations
-answer to the substrate price weighted by exposure `0.75 − closure`, so poor
-habitats feel it first. A station that cannot pay sheds people, and the shed
-order says which. Worked case already in canon: Substrate (Public Stake)
-passes, Ashfield has ~1,400 fewer suspended residents 26 sittings later.
-Inaction drifts the index upward and fires the crisis at ~sitting 19.
-
-### B.4 New lint rule — dead choices
-
-Add to `tools/lint.js`: **fail** on any choice with an empty or absent effects
-list, and **warn** on any choice whose only effect is a flag no condition
-reads. Also warn on any `price` effect with no event gated on that index, and
-any event gated on a price nothing moves — the §7.9 design rule, enforced.
+**Not delivered, and still open: Part D, induction.** There are zero references
+to an induction pack anywhere in `js/` or `content/`. The first-use gloss *is*
+built (`UI.annotate`, with the Concordance behind it), but the pack itself and
+contextual referral were never written. This matters more now than it did then:
+the concept load is unchanged and the player still meets fork, instance,
+divergence threshold, substrate, closure, thermal margin, dual majority and
+licensure inside five events. **Carry Part D forward into this phase.**
 
 ---
 
-## PART C — CABINET AS DATA
+## PART B — WHAT JUST LANDED: THE SEAT SYSTEM
 
-Small object, high leverage. Unlocks a dead presidential reserve power and
-gives instruments an author.
+All 140 district seats are allocated across the 56 constituencies as
+`held:{party:seats}` in `content/constituencies.js`, reproducing every authored
+party total exactly. The Georgists and Uplift Caucus hold no district seat,
+which is what §4.3 means by a pure-list party.
 
-```
-posts: {
-  life_support:    { holder: "iren_vellan",  party: "commons_union" },
-  substrate_thermal: { holder: null, party: null },
-  consumables_agriculture: { ... },
-  volume_housing: { ... },
-  transit_orbital: { ... },
-  attestation_registry: { ... },
-  persons_continuity: { ... },
-  external_relations: { ... },
-  treasury:        { ... }        // reports to the PM, sits apart (§3.9)
-}
-```
+### B.1 The roll is the only source of truth
 
-**Appointment.** Vacancies arise from resignation or dismissal. The player
-nominates; the President may refuse (§3.3, power 4), costing a second choice
-and coalition capital. Portfolio allocation is a coalition currency in its own
-right — giving Persons and Continuity to Root & Vessel is worth capital.
+`st.roll` holds every district seat. Every district total is **derived** from
+it; `st.parties[id].seats.district` is a projection refreshed by `syncRoll()`,
+and `test.js` reconciles the two in both directions. Storing them independently
+is the `apportionment_ratio` mistake in `CLAUDE.md`. A `seats` effect that tries
+to write district seats is refused with a log line rather than silently undone.
 
-**Resignation.** A minister whose party's loyalty falls below a threshold, or
-whose portfolio is directly contradicted by an instrument or bill, resigns.
-This is the chapter-two-scale crisis and the cheap precursor to the leadership
-challenge. Iren Vellan resigning from Life Support is a governmental event, not
-a personnel note.
+### B.2 Four ways a seat moves, and no others
 
-**Authorship.** Every SI names a post. If the post is vacant, the instrument
-cannot be made. If the holder's party opposes the instrument's effects, making
-it costs that party loyalty and may trigger resignation. This is the interlock
-that justifies building cabinet now: the appointment fight and the board fight
-become the same fight.
+| verb | effect | what it costs |
+|---|---|---|
+| `vacateSeat` | death, resignation, disqualification | **A vacancy is a vote you do not have.** The chamber stays 280 and the majority stays 141, so vacating one Commons Union seat takes confidence from 141 to 140. |
+| `byElection` | fills the vacancy on current opinion | The seat is not returned to whoever lost it. |
+| `crossFloor` | a member changes party between elections | Nothing structural; everything politically. |
+| `generalElection` | the whole chamber returned at once | See B.3. |
 
-**Summons.** Life Support is the only Ministry whose Minister may be summoned
-*by* the engineering authority (§3.9). Implement as an event hook available
-from chapter two.
+Content reaches all four through `cross`, `vacate_seat`, `byelection` and
+`election`, with schema entries so the editor can author them.
 
----
+### B.3 Elections
 
-## PART D — INDUCTION
+Deterministic per §1.5: the same state elects the same chamber twice. Parallel
+and non-compensatory per §4.1 — the list runs separately and does not correct
+district results. The divisor is a **law variable, not a constant**, because
+§4.10 makes the choice of divisor a bill.
 
-**Not a tutorial overlay. An in-world induction pack plus inline gloss.**
-No yellow boxes, no arrows, no modal wizard — those read as consumer software
-and break §12.3.
+Two things canon corrected during the build, recorded so they are not undone:
 
-### D.1 First-use gloss
+1. **The list is a second ballot, not a projection of the first.** Deriving the
+   list vote from constituency strength cost the Public Substrate Association
+   16 seats on the first run — the exact opposite of §4.3, which makes a
+   rootless nationally-strong party explicitly viable. National standing now
+   carries the list, with a quarter weight on district strength standing in for
+   ticket-splitting (§4.3: 21.4%), which is also what lets a district-rooted
+   party with no list bench win one.
+2. **The threshold has two carve-outs, not one.** §4.8 exempts a party that
+   won a district seat *and* one representing a single station or single
+   legal-person category. The second is declared in content (`carve_out`),
+   because which parties qualify is a political question and not the engine's.
+   Uplift survives on it; the Georgists, with no roots and no category, are
+   eliminated.
 
-Every glossary term gains `taught_in: <chapter|null>` and `gloss: <one line>`.
-On a term's first appearance in played text, it renders underlined with a
-dotted rule; clicking opens the Concordance article inline without leaving the
-screen. After first use it renders plain. Track seen terms in save state.
+### B.4 A check that was not checking
 
-`tools/lint.js` already tracks terms-used-before-taught — extend it to fail
-when an event uses a term with no Concordance article, and to report the
-per-chapter concept load against the §2.6 budget (one concept cluster per
-event).
-
-### D.2 The induction pack
-
-A document in **Papers**, styled as the Cabinet Office briefing folder handed
-to an incoming Prime Minister. Sections, each written in-world:
-
-- *Reading the Order Paper* — slots, stages, ownership, priority
-- *Divisions and the Second Majority* — the dual test, the functional tier
-- *The Indices* — what thermal quota, substrate rent, volume and transit are,
-  and why they are legislative outputs rather than market prices
-- *Coalition Accounts* — the capital ledger, why nothing decays
-- *Instruments* — the distinction between a bill and an order
-
-Written in Charnock's register or the state printing office's, never the
-game's. It must be readable as a document by someone who is not being taught
-anything, because half its job is worldbuilding.
-
-### D.3 Contextual referral
-
-When a screen first shows a number the player has not met, a single-line
-status-bar note names the relevant induction-pack section. One line, in chrome,
-dismissible, never modal.
+`tools/renametest.js` built its model without `CONSTITUENCIES`, and `refs.js`
+knew about `held` only on functional constituencies. Renaming a party left dead
+ids in the district roll and its seats vanished from every total, silently,
+while the test reported "behaviour-preserving". Both fixed; references rewritten
+per run went 217 → 320. **Whenever a content file gains a field that holds an
+id, check `refs.js` knows about it and that `renametest`'s model contains it.**
 
 ---
 
-## PART E — CHAPTERS ONE AND TWO
+## PART C — THE GAP LIST
 
-### E.1 Chapter one — the functional trap
+Ordered by value per unit of work, not by size. Do not build these as a block:
+interleave with Part D.
 
-**Opens:** 11 April 2287, session 4, week 112. HC 4/117 in committee. Popular
-forecast 128 of 240 (needs 121, carries). Functional forecast 12 of 40 (needs
-21, fails). Coalition at 141 exactly.
+### C.1 Amendments — FIRST, and the cheapest large win
 
-**Teaches:** order-paper slots, divisions, the second majority, the capital
-ledger, the whip table, and the fact that a comfortable majority is not enough.
+`st.bills[id].amendments = []` is initialised and **never written to**.
+`committee` is in `STAGE_ORDER` and does nothing a stage counter does not.
 
-**The problem:** the bill cannot pass on the arithmetic as it stands. All
-twelve functional coalition members already vote for it; there is no headroom.
-The Guild Bench will not divide with the government on any measure touching
-licensure and money will not move them.
+So a bill has two fates: advance unchanged, or die. There is no way to *change
+a bill to buy a vote* — which is the central currency of real legislative
+bargaining and the obvious partner to the whip system that already exists.
 
-**The routes out**, all of which must be reachable and none of which is clean:
+Build: an amendment is an object with an axis shift, a capital price, and a set
+of parties whose stance it moves. Committee stage is where they attach.
+Conceding a clause should be able to carry the functional bench and lose you
+the Substrate Left in the same division.
 
-1. **Pack a licensing board by SI.** Fast, deniable, moves functional seats
-   over 2–4 sittings. Costs the Guild Bench permanently, adds Halloran
-   signatures, and is prayable.
-2. **Amend the bill upward.** Move the threshold from 40 toward 80–100 hours
-   and some functional members become movable. Costs Public Substrate
-   Association loyalty severely — it is their bill in spirit — and fork-labour
-   remains cheap, which is a §10.5 outcome nobody in the chamber will name.
-3. **Trade order-paper time.** Give slots to Root & Vessel's Continuity of
-   Person (Registration) and Public Substrate's Uprating, buy loyalty, and
-   whip harder. Slow, expensive, may not close the gap at all.
-4. **Let it fail.** Survivable. Costs the platform commitment, hands Halloran
-   a different weapon, and opens chapter two from a weaker position.
+### C.2 The leadership ballot — the plumbing is already there, unused
 
-**Advances when:** the bill assents, fails a division, or is withdrawn.
-`{chapter: 2}` on the resolving choice — never on a timer (§1.7).
+§3.5 calls this the best loss condition: it makes your own caucus the
+antagonist. It is currently implemented as `party_loyalty <= 15` — a meter,
+not a mechanic.
 
-**Content target:** 14–18 events plus 3 prologue events.
+Everything else exists already: `st.signatures`, the `signaturesAtLeast`
+condition, and the Halloran events built around nine more names. Nobody ever
+holds a ballot. Build the ballot: a threshold of signatures triggers it, the
+caucus divides on loyalty and on what you have paid each faction, and losing it
+ends the game.
 
-### E.2 Chapter two — the price of that
+**Connect it to the roll.** §4.5 says revenants owe their seat to the party and
+whip perfectly — "a caucus full of them is loyal and brittle, a fact for a PM to
+discover at the wrong moment." That is a leadership-ballot mechanic waiting for
+the seat system that now exists.
 
-**Opens:** with the consequence. Prices have drifted; substrate rent is above
-110 if nothing was done. Ashfield Cans (closure 0.31, exposure 0.44, 11,400
-suspended) is the worked case and the chapter's centre of gravity.
+### C.3 Scandal, and the thriller spine
 
-**Teaches:** the consequence chain end to end — that a decision three chapters
-of prose ago became an index, became a station condition, became a person
-being shed. Also cabinet, resignation, and the President as an actor rather
-than a portrait.
+Grep for "scandal" across `js/` and `content/`: **zero hits in both.** Part XIII
+is LOCKED canon and entirely unbuilt. There is no information asymmetry
+anywhere in the state object — no secrets, no dirt, no model of who knows what.
 
-**The spine:** Shed Order (Civilian Oversight) is currently blocked at 134
-popular and 9 functional on a dual test — the same trap, now with a body count
-attached, and the player already knows what the ugly solution costs because
-they either used it or refused it. If they packed a board in chapter one, the
-Guild Bench is unreachable and route 1 is closed. **The chapter is a different
-game depending on chapter one's answer, using the same content.**
+This is currently a competent governance simulator. The thriller half does not
+exist.
 
-**Also live:** Substrate (Public Stake) drafting, which takes the public share
-0.35 → 0.6 and knocks 26 points off the substrate index. The Halloran group's
-signature counter becomes visible. At least one ministerial resignation is
-reachable.
+The state-object decision — what knowledge is and who holds it — is far cheaper
+to make now than at event 150. §12.8 already points at the shape: the
+distribution list is the artefact, and the minutes already render a cc line with
+a struck-through recipient. It is decorative; make it load-bearing.
 
-**Advances when:** the shed-order question resolves, either by instrument, by
-bill, or by a crisis that settles it without the player.
+### C.4 Wiring the election in
 
-**Content target:** 16–20 events plus 3 prologue events.
+The machinery works; **nothing calls it.** Missing: a dissolution trigger,
+presidential dissolution and government formation (two of the four reserve
+powers in §3.3, against referral and appointments which are built), a campaign,
+and election night (§12.5).
 
-### E.3 Terminal state — DECIDE BEFORE WRITING
+Revenants (§4.5) need district races to record **margins** so best-loser
+resurrection can rank them. Small addition, but only once there is a campaign
+to hang it on.
 
-The bible defines how chapters advance (§1.7) but not how many exist or where
-the campaign stops. Fix this before content volume grows. Proposal, to be
-confirmed: **five chapters, ending at the general election**, with the
-election as chapter five rather than an epilogue. Record the answer in the
-bible under Part I.
+The user's intent: **one general election, mid-game.** Treat it as a chapter
+transition with content around it, not a recurring cycle.
+
+### C.5 Smaller, and genuinely optional
+
+- **The upper house cannot say no.** `upper_house` is a stage with no actor and
+  no rejection path. §16: powers still undefined.
+- **Opposition mode.** `inGovernment` is in the state object from day one as
+  §3.6 instructed; there is no opposition action economy behind it.
+- **Lobbying.** §16: impossible by design, needs its own currency.
+- **Attestation markers on the wire** (§12.9), so manufactured consensus is
+  visible rather than ambient.
+- **Five scalars, not six or seven.** §1.5 allows more. Nothing models
+  information or electoral standing — either would serve C.3 and C.4.
 
 ---
 
-## PART F — ACCEPTANCE
+## PART D — CONTENT, AND IT IS THE PROJECT
 
-The existing six checks must all pass, plus:
+opencode's lane, per `AGENTS.md`. Engine work above is worthless without it.
+
+1. **Chapter two to eight events.** It has four.
+2. **One event per cold station**, keyed off its own grievance. Thirty-one
+   stations have a name, a population, a dependency and a grievance already
+   written and appear nowhere. This is transcription, not invention, and it is
+   the highest-yield content work available.
+3. **Give the Commons Union a moment.** The player's own party never appears.
+4. **Per-constituency holders are now visible in the UI** and read
+   "unrecorded" for district seats because only `held` counts exist, not named
+   members. If a constituency should have a named member, the character roster
+   is the place — do not invent people in passing (§2.7).
+5. **Carry Part D of the previous brief forward**: the induction pack and
+   contextual referral, never built. See Part A.
+
+---
+
+## PART E — ACCEPTANCE
+
+The seven checks must all pass. Added by this phase and not to be regressed:
 
 | check | assertion |
 |---|---|
-| `test.js` | division arithmetic matches §7.8 for every seated party at loyalty 0, 50, 100 |
-| `test.js` | HC 4/117 fails the functional test on opening state, and passes it after a board-packing SI has been in force 4 sittings |
-| `test.js` | an SI made by a vacant post is rejected |
-| `test.js` | a prayed-against SI is revoked and its effects reversed |
-| `lint.js` | no choice has an empty effects list |
-| `lint.js` | no event uses a term with no Concordance article |
-| `cxcheck.js` | every induction-pack section is linked from at least one first-use gloss |
-| `roundtrip.js` | instruments, cabinet, and chapter state survive serialise → reload |
+| `test.js` | every constituency is fully returned; the roll reproduces every authored district total |
+| `test.js` | a vacancy costs a vote and still counts toward the tier |
+| `test.js` | derived and cached district counts agree after every mutation |
+| `test.js` | a `seats` effect cannot write district seats |
+| `test.js` | the same state elects the same chamber twice |
+| `test.js` | a pure-list party survives an election (§4.3) |
+| `test.js` | the carve-out saves a sub-threshold party; a party without one is barred (§4.8) |
+| `renametest.js` | the model contains `constituencies`; renaming a party rewrites the roll |
+| `uitest.js` | the lifecycle track mirrors `STAGE_ORDER`; no markup leaks into prose |
 
-Two new smoke tests: a 40-sitting run that packs a board, and one that does
-not. Both must reach chapter two without an unhandled state.
-
----
-
-## PART G — EXPLICITLY OUT OF SCOPE
-
-Not in this phase, regardless of how naturally they arise:
-
-- **Elections and seat allocation.** Chapter five. Large, and it needs its own
-  phase with the district-tier method (SNTV, deferred) settled first.
-- **The leadership challenge.** Chapter three or four. Signatures accumulate
-  now; the ballot does not fire yet.
-- **Lobbying.** Benches outside the coalition remain unwhippable. Instruments
-  are the chapter-one answer instead, deliberately.
-- **Confidence votes and life-support cascade.** The other two loss conditions.
-- **Upper house powers.** Delay stage only; still THIN in the bible.
-- **Repeal.** Bills are irreversible in this phase.
-- **Foreign affairs.** Deferred until chapter one has ~25 events.
-
-Anything encountered that belongs in a later phase goes into a new
-`engine_wishlist` section at the foot of `bible.md`, not into this build.
+For C.1–C.4, each needs a smoke test that reaches the end of chapter two
+without an unhandled state, as the instruments phase did.
 
 ---
 
-## PART H — SAVE MIGRATION
+## PART F — EXPLICITLY OUT OF SCOPE
 
-This phase changes the state object substantially. Before any of the above:
+- **Repeal.** Acts remain irreversible; instruments are the reversible thing.
+- **Foreign affairs.** §16 defers it until chapter one has ~25 events. It has 8.
+- **Redistricting** (§4.15), **franchise weighting** (§4.13), **compulsory
+  voting** (§4.14). All still OPEN in the bible; none should be settled by
+  implementation.
+- **Recurring elections.** One, mid-game.
 
-- add `state.version` if absent
-- write `migrate(state)` with a case per version bump, even though there is
-  currently one version
-- `roundtrip.js` must load a pre-sweep save and produce a valid post-sweep one
+Anything encountered that belongs to a later phase goes to `engine_wishlist` at
+the foot of `bible.md`, not into this build.
 
-This is cheap now and is the named project-killer at event 150 (§15.3.2).
+---
+
+## PART G — SAVE MIGRATION
+
+`STATE_VERSION` is **5**. The roll arrived in 5; a pre-roll save has no
+constituency map to recover, so it is reseeded from content on load, which is
+the only honest reconstruction available. `Engine.load` now takes content.
+
+The guards are **ascending**, one block per bump, each stamping only its own
+version. They were once descending, which meant the first block stamped every
+old save current and the rest became unreachable — a v1 save loaded looking
+valid, without prices, capital, slots or whips, and threw on the first division.
+`test.js` now walks every version forward and asserts the result is *playable*,
+not merely well-shaped. Bump the constant and add a block; never reorder them.
+
+---
+
+## PART H — OPEN DECISIONS THIS PHASE RAISED
+
+Both need a human answer; neither should be settled by whoever writes the code.
+
+1. **The within-district method.** The previous brief named **SNTV** as the
+   deferred district-tier method. SNTV appears nowhere in the bible — it was a
+   brief-level assumption, not canon. The implementation uses highest-averages
+   (D'Hondt by default, Sainte-Laguë selectable) per constituency, sourced from
+   §4.10, which settles the divisor question for apportionment and list
+   allocation but is silent on what happens *inside* a multi-member district.
+
+   These play very differently. SNTV is factional and chaotic — it punishes
+   parties that misjudge how many candidates to run, and it is what Japan used
+   before 1994, which is the same source §4.5 draws `sekihairitsu` from.
+   Highest-averages is orderly and proportional. **The current build is not
+   canon-breaking, but it is a choice, and it should be an explicit one.**
+
+2. **Whether the functional tier is ever elected.** `generalElection` returns
+   the district and list tiers only. Functional seats are returned by licence
+   and corporate franchise on their own cycles, which is defensible and matches
+   §4.6 — but it means a general election cannot change the bench that holds
+   the dual-majority veto. That may be exactly right, and it may be the single
+   most important political fact in the game. It should be deliberate.
