@@ -546,70 +546,82 @@ const UI = (function () {
              `L${(x-4.2).toFixed(1)} ${(y+3.2).toFixed(1)}Z"${st_}/>`;
     };
 
-    /* Benches run along the floor; rows stack away from it, front bench first. */
-    const X0 = 122, X1 = 556, PER = 42, STEP = (X1 - X0) / (PER - 1), ROW = 21;
-    function bench(seats, yFront, dir) {
+    /* PARTIES STACK HORIZONTALLY. Seats fill column by column, five deep,
+       so a party occupies a contiguous block of columns and you read the
+       chamber left to right as party, party, party — which is how the
+       benches actually work. Filling row-major instead made each party a
+       horizontal band and stacked the parties vertically, which reads as a
+       bar chart lying on its side rather than as a chamber. */
+    const ROWS = 5, CW = 12, RH = 13;
+    const cols = n => Math.ceil(n / ROWS);
+
+    function bench(seats, x0, yFront, dir) {
       let out = "";
       seats.forEach((s, i) => {
-        const row = Math.floor(i / PER), col = i % PER;
-        out += glyph(X0 + col * STEP, yFront + dir * row * ROW, s);
+        const c = Math.floor(i / ROWS), r = i % ROWS;
+        out += glyph(x0 + c * CW, yFront + dir * r * RH, s);
       });
       return out;
     }
 
-    /* The bench at the Bar: columns, filling away from the floor. */
+    /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
-      let out = "", COLS = 5, CS = 19, RS = 17;
+      let out = "", COLS = 5, CS = 15, RS = 14;
       seats.forEach((s, i) => {
         out += glyph(x0 + (i % COLS) * CS, yTop + Math.floor(i / COLS) * RS, s);
       });
       return out;
     }
 
-    /* Geometry is derived from how many rows each side actually needs, so the
-       diagram tightens when a party crosses the floor instead of leaving a
-       hole where its benches used to be. */
-    const govRows = Math.max(1, Math.ceil(gov.length / PER));
-    const oppRows = Math.max(1, Math.ceil(opp.length / PER));
+    /* Everything is derived from the seat counts, so the diagram tightens
+       when a party crosses the floor rather than leaving a hole. */
+    const govCols = Math.max(1, cols(gov.length));
+    const oppCols = Math.max(1, cols(opp.length));
+    const benchW = Math.max(govCols, oppCols) * CW;
     const crossRows = Math.max(1, Math.ceil(cross.length / 5));
 
-    const FLOOR = 40 + (govRows - 1) * ROW + 40;      // room for the government benches above
-    const GOV_FRONT = FLOOR - 40, OPP_FRONT = FLOOR + 40;
-    const govTop = GOV_FRONT - (govRows - 1) * ROW;
-    const oppBot = OPP_FRONT + (oppRows - 1) * ROW;
+    const X0 = 104;                                   // clear of the Speaker
+    const GAP = 34;                                   // floor to front bench
+    const FLOOR = 30 + (ROWS - 1) * RH + GAP;   // headroom for the label
+    const govFront = FLOOR - GAP, oppFront = FLOOR + GAP;
+    const govTop = govFront - (ROWS - 1) * RH;
+    const oppBot = oppFront + (ROWS - 1) * RH;
 
-    const CX = (X0 + X1) / 2;                          // bench centre, so the table sits on it
-    const TW = 340, TX = CX - TW / 2;
-    const crossTop = FLOOR - ((crossRows - 1) * 17) / 2;
-    const crossBot = crossTop + (crossRows - 1) * 17;
+    const CX = X0 + benchW / 2 - CW / 2;              // bench centre
+    const TW = Math.min(benchW - 40, 300), TX = CX - TW / 2;
 
-    const H = Math.max(oppBot + 34, crossBot + 34, FLOOR + 60) + 12;
+    const crossX = X0 + benchW + 38;
+    const crossTop = FLOOR - ((crossRows - 1) * 14) / 2;
+    const crossBot = crossTop + (crossRows - 1) * 14;
+
+    const W = crossX + 5 * 15 + 18;
+    const H = Math.max(oppBot + 30, crossBot + 30) + 10;
     const svg = document.getElementById("chamber").ownerSVGElement ||
                 document.getElementById("chamber").parentNode;
-    svg.setAttribute("viewBox", `0 0 720 ${Math.round(H)}`);
+    svg.setAttribute("viewBox", `0 0 ${Math.round(W)} ${Math.round(H)}`);
 
     const label = (x, y, t, cls) =>
-      `<text x="${x}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
+      `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
 
     $("#chamber").innerHTML =
       /* the table of the House, centred on the benches, and the mace on it */
-      `<rect x="${TX}" y="${FLOOR-11}" width="${TW}" height="22" fill="#b9bcae" stroke="#75776e" stroke-width=".8"/>` +
-      `<line x1="${TX+26}" y1="${FLOOR}" x2="${TX+150}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2.4" stroke-linecap="round"/>` +
-      `<circle cx="${TX+26}" cy="${FLOOR}" r="4" fill="#8a6d24"/>` +
+      `<rect x="${TX.toFixed(0)}" y="${FLOOR-9}" width="${TW.toFixed(0)}" height="18" fill="#b9bcae" stroke="#75776e" stroke-width=".8"/>` +
+      `<line x1="${(TX+22).toFixed(0)}" y1="${FLOOR}" x2="${(TX+TW*0.45).toFixed(0)}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2.2" stroke-linecap="round"/>` +
+      `<circle cx="${(TX+22).toFixed(0)}" cy="${FLOOR}" r="3.4" fill="#8a6d24"/>` +
       /* the two lines, two sword-lengths apart */
-      `<line x1="${X0-6}" y1="${FLOOR-26}" x2="${X1-20}" y2="${FLOOR-26}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
-      `<line x1="${X0-6}" y1="${FLOOR+26}" x2="${X1-20}" y2="${FLOOR+26}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      `<line x1="${X0-8}" y1="${FLOOR-20}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR-20}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      `<line x1="${X0-8}" y1="${FLOOR+20}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR+20}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
       /* the Speaker holds the end */
-      `<rect x="42" y="${FLOOR-26}" width="34" height="52" rx="3" fill="#5d6152" stroke="#2c2f28" stroke-width="1"/>` +
-      `<rect x="49" y="${FLOOR-15}" width="20" height="30" rx="2" fill="#7d8271"/>` +
-      label(59, FLOOR + 42, "SPEAKER") +
-      bench(gov, GOV_FRONT, -1) +
-      bench(opp, OPP_FRONT, +1) +
-      crossbench(cross, 600, crossTop) +
-      label(CX, govTop - 15, "GOVERNMENT") +
-      label(CX, oppBot + 26, "OPPOSITION") +
-      label(638, crossTop - 17, "THE BENCH") +
-      label(638, crossBot + 26, "functional tier", "sub");
+      `<rect x="44" y="${FLOOR-22}" width="30" height="44" rx="3" fill="#5d6152" stroke="#2c2f28" stroke-width="1"/>` +
+      `<rect x="50" y="${FLOOR-12}" width="18" height="24" rx="2" fill="#7d8271"/>` +
+      label(59, FLOOR + 36, "SPEAKER") +
+      bench(gov, X0, govFront, -1) +
+      bench(opp, X0, oppFront, +1) +
+      crossbench(cross, crossX, crossTop) +
+      label(CX, govTop - 12, "GOVERNMENT") +
+      label(CX, oppBot + 22, "OPPOSITION") +
+      label(crossX + 30, crossTop - 14, "THE BENCH") +
+      label(crossX + 30, crossBot + 22, "functional tier", "sub");
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     const govN = gov.length, oppN = opp.length, crossN = cross.length;
