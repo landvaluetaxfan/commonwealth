@@ -307,7 +307,7 @@ Forty seats. Modelled on Hong Kong, but the justification is actually true here:
 
 **Origin.** The founding compromise. The Perigee Charter's authors needed the engineering guilds and the consortiums to accept civilian rule, so they got permanent seats. Explicitly transitional, with a sunset clause extended four times. *Hullism didn't win the constitutional argument; it won a bloc of seats.*
 
-**The sectors:** Life Support Engineering · Maintenance and Trades (union bloc vote) · Substrate Providers · Consumables and Agriculture · Transit and Orbital Mechanics · Elevator and Loop Consortiums · Physiological Medicine · Attestation and Registry · Underwriting · Legal.
+**The sectors:** Life Support · Maintenance and Trades (union bloc vote) · Substrate and Hosting · Consumables and Agriculture · Transit and Orbital Mechanics · Tether and Anchorage · Medicine and Embodiment · Attestation and Registry · Insurance and Underwriting · Legal.
 
 **These are not uniformly right-wing.** The labour panels are solidly Commons Union. The player's own party benefits from a system the player's own party is committed to abolishing. The good kind of hypocrisy to hand a protagonist.
 
@@ -654,7 +654,7 @@ The pipeline, stated properly:
 
 It also locks the person out of 46% of the labour market, and returning requires
 renting a body at more than the volume rent they were fleeing. A poverty trap with
-a shape no real economy has. It gives Physiological Medicine a real constituency
+a shape no real economy has. It gives Medicine and Embodiment a real constituency
 interest and gives Root & Vessel's continuity-of-soul position an economic base
 rather than only a theological one. **THIN** — no events use it yet.
 
@@ -750,7 +750,7 @@ rather than shareholder-owned.
   an appropriation vote.
 - **Underwriting**, not banking, is the dominant institution. Where failure kills
   everyone in the room, insurance prices everything continuously — which is why
-  Underwriting holds three functional seats and why the Underwriters are the only
+  Insurance and Underwriting holds three functional seats and why the Underwriters are the only
   party with accurate numbers on everything.
 - **Volume leases** are the household store of wealth: long-dated, inheritable,
   the nearest thing to real estate. Their value derives from position inside a
@@ -1316,13 +1316,13 @@ Forty seats, eleven sectors. Reconciles exactly with party functional counts.
 
 | sector | seats | franchise | electorate |
 |---|---|---|---|
-| Life Support Engineering | 6 | licensure | 4,100 |
+| Life Support | 6 | licensure | 4,100 |
 | Maintenance and Trades | 7 | union bloc | 214,000 |
-| Substrate Providers | 4 | corporate | 411 |
+| Substrate and Hosting | 4 | corporate | 411 |
 | Consumables and Agriculture | 4 | licensure | 8,900 |
 | Transit and Orbital Mechanics | 3 | licensure | 3,400 |
-| Elevator and Loop Consortiums | 4 | corporate | **62** |
-| Physiological Medicine | 3 | licensure | 2,700 |
+| Tether and Anchorage | 4 | corporate | **62** |
+| Medicine and Embodiment | 3 | licensure | 2,700 |
 | Attestation and Registry | 2 | licensure | 890 |
 | Underwriting | 3 | corporate | 140 |
 | Legal | 3 | licensure | 5,200 |

@@ -42,7 +42,7 @@
 
 const FUNCTIONAL = [
 
-  { id:"fc_lifesupport", name:"Life Support Engineering", seats:6,
+  { id:"fc_lifesupport", name:"Life Support", seats:6,
     franchise:"licensure", electorate:4100,
     gatekeeper:{ board:"Life Support Licensing Board", appointed_by:"government" },
     electors:[
@@ -72,7 +72,7 @@ const FUNCTIONAL = [
     interest:["essential_services_law","shed_order_priority"],
     note:"The largest functional electorate by two orders of magnitude, and the reason the tier is not uniformly right-wing." },
 
-  { id:"fc_substrate", name:"Substrate Providers", seats:4,
+  { id:"fc_substrate", name:"Substrate and Hosting", seats:4,
     franchise:"corporate", electorate:411,
     gatekeeper:{ board:"Corporate Registry", appointed_by:"registry",
                  test:"hosting capacity above the registration floor" },
@@ -110,7 +110,7 @@ const FUNCTIONAL = [
     interest:["transit_windows","debris_remediation"],
     note:"Certifies every crewed transfer. Takes Kessler risk more seriously than the chamber does." },
 
-  { id:"fc_elevator", name:"Elevator and Loop Consortiums", seats:4,
+  { id:"fc_elevator", name:"Tether and Anchorage", seats:4,
     franchise:"corporate", electorate:62,
     gatekeeper:{ board:"Consortium Register", appointed_by:"registry" },
     electors:[
@@ -124,7 +124,7 @@ const FUNCTIONAL = [
     interest:["anchor_concession","tether_traffic"],
     note:"Sixty-two voters. The smallest electorate in the Commonwealth and the largest balance sheet." },
 
-  { id:"fc_medicine", name:"Physiological Medicine", seats:3,
+  { id:"fc_medicine", name:"Medicine and Embodiment", seats:3,
     franchise:"licensure", electorate:2700,
     gatekeeper:{ board:"Medical Licensing Board", appointed_by:"government" },
     electors:[
@@ -149,7 +149,7 @@ const FUNCTIONAL = [
     interest:["attestation_enforcement","registry_powers"],
     note:"Administers the roll that decides who may vote, and is itself elected by a roll of 890." },
 
-  { id:"fc_underwriting", name:"Underwriting", seats:3,
+  { id:"fc_underwriting", name:"Insurance and Underwriting", seats:3,
     franchise:"corporate", electorate:140,
     gatekeeper:{ board:"Underwriters' Register", appointed_by:"registry" },
     electors:[

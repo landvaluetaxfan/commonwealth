@@ -215,7 +215,7 @@ know it on the record, because the answer is a story either way.`,
   speaker:"ceyhan",
   body:`The cycles were billed to a holding entity, the holding entity is one of
 six incorporated in the same week, and all six are registered voters in the
-Substrate Providers functional constituency. The electorate of that seat is
+Substrate and Hosting functional constituency. The electorate of that seat is
 four hundred and eleven.
 
 Somebody manufactured six voters and used the spare capacity to manufacture a
