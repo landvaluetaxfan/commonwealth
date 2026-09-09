@@ -21,6 +21,10 @@ defeat something you can trace backwards.
 **[Play in your browser](https://landvaluetaxfan.github.io/commonwealth/)** —
 no download, nothing to install. Saves live in that browser, per slot.
 
+> First-time setup: Pages must be enabled once by hand at
+> **Settings → Pages → Source: GitHub Actions**. The `pages` workflow deploys
+> on every push to `main` after that.
+
 Or **download the single file from [Releases](../../releases)** and open it
 offline; it is the same build with everything inlined.
 

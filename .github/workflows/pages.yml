@@ -49,9 +49,10 @@ jobs:
           echo "--- deploying ---"
           find _site -type f | sort | sed 's/^/  /'
 
+      # No `enablement: true`. The workflow token cannot turn Pages on for this
+      # repo, and asking it to fails the whole deploy. Enable it once by hand:
+      #   Settings > Pages > Build and deployment > Source: GitHub Actions
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
