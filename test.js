@@ -315,6 +315,42 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        residual === T.residual, residual + " vs " + T.residual);
     ok("franchise + residual = adult roll",
        licensed + residual === T.adultRoll, (licensed + residual) + " vs " + T.adultRoll);
+    /* ELECTOR ROLLS. Each functional constituency names who is actually on
+       its roll; those counts must sum to the electorate the bible fixes, or
+       the two numbers are a divergence waiting to happen. The residual is
+       exempt: it is the complement of the other ten and nobody registers. */
+    const rollBad = [], noGate = [];
+    FUNCTIONAL.forEach(f => {
+      if (f.complement) return;
+      if (!f.electors) { rollBad.push(f.id + " has no roll"); return; }
+      const sum = f.electors.reduce((n, e) => n + e.count, 0);
+      if (sum !== f.electorate) rollBad.push(`${f.id} ${sum}/${f.electorate}`);
+      if (!f.gatekeeper || !f.gatekeeper.board) noGate.push(f.id);
+    });
+    ok("every elector roll sums to its electorate", rollBad.length === 0, rollBad.join(", "));
+    ok("every roll has a gatekeeper", noGate.length === 0, noGate.join(", "));
+
+    const gov = FUNCTIONAL.filter(f => f.gatekeeper &&
+                  f.gatekeeper.appointed_by === "government");
+    ok("the government appoints most of the boards", gov.length >= 5,
+       gov.length + " of " + FUNCTIONAL.length + " reachable by regulation");
+
+    /* the residual really is the complement, not a roll of its own */
+    const enrolled = FUNCTIONAL.filter(f => !f.complement)
+                       .reduce((n, f) => n + f.electorate, 0);
+    const resid = FUNCTIONAL.filter(f => f.complement)
+                    .reduce((n, f) => n + f.electorate, 0);
+    ok("enrolled plus residual is the adult roll",
+       enrolled + resid === LABOUR.totals.adultRoll,
+       `${enrolled} + ${resid} = ${enrolled + resid}`);
+
+    /* every party declares how it contests seats */
+    const noKind = CONTENT.parties.filter(p => !p.kind).map(p => p.id);
+    ok("every party declares a kind", noKind.length === 0, noKind.join(", "));
+    ok("the functional tier is not purely partisan",
+       CONTENT.parties.some(p => p.kind === "professional"),
+       CONTENT.parties.filter(p => p.kind === "professional").map(p => p.id).join(", "));
+
     ok("adult roll is a plausible share of population",
        T.adultRoll < T.population && T.adultRoll / T.population > 0.5,
        (100 * T.adultRoll / T.population).toFixed(1) + "% of " + T.population);
