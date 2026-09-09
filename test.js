@@ -275,6 +275,56 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   }
 
   ok("cabinet is data", Object.keys(Engine.newGame(CONTENT).cabinet).length === 9);
+  /* Content keeps moving after a save is written. A station added to the
+     roster left older saves with a hole in st.stations, and the orbital
+     chart read .band off undefined and drew nothing — a blank tab, with no
+     error a player could see. load() now reconciles, so check both
+     directions: what content adds appears, what content drops goes. */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const last = CONTENT.stations[CONTENT.stations.length - 1];
+    const firstSeat = CONTENT.constituencies[0];
+    delete fresh.stations[last.id];
+    delete fresh.roll[firstSeat.id];
+    fresh.stations.ghost = { id:"ghost", name:"Gone", band:"low", seats:2,
+      population:1, closure:0.5, suspended:0, attested:0.5 };
+    fresh.roll.ghost_seat = { held:{ cu:1 }, vacant:0 };
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a save missing a station regains it", !!back.stations[last.id]);
+    ok("a save missing a seat regains it", !!back.roll[firstSeat.id]);
+    ok("a station content has dropped is dropped", !back.stations.ghost);
+    ok("a seat content has dropped is dropped", !back.roll.ghost_seat);
+    ok("the reconciled roll still reconciles", Engine.tierCheck(back, CONTENT).ok,
+       JSON.stringify(Engine.tierCheck(back, CONTENT)));
+  }
+
+  /* Content owns a station's identity; the save owns what play has moved.
+     A renamed or resized station must show its current name and return its
+     current seats, or the map and the chamber arithmetic disagree — but a
+     closure figure the player has spent four sittings moving is theirs. */
+  {
+    const drifted = Engine.newGame(CONTENT);
+    const s = CONTENT.stations[0];
+    drifted.stations[s.id].name = "Stale Name";
+    drifted.stations[s.id].seats = s.seats + 9;
+    drifted.stations[s.id].closure = 0.123;
+    const back = Engine.load(Engine.save(drifted), CONTENT);
+    ok("content wins on a station's name", back.stations[s.id].name === s.name,
+       back.stations[s.id].name);
+    ok("content wins on a station's seats", back.stations[s.id].seats === s.seats,
+       back.stations[s.id].seats + " vs " + s.seats);
+    ok("the save wins on simulated figures", back.stations[s.id].closure === 0.123,
+       String(back.stations[s.id].closure));
+  }
+
+  /* Reconciling must not leave a fingerprint on the state, or a save stops
+     round-tripping to an identical one and tools/roundtrip.js is lying. */
+  {
+    const a = Engine.load(Engine.save(Engine.newGame(CONTENT)), CONTENT);
+    ok("reconciling leaves no trace on the state",
+       Engine.save(a) === Engine.save(Engine.load(Engine.save(a), CONTENT)));
+  }
+
   ok("state version is current", Engine.newGame(CONTENT).version === Engine.STATE_VERSION,
      "v" + Engine.STATE_VERSION);
 

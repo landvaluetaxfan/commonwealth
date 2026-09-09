@@ -712,31 +712,33 @@ const UI = (function () {
       <div class="rulehead">Grievance</div><div class="note">${s.grievance}</div>`;
   }
 
-  /* Every constituency returned by a station, with who holds it.
+  /* Every constituency returned by a station, with who holds it NOW.
 
-     `held` is optional and currently absent from every district seat:
-     content/constituencies.js carries magnitude and electorate but no
-     holder, and the engine tracks seats per party per TIER rather than per
-     seat, so there is nothing to derive it from. The moment a constituency
-     gains held:{party:seats} this lights up without further work. Until
-     then it says so, rather than inventing a member. */
+     Holders come from st.roll, not from the authored `held` in content.
+     Content is the state of the map at the opening of play; the roll is
+     what by-elections, floor-crossings and the general election have made
+     of it since, and it is the only thing the chamber arithmetic reads.
+     Showing the authored value here would quietly contradict the chamber
+     the moment a member crossed the floor.
+
+     A vacant seat is shown as vacant rather than omitted. The chamber
+     stays 280 and the majority stays 141, so an empty seat is a vote the
+     government does not have, and the map should say so. */
   function constituencyList(sid) {
     const mine = (C.constituencies || []).filter(k => k.station === sid);
     if (!mine.length) return `<div class="note">No constituency returns this station directly.</div>`;
     const ap = Engine.apportionment(C);
     const rows = mine.map(k => {
-      const held = k.held ? Object.keys(k.held).sort((a, b) => k.held[b] - k.held[a]) : [];
-      return `<tr><td><b>${k.name}</b><i class="sub">${k.magnitude} seat${k.magnitude === 1 ? "" : "s"}` +
-        ` &middot; ${k.electorate.toLocaleString()} electors &middot; ratio ${ap[k.id].toFixed(2)}</i></td>` +
-        `<td class="n">${held.length
-          ? held.map(pid => `${mark(pid)}<span class="hn">${k.held[pid]}</span>`).join(" ")
-          : '<i class="sub">unrecorded</i>'}</td></tr>`;
+      const r = Engine.seatsFor(st, k.id);
+      const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
+      const member = (C.characters || []).find(c => c.seat === k.name);
+      return `<tr><td><b>${esc(k.name)}</b><i class="sub">` +
+        (member ? esc(member.name) + " &middot; " : "") +
+        `${k.electorate.toLocaleString()} electors &middot; ratio ${ap[k.id].toFixed(2)}</i></td>` +
+        `<td class="n">${held.map(pid => `${mark(pid)}<span class="hn">${r.held[pid]}</span>`).join(" ")}` +
+        `${r.vacant ? `<span class="hn vac" title="vacant">vacant</span>` : ""}</td></tr>`;
     }).join("");
-    return `<table class="conslist">${rows}</table>` +
-      (mine.some(k => k.held) ? "" :
-       `<div class="note dim">Holders are not recorded per constituency yet &mdash;
-        seats are tracked by party and tier. Adding <code>held</code> in
-        content/constituencies.js fills this in.</div>`);
+    return `<table class="conslist">${rows}</table>`;
   }
 
   /* The functional tier in full. Every seat here is held by a named party,

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 5;   // 3 prices, 4 cabinet and instruments, 5 the district roll
+  const STATE_VERSION = 6;   // 3 prices, 4 cabinet and instruments, 5 the district roll, 6 content reconciliation
 
   /* ---------------------------------------------------------
      1. STATE
@@ -151,6 +151,77 @@ const Engine = (function () {
       st.electionsHeld = st.electionsHeld || 0;
       st.version = 5;
     }
+    if (st.version < 6) {                     // content reconciliation
+      /* Nothing to add here: the work is reconcile(), which load() runs on
+         every save regardless of version. The bump exists so a v5 save is
+         seen to have passed through it. */
+      st.version = 6;
+    }
+    return st;
+  }
+
+  /* Bring a save's content-derived tables into line with content as it now
+     is. A save freezes a copy of the station roster and the district roll at
+     the moment it was written; content keeps moving. Adding a station left
+     older saves with a hole in st.stations, and the orbital chart read .band
+     off undefined and rendered nothing at all — a blank tab, no error the
+     player could see.
+
+     The split is between what the save OWNS and what content owns:
+
+       content owns identity — name, band, type, form, settlements, seats.
+         A renamed or resized station must show its current name and return
+         its current number of members, or the chamber arithmetic disagrees
+         with the map. No content effect writes any of these.
+
+       the save owns simulation — closure, suspended, attested and anything
+         else play has moved. Those are taken from the save wherever the save
+         has them, and from content only when it does not.
+
+     Stations content has dropped are dropped. Constituencies content has
+     added enter the roll on their authored holder; ones it has dropped leave
+     it. Everything else about the roll is the save's, because who sits for a
+     seat is exactly what play decides. */
+  let lastReconcile = null;
+  const STATION_IDENTITY = ["name", "band", "type", "form", "seats", "settlements",
+                            "material_interest", "dependency", "grievance"];
+
+  function reconcile(st, C) {
+    if (!C) return st;
+    const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [] };
+
+    st.stations = st.stations || {};
+    C.stations.forEach(s0 => {
+      const was = st.stations[s0.id];
+      if (!was) { st.stations[s0.id] = JSON.parse(JSON.stringify(s0)); notes.stationsAdded.push(s0.id); return; }
+      const now = JSON.parse(JSON.stringify(s0));
+      Object.keys(now).forEach(f => {
+        if (STATION_IDENTITY.indexOf(f) >= 0) return;      // content wins
+        if (was[f] !== undefined) now[f] = was[f];         // the save wins
+      });
+      st.stations[s0.id] = now;
+    });
+    Object.keys(st.stations).forEach(id => {
+      if (!C.stationById[id]) { delete st.stations[id]; notes.stationsDropped.push(id); }
+    });
+
+    if (st.roll) {
+      (C.constituencies || []).forEach(k => {
+        if (st.roll[k.id]) return;
+        st.roll[k.id] = { held: Object.assign({}, k.held), vacant: 0 };
+        notes.seatsAdded.push(k.id);
+      });
+      Object.keys(st.roll).forEach(cid => {
+        if (!C.constituencyById[cid]) { delete st.roll[cid]; notes.seatsDropped.push(cid); }
+      });
+      syncRoll(st, C);
+    }
+
+    /* Notes live on the module, not on the state. Anything written onto st
+       here would be saved, reloaded and compared, and a save would stop
+       round-tripping to an identical state — which tools/uitest.js checks
+       and which is the whole basis of the roundtrip test. */
+    lastReconcile = notes;
     return st;
   }
 
@@ -1234,7 +1305,7 @@ const Engine = (function () {
   function load(str, C) {
     const st = migrate(JSON.parse(str));
     if (C && (st.rollReseeded || !st.roll)) { seedRoll(st, C); delete st.rollReseeded; }
-    return st;
+    return reconcile(st, C);
   }
 
   /* Every chapter referenced by content, in order. */
@@ -1252,7 +1323,8 @@ const Engine = (function () {
     partyPopular, partyFunctional, partyTotal,
     division, matches, apply, eligible, nextEvent, choose, advance, tick, checkLoss,
     apportionment, tierCheck, DIVIDES_AT, STAGE_ORDER,
-    seedRoll, syncRoll, partyDistrict, nationalShares, vacantSeats, seatsFor,
+    seedRoll, syncRoll, reconcile, partyDistrict,
+    lastReconcile: () => lastReconcile, nationalShares, vacantSeats, seatsFor,
     vacateSeat, crossFloor, byElection, generalElection, shares, swungShares,
     divisorAllocate,
     assent, presidentDecides, referralRisk, reviewReturns,

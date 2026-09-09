@@ -159,6 +159,44 @@ try {
      boxes + " toggles");
 } catch (e) { ok("options panel opens", false, e.message); }
 
+
+/* `const CONTENT` inside a script is a lexical global, not a window
+   property, so it has to be read through eval rather than off w. */
+const CONTENT = w.eval("CONTENT");
+
+/* The orbit tab rendered nothing at all after a station was added: the chart
+   read .band off a station the save did not have, threw, and left both panels
+   empty. A blank tab throws no error the player can see, so check that each
+   screen actually put something on the page. */
+["#orbit-chart", "#orbit-table", "#station-detail", "#orbit-key"].forEach(sel =>
+  ok("orbit renders " + sel, $(sel) && $(sel).innerHTML.length > 100,
+     $(sel) ? $(sel).innerHTML.length + " chars" : "missing"));
+ok("the chart draws every station",
+   ($("#orbit-chart").querySelectorAll("[data-station]") || []).length === CONTENT.stations.length,
+   $("#orbit-chart").querySelectorAll("[data-station]").length + " of " + CONTENT.stations.length);
+ok("the station list lists every station",
+   $("#orbit-table").querySelectorAll("tr[data-station]").length === CONTENT.stations.length);
+
+/* A save written before a station existed must still open. This is the bug
+   that produced the blank tab, reproduced through the real load path. */
+{
+  const stale = JSON.parse(w.eval("Engine.save(UI.state())"));
+  const gone = CONTENT.stations[CONTENT.stations.length - 1].id;
+  delete stale.stations[gone];
+  let reloaded = null, threw = "";
+  try { reloaded = w.eval("Engine.load(" + JSON.stringify(JSON.stringify(stale)) + ", CONTENT)"); }
+  catch (e) { threw = e.message; }
+  ok("a save missing a station still loads", !!reloaded, threw);
+  ok("the missing station is restored", reloaded && !!reloaded.stations[gone]);
+  ok("the repair is reported",
+     (w.eval("(Engine.lastReconcile()||{}).stationsAdded") || []).length === 1);
+  let len = 0;
+  try { len = w.eval("OrbitChart.render(Engine.load(" + JSON.stringify(JSON.stringify(stale)) + ", CONTENT), CONTENT, null)").length; }
+  catch (e) { len = 0; }
+  ok("the chart still draws from that save", len > 1000, len + " chars");
+}
+
+
 console.log("");
 const uniq = [...new Set(errs.map(e => String(e).replace(/^Uncaught \[?|\]$/g, "")))];
 if (uniq.length) { console.log("WINDOW ERRORS:"); uniq.forEach(e => console.log("  " + e)); fail += uniq.length; }
