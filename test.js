@@ -139,6 +139,36 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
   ok("a slot cannot advance a bill awaiting a division",
      !Engine.grantSlot(g, CONTENT, "divergence").ok);
 
+  /* ORDER-PAPER TIME. Slots are the scarce good that generates capital
+     (bible 7.7), so granting one must always move a bill. A stage the engine
+     did not recognise fell through every branch and burned the slot in
+     silence — content had a bill parked at "lords", which is neither in
+     STAGE_ORDER nor the name this setting uses for the upper house. */
+  {
+    let burned = [], sl = Engine.newGame(CONTENT);
+    CONTENT.bills.forEach(b => {
+      const before = sl.bills[b.id].stage, used = sl.slots.used;
+      const r = Engine.grantSlot(sl, CONTENT, b.id);
+      if (r.ok && sl.bills[b.id].stage === before && sl.slots.used > used)
+        burned.push(`${b.id} (${before})`);
+    });
+    ok("a granted slot always advances a bill", burned.length === 0,
+       burned.length ? "slot burned on " + burned.join(", ") : "");
+
+    let u = Engine.newGame(CONTENT);
+    u.bills[CONTENT.bills[0].id].stage = "not_a_real_stage";
+    const before = u.slots.used;
+    const r = Engine.grantSlot(u, CONTENT, CONTENT.bills[0].id);
+    ok("an unknown stage is refused, not charged",
+       !r.ok && u.slots.used === before, r.reason || "");
+
+    /* every stage content ships must be one the engine can advance */
+    const known = Engine.STAGE_ORDER.concat(["blocked"]);
+    const strays = CONTENT.bills.filter(b => !known.includes(b.stage))
+                                .map(b => `${b.id}:"${b.stage}"`);
+    ok("every authored stage is in STAGE_ORDER", strays.length === 0, strays.join(", "));
+  }
+
   ok("cabinet is data", Object.keys(Engine.newGame(CONTENT).cabinet).length === 9);
   ok("state version is current", Engine.newGame(CONTENT).version === Engine.STATE_VERSION,
      "v" + Engine.STATE_VERSION);

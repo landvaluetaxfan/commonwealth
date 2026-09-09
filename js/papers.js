@@ -112,6 +112,53 @@ const Papers = (function () {
     "34.0C212.1 33.5,215.2 33.3,218.4 33.0C221.6 32.7,226.1 32.2,227.6 32.0 M113.0 5.0C114.3 " +
     "4.3,118.3 1.7,120.8 1.0C123.3 0.3,125.6 0.3,127.8 1.0C130.0 1.7,133.0 4.3,134.0 5.0";
 
+  /* WHERE A BILL GOES. The register used to show the end state and nothing
+     else, so "assented" arrived without the road that led to it and an act in
+     force looked the same as one that had merely survived a division.
+
+     The track is the engine's own STAGE_ORDER, not a copy: if a stage is added
+     there this renders it without being touched. Terminal states are not
+     positions on the track — struck, referred, defeated and withdrawn are ways
+     of leaving it — so they are drawn as a branch off the end. */
+  const STAGE_LABEL = {
+    drafting:"Drafting", first_reading:"First reading", second_reading:"Second reading",
+    committee:"Committee", report:"Report", third_reading:"Third reading",
+    upper_house:"Upper house", assent:"Assent", blocked:"Blocked"
+  };
+  const TERMINAL = {
+    struck:    { label:"Struck on review", cls:"bad",  note:"Removed from the statute book. It cannot be revived; it must be brought again as a new bill." },
+    defeated:  { label:"Defeated",         cls:"bad",  note:"Lost on division. The slot is spent." },
+    withdrawn: { label:"Withdrawn",        cls:"bad",  note:"Pulled before division." },
+    referred:  { label:"Referred",         cls:"warn", note:"With the constitutional court. It returns, struck or intact." },
+    assented:  { label:"In force",         cls:"good", note:"Law. Its effects are live and stay live until amended or repealed by another act." }
+  };
+
+  function stageTrack(b, bs) {
+    const order = (typeof Engine !== "undefined" && Engine.STAGE_ORDER) || [];
+    const term = TERMINAL[bs.stage];
+    /* How far it got: an assented act cleared the whole track. */
+    const reached = bs.stage === "assented" ? order.length
+                  : bs.stage === "awaiting_assent" ? order.indexOf("assent")
+                  : order.indexOf(bs.stage) >= 0 ? order.indexOf(bs.stage)
+                  : order.length - 1;
+
+    const steps = order.map((sg, i) => {
+      const state = i < reached ? "done" : i === reached ? "here" : "todo";
+      return `<li class="${state}"><i></i><span>${STAGE_LABEL[sg] || sg}` +
+             `${sg === Engine.DIVIDES_AT ? '<em>division</em>' : ""}</span></li>`;
+    }).join("");
+
+    return `<div class="track">
+        <ol class="stagetrack">${steps}
+          ${term ? `<li class="term ${term.cls}"><i></i><span>${term.label}</span></li>` : ""}
+        </ol>
+        ${term ? `<div class="trknote ${term.cls}">${term.note}</div>` : ""}
+        ${bs.stage === "assented" && bs.assentedAt != null
+          ? `<div class="trknote">Assented at sitting ${bs.assentedAt}. It sits in this register
+             permanently; the Concordance carries what it changed.</div>` : ""}
+      </div>`;
+  }
+
   function actDoc(it) {
     const b = it.bill, bs = it.state;
     const assented = bs.stage === "assented";
@@ -151,9 +198,9 @@ const Papers = (function () {
       </div>` : "";
 
     return { html: `<div class="paper${ceremonial && !already ? " sig-armed" : ""}${ceremonial && already ? " sig-done" : ""}">
-      ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth &middot; Anselm Ring",
+      ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth \u00b7 Anselm Ring",
              "FILE " + b.ref, "11 APR 2287")}
-      ${banner}${body}${sig}</div>`, ceremonial: ceremonial && !already };
+      ${banner}${stageTrack(b, bs)}${body}${sig}</div>`, ceremonial: ceremonial && !already };
   }
 
   /* A minute is signed and served. Signing is the decision — the distribution
@@ -211,7 +258,7 @@ const Papers = (function () {
     const signed = st.signedMinutes && st.signedMinutes[m.id];
     const line = (label, v) => `<div class="row"><span>${label}</span><span>${v}</span></div>`;
     return { html: `<div class="paper">
-      ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth &middot; Anselm Ring",
+      ${head("Office of the Prime Minister", "Circumterrestrial Commonwealth \u00b7 Anselm Ring",
              "FILE " + m.file, "SITTING " + (m.sitting || st.sitting))}
       <div class="classif">${esc(m.classification || "Restricted — ministerial")}</div>
       <div class="distrib">

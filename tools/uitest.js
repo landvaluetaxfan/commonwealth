@@ -111,6 +111,46 @@ try {
      before === after ? "" : "state differs after reload");
 } catch (e) { ok("save round-trip", false, e.message); }
 
+/* THE BILL LIFECYCLE TRACK. An assented act must show the road it took, not
+   just its end state — and the terminal branch must be drawn off the end of
+   the track rather than as a position on it. */
+try {
+  const stt = w.eval("UI.state()");
+  stt.bills.anchor_kepler.stage = "assented";
+  stt.bills.anchor_kepler.assentedAt = 3;
+  /* Switching tabs only toggles visibility; the register is drawn in drawAll,
+     so re-enter boot (which is re-entrant) to redraw against the new state. */
+  w.eval("UI.boot(UI.state(), CONTENT)");
+  w.document.querySelector('.tab[data-t="pap"]').click();
+
+  const rows = [...w.document.querySelectorAll("#pp-list tbody tr")];
+  const act = rows.find(r => /Ratification Act/.test(r.textContent));
+  ok("the assented act is in the register", !!act, rows.length + " register rows");
+  if (act) {
+    act.click();
+    const track = w.document.querySelector(".stagetrack");
+    ok("the act document draws a stage track", !!track);
+    if (track) {
+      const steps = [...track.querySelectorAll("li")];
+      const term  = track.querySelector("li.term");
+      const order = w.eval("Engine.STAGE_ORDER.length");
+      ok("the track mirrors STAGE_ORDER", steps.length === order + 1,
+         `${steps.length} steps for ${order} stages plus a terminal`);
+      ok("assent shows every stage cleared",
+         steps.filter(l => l.classList.contains("done")).length === order,
+         steps.filter(l => l.classList.contains("done")).length + " done");
+      ok("the terminal state is a branch, marked in force",
+         !!term && term.classList.contains("good") && /in force/i.test(term.textContent),
+         term ? term.textContent.trim() : "no terminal");
+    }
+  }
+  /* the letterhead must not leak an HTML entity as text */
+  const doc = w.document.querySelector("#pp-doc, .paper");
+  ok("no raw entities in the letterhead",
+     !doc || !/&[a-z]+;/i.test(doc.textContent),
+     (doc && (doc.textContent.match(/&[a-z]+;/i) || [""])[0]) || "clean");
+} catch (e) { ok("bill lifecycle track", false, e.message); }
+
 /* options panel */
 try {
   $("#tb-options").click();

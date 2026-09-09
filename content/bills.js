@@ -62,7 +62,7 @@ const BILLS = [
     onPass:[{law:{shed_order_authority:"statute"}},{scalar:{public_standing:6}}],
     onFail:[{loyalty:{cu_halloran:-8}}] },
 
-  { id:"anchor_kepler", ref:"HC 4/103", stage:"lords", owner:null,
+  { id:"anchor_kepler", ref:"HC 4/103", stage:"upper_house", owner:null,
     title:"Anchor Concession (Kepler) Ratification Bill",
     summary:"Ratifies renewed terms for the Tether 2 anchor, which stands on the sovereign "+
             "territory of an Earth state.",

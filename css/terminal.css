@@ -694,3 +694,38 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
    proportions were the problem and were fixed in orbitchart.js; this just lets
    it scale to the panel width. */
 #orbit-chart svg{width:100%;height:auto;display:block;}
+
+/* --- bill lifecycle track (Papers) --- */
+.track{margin:10px 0 14px;}
+.stagetrack{list-style:none;display:flex;flex-wrap:wrap;gap:0;margin:0;padding:0;
+  font-family:var(--f-ui);font-size:9px;letter-spacing:.06em;text-transform:uppercase;}
+.stagetrack li{position:relative;flex:1 1 0;min-width:58px;text-align:center;
+  padding-top:13px;color:#8a8574;}
+.stagetrack li i{position:absolute;top:3px;left:50%;width:7px;height:7px;margin-left:-3.5px;
+  border:1px solid #b3ac96;background:#e8e3d2;border-radius:50%;z-index:2;}
+.stagetrack li::before{content:"";position:absolute;top:6px;left:0;right:50%;height:1px;
+  background:#cfc8b3;}
+.stagetrack li::after{content:"";position:absolute;top:6px;left:50%;right:0;height:1px;
+  background:#cfc8b3;}
+.stagetrack li:first-child::before,.stagetrack li:last-child::after{display:none;}
+.stagetrack li.done{color:#5c563f;}
+.stagetrack li.done i{background:#6f6a4e;border-color:#4e4838;}
+.stagetrack li.done::before,.stagetrack li.done::after{background:#8f8974;}
+.stagetrack li.here{color:#17140e;font-weight:700;}
+.stagetrack li.here i{background:#1b2a5c;border-color:#1b2a5c;width:9px;height:9px;
+  margin-left:-4.5px;top:2px;}
+.stagetrack li.here::before{background:#8f8974;}
+.stagetrack li span em{display:block;font-style:normal;font-size:7.5px;letter-spacing:.1em;
+  color:#8c3a32;text-transform:uppercase;}
+.stagetrack li.term i{border-radius:0;}
+.stagetrack li.term.good i{background:#3d5c33;border-color:#3d5c33;}
+.stagetrack li.term.bad i{background:#8c3a32;border-color:#8c3a32;}
+.stagetrack li.term.warn i{background:#a5762c;border-color:#a5762c;}
+.stagetrack li.term.good{color:#3d5c33;font-weight:700;}
+.stagetrack li.term.bad{color:#8c3a32;font-weight:700;}
+.stagetrack li.term.warn{color:#8a6d24;font-weight:700;}
+.trknote{font-family:var(--f-doc);font-size:11.5px;line-height:1.45;color:#4e4838;
+  margin-top:8px;padding-left:9px;border-left:2px solid #cfc8b3;}
+.trknote.good{border-left-color:#3d5c33;}
+.trknote.bad{border-left-color:#8c3a32;}
+.trknote.warn{border-left-color:#a5762c;}

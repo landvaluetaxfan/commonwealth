@@ -470,9 +470,16 @@ const Engine = (function () {
     const b = C.billById[billId], bs = st.bills[billId];
     if (!b || bs.dead) return { ok: false, reason: "not before Parliament" };
     if (bs.stage === DIVIDES_AT) return { ok: false, reason: "awaiting a division" };
+    /* Order-paper time is the scarce good that generates capital, so a slot
+       must never be consumed without moving something. A stage the engine
+       does not recognise used to fall through every branch below and burn
+       the slot in silence — content had a bill sitting at "lords", which is
+       not in STAGE_ORDER and is not the name this setting uses either. */
     const i = STAGE_ORDER.indexOf(bs.stage);
     if (bs.stage === "blocked") { bs.stage = "second_reading"; }
-    else if (i >= 0 && i < STAGE_ORDER.length - 1) { bs.stage = STAGE_ORDER[i + 1]; }
+    else if (i === STAGE_ORDER.length - 1) return { ok: false, reason: "already awaiting assent" };
+    else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
+    else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     st.slots.used += 1;
     let gained = 0;
     const owner = b.owner;
