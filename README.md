@@ -1,55 +1,99 @@
-# Orbital — political thriller prototype
+# Ways & Means
 
-Extract over your existing folder, replacing files. No build step, no server.
+*A Space Story About Politics and Governance.*
 
-## Run it
+A text-based narrative political thriller with a real electoral simulation,
+set in the Circumterrestrial Commonwealth — a federated republic of thirty-three
+orbital habitats, population 6,863,000.
 
-- **`index.html`** — the game.
-- **`editor.html`** — the content editor.
+You lead a party in a 280-seat House of Delegates. Bills carry on a **dual
+majority**: they must pass among the elected members *and* separately among the
+forty functional members, who are returned by trade licence and corporate
+franchise rather than by place. Your majority is not a majority. That is the
+trap the first chapter is built around.
 
-Open either straight from disk. Content files are `.js` rather than `.json`
-precisely so this works from `file://`, where `fetch()` is blocked.
+Resolution is deterministic. There is no dice roll anywhere in event selection
+or in a division — which is what makes the balance testable, and what makes a
+defeat something you can trace backwards.
 
-## Checks
+## Play it
+
+**Download the single file from [Releases](../../releases)** and open it in a
+browser. No install, no server, works offline.
+
+From a clone, open `index.html` directly — `file://` is a supported way to run
+this, not a fallback. Content lives in `content/*.js` rather than `.json`
+precisely because `fetch()` is blocked on `file://` and `<script src>` is not.
+
+- **`index.html`** — the game
+- **`editor.html`** — the content editor
+- `npm run build` — writes `dist/ways-and-means.html`, everything inlined
+
+## State of the build
+
+| | |
+|---|---|
+| Engine | Complete for chapters one and two. Divisions, whipping with per-partner capital, statutory instruments with prayer windows, cabinet vacancies, scarcity prices, save migration. |
+| Content | **Placeholder.** Twelve events against a canon that supports hundreds. Being rewritten. |
+| Setting | 1,600 lines of locked canon in `bible.md`, plus an in-world primer. |
+
+The engine is not the project; the content is. Canon describes thirty-three
+stations and eleven parties, and events currently touch two stations and five
+parties. `js/coverage.js` will tell you what to write next from the content
+itself rather than from a checklist.
+
+## Working on it
+
+Read **`CLAUDE.md`** first, then `bible.md`. The short version:
+
+1. **`js/engine.js` names no event, no party, no station.** Content is data.
+   If adding content means editing the engine, the design has gone wrong.
+2. **No randomness in event selection.** Determinism is the whole bargain.
+3. **The rosters are frozen.** Do not invent a station or a character in passing.
+4. **One concept cluster per event.** `tools/lint.js` enforces it.
+5. **Bump `STATE_VERSION` and add an ascending migration block** when the state
+   object changes shape.
+
+Two agents work this repo on a split documented in `AGENTS.md`: **Claude Code**
+takes `js/`, `tools/`, tests and structural work; **opencode** takes
+`content/*.js` and prose.
+
+## The checks
 
 ```
-node test.js               chamber arithmetic + 40-sitting smoke test
-node tools/lint.js         legibility: concept load, terms taught before use
-node tools/cxcheck.js      encyclopedia links, see-alsos, banners
-node tools/roundtrip.js    editor fidelity: serialise → reload → identical play
-node tools/edtest.js       editor smoke test (needs: npm install jsdom)
-node tools/renametest.js   renaming preserves behaviour exactly
-node tools/bundle.js       one-file project snapshot for handing to a new chat
+npm install      # once, for jsdom
+npm run check    # all seven, about three seconds
 ```
 
-Run all four after any content change. They take about a second.
+| | |
+|---|---|
+| `test.js` | chamber arithmetic against the bible, tier reconciliation, instruments, save migration from every past version, labour reconciliation, 40-sitting smoke test |
+| `tools/lint.js` | legibility: concept load per event, terms used before taught |
+| `tools/cxcheck.js` | Concordance links, see-alsos, banners |
+| `tools/roundtrip.js` | editor fidelity: serialise → reload → identical play |
+| `tools/renametest.js` | renaming an id preserves behaviour exactly |
+| `tools/edtest.js` | the editor boots and every tab works |
+| `tools/uitest.js` | the menu, save slots, options, and glossary annotation |
+
+Run them after any change. They are the only playtester this project has.
 
 ## Layout
 
 ```
-index.html          the game
-editor.html         the content editor
-css/terminal.css    government chrome + Concordance + glossary
-css/editor.css      editor chrome
-js/engine.js        rules. Names no event, party or station.
-js/ui.js            game rendering
-js/encyclopedia.js  Concordance generator + renderer
-js/schema.js        the content vocabulary, machine-readable
-js/serialise.js     model → content files
-js/editor.js        the editor
-content/*.js        everything you author
-img/portraits/      4:5, 160px, registry palette
-img/events/         12:5, 640px, per-source palette
-tools/dither.sh     image pipeline
-tools/palettes/     four palettes; edit these to restyle every image at once
+index.html            the game
+editor.html           the content editor
+bible.md              canon, out-of-world. Read this first.
+textbook.md           canon, in-world. Charnock's primer.
+sweep-brief.md        the current build phase
+content/*.js          everything authored
+js/engine.js          rules. Names nothing concrete.
+js/ui.js              game rendering
+js/shell.js           main menu, save slots, options
+js/editor.js          the editor
+js/schema.js          the content vocabulary, machine-readable
+js/coverage.js        what-to-do-next analysis
+tools/                checks, build, image pipeline
 ```
 
-See `CONTENT_GUIDE.md` for how to add events, bills, stations, images and
-encyclopedia articles.
-
-## Starting a new chat about this project
-
-Run `node tools/bundle.js`. It writes `orbital.bundle.md` — a digest plus every
-content file verbatim. Upload that to the project knowledge base, replacing the
-previous one. Any new chat then knows exactly what the content is, rather than
-relying on what was in some earlier zip.
+See `CONTENT_GUIDE.md` to author. The short version: copy an entry in
+`content/events.js` and change it.

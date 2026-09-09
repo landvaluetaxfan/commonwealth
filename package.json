@@ -1,6 +1,6 @@
 {
-  "name": "orbital",
-  "version": "0.4.0",
+  "name": "ways-and-means",
+  "version": "0.5.0",
   "private": true,
   "description": "A text-based narrative political thriller with real electoral mechanics, set in a federated republic of orbital habitats.",
   "scripts": {
@@ -10,8 +10,10 @@
     "roundtrip": "node tools/roundtrip.js",
     "rename": "node tools/renametest.js",
     "editor": "node tools/edtest.js",
+    "ui": "node tools/uitest.js",
     "bundle": "node tools/bundle.js",
-    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor"
+    "build": "node tools/build.js",
+    "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui"
   },
   "devDependencies": { "jsdom": "^24.0.0" }
 }

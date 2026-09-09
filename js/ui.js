@@ -22,8 +22,17 @@ const UI = (function () {
   const pc = id => (C.partyById[id] || {}).colour || "var(--chrome-dk)";
   const pn = id => (C.partyById[id] || {}).name || id;
 
+  /* Autosave. Shell owns slots; if it is not loaded (the editor, a test
+     harness) this is a no-op rather than an error. */
+  const saved = () => { if (typeof Shell !== "undefined") Shell.autosave(); };
+
+  let wired = false;
+
   function boot(state, content) {
     st = state; C = content;
+    currentEvent = null; lastResult = null;
+    if (wired) { drawAll(); return; }   /* Shell re-boots on every load */
+    wired = true;
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(o => o.setAttribute("aria-selected", "false"));
       t.setAttribute("aria-selected", "true");
@@ -31,18 +40,8 @@ const UI = (function () {
       $("#s-" + t.dataset.t).classList.add("on");
       $("#viewport").scrollTop = 0;
     }));
-    $("#btn-save").addEventListener("click", () => {
-      const blob = new Blob([Engine.save(st)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = "orbital-save.json"; a.click();
-    });
-    $("#btn-load").addEventListener("click", () => $("#file-load").click());
-    $("#file-load").addEventListener("change", e => {
-      const f = e.target.files[0]; if (!f) return;
-      const r = new FileReader();
-      r.onload = () => { st = Engine.load(r.result); currentEvent = null; lastResult = null; drawAll(); };
-      r.readAsText(f);
-    });
+    /* Saving, loading and starting a game belong to Shell now — they are
+       session concerns, not rendering ones, and they live in the topbar. */
     const goSearch = () => {
       const hit = Concordance.search($("#cx-q").value);
       if (hit) { cxCurrent = hit; Concordance.render(st, C, cxCurrent, true); $("#cx-body").scrollTop = 0; }
@@ -63,11 +62,6 @@ const UI = (function () {
       if (g) { cxCurrent = g.dataset.go; Concordance.render(st, C, cxCurrent, true); $("#cx-body").scrollTop = 0; }
     });
 
-    $("#btn-new").addEventListener("click", () => {
-      st = Engine.newGame(C); currentEvent = null; lastResult = null;
-      if (typeof Papers !== "undefined") Papers.reset();
-      drawAll();
-    });
     drawAll();
   }
 
@@ -384,21 +378,44 @@ const UI = (function () {
      one-line gloss with its familiar handle. Opt-in, not a wall of text,
      and diegetic: government software has footnotes. */
 
+  /* Wrap the first occurrence of each glossary term in a gloss span.
+
+     Only text outside tags is eligible. Matching inside a tag inserts a
+     <span> into an attribute value and destroys the markup, which is exactly
+     what happened: several glosses are written using other glossary terms
+     ("instance" is defined as "A fork that is still legally the same person
+     as its root"), so annotating `fork` tore open the span already wrapped
+     around `instance` and dumped the raw attributes into the prose.
+
+     After each insertion the segments are re-split, so a term can never land
+     inside markup added moments earlier by another term. */
   function annotate(html) {
     const terms = (C.glossary || []).filter(g => !g.assumed)
       .sort((a, b) => b.term.length - a.term.length);
     const done = new Set();
+    let parts = html.split(/(<[^>]*>)/);
+
     terms.forEach(g => {
       if (done.has(g.term)) return;
-      const re = new RegExp("(?<![\\w>])(" + g.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?![\\w<])", "i");
-      if (!re.test(html)) return;
-      html = html.replace(re, (m) =>
-        `<span class="gl" tabindex="0" data-gloss="${esc(g.gloss)}" data-handle="${esc(g.handle || "")}">${m}</span>`);
-      done.add(g.term);
+      const re = new RegExp("\\b(" + g.term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")\\b", "i");
+      for (let i = 0; i < parts.length; i++) {
+        if (parts[i].charAt(0) === "<" || !re.test(parts[i])) continue;
+        parts[i] = parts[i].replace(re, m =>
+          `<span class="gl" tabindex="0" data-gloss="${esc(g.gloss)}"` +
+          ` data-handle="${esc(g.handle || "")}">${m}</span>`);
+        done.add(g.term);
+        parts = parts.join("").split(/(<[^>]*>)/);
+        break;
+      }
     });
-    return html;
+    return parts.join("");
   }
-  function esc(s) { return String(s).replace(/"/g, "&quot;"); }
+  /* Attribute-safe. & must go first or it double-escapes the entities below. */
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+      .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
 
   function bindGlossary(scope) {
     scope.querySelectorAll(".gl").forEach(n => {
@@ -448,7 +465,7 @@ const UI = (function () {
     if (!currentEvent) {
       box.innerHTML = `<div class="note">Nothing on the order paper demands a decision this sitting.</div>` +
         `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
-      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); });
+      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); saved(); });
       return;
     }
     const e = currentEvent;
@@ -467,11 +484,12 @@ const UI = (function () {
 
     if (lastResult) {
       bindGlossary(box);
-      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); });
+      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); saved(); });
     } else {
       bindGlossary(box);
       box.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
         lastResult = Engine.choose(st, C, e, +b.dataset.i) || "Noted.";
+        saved();
         drawAll();
       }));
     }
@@ -681,5 +699,5 @@ const UI = (function () {
       : "<tbody><tr><td>No decisions recorded.</td></tr></tbody>";
   }
 
-  return { boot };
+  return { boot, state: () => st, annotate };
 })();

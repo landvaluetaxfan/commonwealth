@@ -1,0 +1,33 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm install
+      - name: Checks must pass before anything ships
+        run: npm run check
+      - name: Build the single file
+        run: npm run build
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Ways & Means ${{ github.ref_name }}
+          generate_release_notes: true
+          files: dist/ways-and-means.html
+          body: |
+            **Download `ways-and-means.html` below and open it in a browser.**
+            One file, no install, no server, works offline.
+
+            Saves live in that browser's local storage, per slot. Use
+            Options → Export to file to move a game between machines.
+
+            The engine is complete for chapters one and two; the prose is
+            placeholder and is being rewritten.

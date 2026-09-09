@@ -18,10 +18,20 @@
 </style>
 </head>
 <body>
+<div id="menu"></div>
+<input type="file" id="file-load" accept=".json" style="display:none">
 <div id="shell">
   <div id="titlebar">
     <span>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</span>
     <span class="sys" id="tb-sys"></span>
+    <span class="tbgroup">
+      <span class="tbslot" id="tb-slot"></span>
+      <span id="tb-flash"></span>
+      <button class="tbbtn" id="tb-save" title="Write to the current slot">Save</button>
+      <button class="tbbtn" id="tb-load" title="Open the save list">Load</button>
+      <button class="tbbtn" id="tb-options" aria-haspopup="true">Options</button>
+      <div id="tb-optpanel"></div>
+    </span>
     <span class="boxes"><i></i><i></i><i></i></span>
   </div>
 
@@ -99,18 +109,6 @@
           <div class="panel">
             <h2>Cabinet</h2>
             <div class="pbody flush"><table id="gov-cabinet"></table></div>
-          </div>
-          <div class="panel">
-            <h2>Files</h2>
-            <div class="pbody">
-              <div class="btnrow" style="margin-top:0">
-                <button class="btn" id="btn-save">Save</button>
-                <button class="btn" id="btn-load">Load</button>
-                <button class="btn" id="btn-new">New game</button>
-              </div>
-              <input type="file" id="file-load" accept=".json" style="display:none">
-              <div class="note" style="margin-top:6px">State is versioned. Saves from older versions migrate on load.</div>
-            </div>
           </div>
         </div>
       </div>
@@ -242,9 +240,9 @@
 <script src="js/papers.js"></script>
 <script src="js/encyclopedia.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/shell.js"></script>
 <script>
-  const state = Engine.newGame(CONTENT);
-  UI.boot(state, CONTENT);
+  Shell.boot(CONTENT);
   // mirror the indicator panel onto the Sitting screen
   const mo = new MutationObserver(() => {
     document.getElementById("gov-meters-mirror").innerHTML =

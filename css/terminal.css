@@ -27,6 +27,7 @@
   --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
   --f-data:"DejaVu Sans Mono","Courier New",Courier,monospace;
   --f-doc:"Liberation Serif","Times New Roman",Times,serif;
+  --f-disp:"Bodoni MT",Didot,"Playfair Display","Liberation Serif",Georgia,"Times New Roman",serif;
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
@@ -47,15 +48,16 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* ---------- shell ---------- */
 #shell{
   height:100%;
-  display:flex;flex-direction:column;
+  display:none;flex-direction:column;
   background:var(--chrome);
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
 }
+#shell.on{display:flex;}
 #titlebar{
   background:var(--bar);color:var(--bar-txt);
   padding:3px 6px;
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;justify-content:space-between;align-items:center;gap:16px;
   font-size:11px;letter-spacing:.09em;text-transform:uppercase;
   flex:0 0 auto;
 }
@@ -576,3 +578,97 @@ img.dith{
 
 .signbtn{font-size:12px;padding:5px 14px;}
 .sigblock .rule svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
+
+
+/* =============================================================
+   THE SHELL — main menu, topbar controls, options
+   ============================================================= */
+
+/* --- topbar controls --- */
+#titlebar .tbgroup{display:flex;align-items:center;gap:6px;margin-left:auto;position:relative;}
+#titlebar .tbslot{font-family:var(--f-ui);text-transform:none;letter-spacing:.03em;
+  opacity:.72;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tbbtn{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--bar-txt);background:transparent;border:1px solid rgba(233,234,226,.34);
+  padding:2px 8px;cursor:pointer;line-height:1.5;}
+.tbbtn:hover{background:rgba(233,234,226,.13);border-color:rgba(233,234,226,.62);}
+.tbbtn:active{background:rgba(233,234,226,.22);}
+#tb-flash{font-family:var(--f-ui);text-transform:none;letter-spacing:.03em;font-size:10px;
+  color:var(--bar-txt);opacity:0;transition:opacity .2s;}
+#tb-flash.on{opacity:.85;}
+
+#tb-optpanel{display:none;position:absolute;top:100%;right:0;z-index:60;margin-top:4px;
+  width:262px;background:var(--chrome);color:var(--ink);text-transform:none;letter-spacing:0;
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  box-shadow:3px 4px 0 rgba(27,29,25,.22);padding:8px;}
+#tb-optpanel.on{display:block;}
+.opt-title{font-family:var(--f-ui);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:4px;margin-bottom:6px;}
+.opt{display:flex;gap:7px;align-items:flex-start;padding:4px 2px;cursor:pointer;font-size:11px;}
+.opt input{margin:2px 0 0 0;flex:0 0 auto;}
+.opt span{display:block;}
+.opt b{display:block;font-weight:600;font-size:11px;}
+.opt i{display:block;font-style:normal;font-size:10px;color:var(--ink-soft);line-height:1.35;}
+.opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
+
+/* --- the main menu --- */
+#menu{display:none;position:fixed;inset:0;z-index:100;background:var(--chrome);
+  overflow:auto;}
+#menu.on{display:block;}
+/* the menu covers the desktop chrome, so the page ground matches it */
+body.menu-on{background:var(--chrome);}
+#menu::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
+  display:block;background:var(--bar);color:var(--bar-txt);
+  font-family:var(--f-ui);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  padding:4px 8px;}
+.menu-plate{max-width:920px;padding:74px 40px 60px 56px;}
+.menu-title{font-family:var(--f-disp);color:#fff;line-height:.84;
+  text-transform:uppercase;text-shadow:0 1px 0 rgba(27,29,25,.18);}
+.menu-title .w{display:block;font-size:64px;letter-spacing:.06em;}
+.menu-title .a{font-size:38px;letter-spacing:0;padding-right:6px;}
+.menu-title .m{font-size:64px;letter-spacing:.04em;}
+.menu-tag{display:inline-block;margin-top:14px;background:var(--bar);color:var(--bar-txt);
+  font-family:var(--f-ui);font-size:14px;letter-spacing:.02em;padding:4px 12px;}
+.menu-body{margin-top:52px;}
+.menu-sub{font-family:var(--f-ui);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:10px;}
+.menu-btns{display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
+.menu-btns.row{flex-direction:row;margin-top:16px;}
+.mbtn{font-family:var(--f-ui);font-size:19px;color:var(--ink);text-align:left;
+  background:var(--chrome-lt);border:1px solid var(--rule);padding:9px 16px;width:306px;
+  cursor:pointer;box-shadow:2px 3px 0 rgba(27,29,25,.16);}
+.mbtn:hover{background:#ecede6;}
+.mbtn:active{box-shadow:1px 1px 0 rgba(27,29,25,.16);transform:translate(1px,2px);}
+.mbtn.off,.mbtn:disabled{opacity:.42;cursor:default;box-shadow:none;}
+.mbtn.off:hover,.mbtn:disabled:hover{background:var(--chrome-lt);}
+.mbtn.sm{font-size:12px;width:auto;padding:4px 11px;box-shadow:1px 2px 0 rgba(27,29,25,.16);}
+.mbtn.wide{width:100%;margin-top:5px;}
+.mbtn.danger{color:var(--alert);border-color:var(--alert);}
+
+.slots{display:flex;flex-direction:column;gap:7px;max-width:620px;}
+.slot{display:flex;align-items:center;gap:12px;background:var(--chrome-lt);
+  border:1px solid var(--chrome-dk);padding:9px 12px;}
+.slot.empty{background:transparent;border-style:dashed;}
+.sl-n{font-family:var(--f-data);font-size:17px;color:var(--chrome-dkr);width:18px;flex:0 0 auto;}
+.sl-b{flex:1 1 auto;min-width:0;}
+.sl-name{font-family:var(--f-ui);font-size:15px;}
+.slot.empty .sl-name{color:var(--ink-soft);}
+.sl-meta{font-family:var(--f-ui);font-size:10.5px;color:var(--ink-soft);letter-spacing:.02em;}
+.sl-a{display:flex;gap:6px;flex:0 0 auto;}
+.menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;}
+.menu-text p{margin:0 0 10px;}
+.menu-text .dim{color:var(--ink-soft);font-size:13px;}
+.menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:11px;
+  color:var(--alert);border-left:2px solid var(--alert);padding-left:9px;line-height:1.45;}
+
+/* Options > Animations off. The ceremony still resolves, it just does not draw. */
+body.no-motion .sig-draw #sigpath,body.no-motion .sig-draw .sigpath{transition:none;}
+body.no-motion *{animation:none !important;}
+
+@media (max-width:700px){
+  .menu-plate{padding:44px 20px 40px 24px;}
+  .menu-title .w,.menu-title .m{font-size:44px;}
+  .mbtn{width:100%;max-width:306px;}
+  .slot{flex-wrap:wrap;}
+}
