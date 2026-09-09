@@ -13,6 +13,7 @@
     "ui": "node tools/uitest.js",
     "bundle": "node tools/bundle.js",
     "build": "node tools/build.js",
+    "tracesig": "node tools/tracesig.js",
     "check": "npm run test && npm run lint && npm run cx && npm run roundtrip && npm run rename && npm run editor && npm run ui"
   },
   "devDependencies": { "jsdom": "^24.0.0" }
