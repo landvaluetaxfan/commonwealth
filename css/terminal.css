@@ -111,7 +111,19 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .grid{display:grid;gap:5px;}
 .g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
 .g-cham{grid-template-columns:minmax(0,1fr) 300px;}
-.g-orb{grid-template-columns:260px minmax(0,1fr);}
+.g-orb{grid-template-columns:260px minmax(0,1fr);align-items:stretch;}
+/* The station list and the station detail sit ABOVE the schematic, so they
+   share one band of height and scroll independently inside it. Without the
+   cap the two columns are as tall as the longer one — a 37-seat station
+   leaves a column of dead grey beside the list — and the schematic is
+   pushed off the bottom of the screen entirely. */
+.g-orb>.panel{display:flex;flex-direction:column;min-height:0;max-height:44vh;}
+.g-orb>.panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
+/* The chart is a 1.94:1 SVG that scales to its container, so capping the
+   height rather than the width keeps it legible and keeps the whole tab on
+   one screen. */
+#orbit-chart{max-height:46vh;}
+#orbit-chart svg{display:block;width:100%;max-height:46vh;}
 .g-disp{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
 .g-elec{grid-template-columns:290px minmax(0,1fr) 250px;}
 .stack{display:flex;flex-direction:column;gap:5px;min-width:0;}
