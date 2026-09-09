@@ -2,6 +2,14 @@ name: release
 on:
   push:
     tags: ['v*']
+  # Tag pushes are not always available to every credential, so a release can
+  # also be cut by hand from the Actions tab: run this and give it a version.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to publish, e.g. v0.5.0'
+        required: true
+        default: 'v0.5.0'
 permissions:
   contents: write
 jobs:
@@ -19,7 +27,8 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          name: Ways & Means ${{ github.ref_name }}
+          tag_name: ${{ inputs.version || github.ref_name }}
+          name: Ways & Means ${{ inputs.version || github.ref_name }}
           generate_release_notes: true
           files: dist/ways-and-means.html
           body: |
