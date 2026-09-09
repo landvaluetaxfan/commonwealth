@@ -478,35 +478,138 @@ const UI = (function () {
   }
 
   /* ---------- chamber ---------- */
+
+  /* WESTMINSTER, NOT A HEMICYCLE (bible 12.7, revised).
+
+     A semicircle renders parliament as a spectrum, which is exactly the wrong
+     reading of this chamber: confidence is binary and the whip panel next door
+     spends capital moving whole benches across a floor. Facing benches make
+     "who is in government" the first thing the diagram says.
+
+     Three bodies, because there are three:
+       government   coalition plus confidence-and-supply, above the floor
+       opposition   everyone else, below it
+       the bench    every functional member, crosswise at the Bar
+
+     Functional members sit apart whatever party badge they wear, because under
+     dual majority they are a separate electorate that must carry a measure
+     separately. Seating them with their party would hide the one fact the
+     player most needs: that a government majority is not a majority.
+
+     Glyph shape still carries tier (12.2's split visual language):
+     circle district, square list, triangle functional. */
   function drawChamber() {
-    const seats = [];
-    C.parties.forEach(p => {
-      const s = st.parties[p.id].seats;
-      for (let i = 0; i < s.district; i++) seats.push({ c: p.colour, t: "d" });
-      for (let i = 0; i < s.list; i++) seats.push({ c: p.colour, t: "l" });
-      for (let i = 0; i < s.functional; i++) seats.push({ c: p.colour, t: "f" });
+    const govIds = st.coalition.concat(st.confidenceSupply);
+
+    /* Largest party nearest the floor, so the front bench reads as the
+       despatch box rather than as an arbitrary content order. */
+    const bySize = ids => ids.slice().sort((a, b) =>
+      Engine.partyTotal(st, b) - Engine.partyTotal(st, a));
+
+    const gov = [], opp = [], cross = [];
+    const popular = (id, into) => {
+      const s = st.parties[id].seats, col = C.partyById[id].colour;
+      for (let i = 0; i < s.district; i++) into.push({ c: col, t: "d", p: id });
+      for (let i = 0; i < s.list; i++)     into.push({ c: col, t: "l", p: id });
+    };
+    const allIds = C.parties.map(p => p.id);
+    bySize(allIds.filter(id => govIds.includes(id))).forEach(id => popular(id, gov));
+    bySize(allIds.filter(id => !govIds.includes(id))).forEach(id => popular(id, opp));
+    bySize(allIds).forEach(id => {
+      const s = st.parties[id].seats, col = C.partyById[id].colour;
+      for (let i = 0; i < s.functional; i++) cross.push({ c: col, t: "f", p: id });
     });
-    const rows = [{ r: 96, n: 34 }, { r: 120, n: 42 }, { r: 144, n: 50 }, { r: 168, n: 58 }, { r: 192, n: 66 }, { r: 216, n: 30 }];
-    const total = rows.reduce((a, b) => a + b.n, 0);
-    while (seats.length < total) seats.push({ c: "var(--chrome-dk)", t: "d" });
-    let out = "", idx = 0, cx = 360, cy = 272;
-    rows.forEach(row => {
-      for (let i = 0; i < row.n; i++) {
-        const a = Math.PI - (i + 0.5) / row.n * Math.PI;
-        const x = cx + Math.cos(a) * row.r, y = cy - Math.sin(a) * row.r * 0.8;
-        const s = seats[idx++]; if (!s) continue;
-        if (s.t === "d") out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.1" fill="${s.c}" stroke="#2c2f28" stroke-width=".6"/>`;
-        else if (s.t === "l") out += `<rect x="${(x - 3.6).toFixed(1)}" y="${(y - 3.6).toFixed(1)}" width="7.2" height="7.2" fill="${s.c}" stroke="#2c2f28" stroke-width=".6"/>`;
-        else out += `<path d="M${x.toFixed(1)} ${(y - 4.6).toFixed(1)} L${(x + 4.4).toFixed(1)} ${(y + 3.4).toFixed(1)} L${(x - 4.4).toFixed(1)} ${(y + 3.4).toFixed(1)} Z" fill="${s.c}" stroke="#2c2f28" stroke-width=".6"/>`;
-      }
-    });
-    $("#hemi").innerHTML = out;
+
+    const glyph = (x, y, s) => {
+      const st_ = ` fill="${s.c}" stroke="#2c2f28" stroke-width=".6"`;
+      if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"${st_}/>`;
+      if (s.t === "l") return `<rect x="${(x-3.5).toFixed(1)}" y="${(y-3.5).toFixed(1)}" width="7" height="7"${st_}/>`;
+      return `<path d="M${x.toFixed(1)} ${(y-4.4).toFixed(1)}L${(x+4.2).toFixed(1)} ${(y+3.2).toFixed(1)}` +
+             `L${(x-4.2).toFixed(1)} ${(y+3.2).toFixed(1)}Z"${st_}/>`;
+    };
+
+    /* Benches run along the floor; rows stack away from it, front bench first. */
+    const X0 = 122, X1 = 556, PER = 42, STEP = (X1 - X0) / (PER - 1), ROW = 21;
+    function bench(seats, yFront, dir) {
+      let out = "";
+      seats.forEach((s, i) => {
+        const row = Math.floor(i / PER), col = i % PER;
+        out += glyph(X0 + col * STEP, yFront + dir * row * ROW, s);
+      });
+      return out;
+    }
+
+    /* The bench at the Bar: columns, filling away from the floor. */
+    function crossbench(seats, x0, yTop) {
+      let out = "", COLS = 5, CS = 19, RS = 17;
+      seats.forEach((s, i) => {
+        out += glyph(x0 + (i % COLS) * CS, yTop + Math.floor(i / COLS) * RS, s);
+      });
+      return out;
+    }
+
+    /* Geometry is derived from how many rows each side actually needs, so the
+       diagram tightens when a party crosses the floor instead of leaving a
+       hole where its benches used to be. */
+    const govRows = Math.max(1, Math.ceil(gov.length / PER));
+    const oppRows = Math.max(1, Math.ceil(opp.length / PER));
+    const crossRows = Math.max(1, Math.ceil(cross.length / 5));
+
+    const FLOOR = 40 + (govRows - 1) * ROW + 40;      // room for the government benches above
+    const GOV_FRONT = FLOOR - 40, OPP_FRONT = FLOOR + 40;
+    const govTop = GOV_FRONT - (govRows - 1) * ROW;
+    const oppBot = OPP_FRONT + (oppRows - 1) * ROW;
+
+    const CX = (X0 + X1) / 2;                          // bench centre, so the table sits on it
+    const TW = 340, TX = CX - TW / 2;
+    const crossTop = FLOOR - ((crossRows - 1) * 17) / 2;
+    const crossBot = crossTop + (crossRows - 1) * 17;
+
+    const H = Math.max(oppBot + 34, crossBot + 34, FLOOR + 60) + 12;
+    const svg = document.getElementById("chamber").ownerSVGElement ||
+                document.getElementById("chamber").parentNode;
+    svg.setAttribute("viewBox", `0 0 720 ${Math.round(H)}`);
+
+    const label = (x, y, t, cls) =>
+      `<text x="${x}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
+
+    $("#chamber").innerHTML =
+      /* the table of the House, centred on the benches, and the mace on it */
+      `<rect x="${TX}" y="${FLOOR-11}" width="${TW}" height="22" fill="#b9bcae" stroke="#75776e" stroke-width=".8"/>` +
+      `<line x1="${TX+26}" y1="${FLOOR}" x2="${TX+150}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2.4" stroke-linecap="round"/>` +
+      `<circle cx="${TX+26}" cy="${FLOOR}" r="4" fill="#8a6d24"/>` +
+      /* the two lines, two sword-lengths apart */
+      `<line x1="${X0-6}" y1="${FLOOR-26}" x2="${X1-20}" y2="${FLOOR-26}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      `<line x1="${X0-6}" y1="${FLOOR+26}" x2="${X1-20}" y2="${FLOOR+26}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      /* the Speaker holds the end */
+      `<rect x="42" y="${FLOOR-26}" width="34" height="52" rx="3" fill="#5d6152" stroke="#2c2f28" stroke-width="1"/>` +
+      `<rect x="49" y="${FLOOR-15}" width="20" height="30" rx="2" fill="#7d8271"/>` +
+      label(59, FLOOR + 42, "SPEAKER") +
+      bench(gov, GOV_FRONT, -1) +
+      bench(opp, OPP_FRONT, +1) +
+      crossbench(cross, 600, crossTop) +
+      label(CX, govTop - 15, "GOVERNMENT") +
+      label(CX, oppBot + 26, "OPPOSITION") +
+      label(638, crossTop - 17, "THE BENCH") +
+      label(638, crossBot + 26, "functional tier", "sub");
+
+    const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
+    const govN = gov.length, oppN = opp.length, crossN = cross.length;
+    $("#chamber-tally").innerHTML =
+      `<span class="ct gov">Government ${seatLine(govN, Engine.popularTotal(st))}</span>` +
+      `<span class="ct opp">Opposition ${seatLine(oppN, Engine.popularTotal(st))}</span>` +
+      `<span class="ct cross">Functional ${crossN}</span>` +
+      `<span class="ct">Majority ${Engine.majority(st)}</span>`;
+
     $("#chamber-legend").innerHTML = C.parties.map(p =>
-      `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}</span>`).join("");
+      `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}` +
+      `${govIds.includes(p.id) ? ' <i class="ingov">gov</i>' : ""}</span>`).join("");
+
     $("#comp-table").innerHTML =
       "<thead><tr><th>Party</th><th class='n'>Dist</th><th class='n'>List</th><th class='n'>Func</th><th class='n'>Tot</th></tr></thead><tbody>" +
       C.parties.map(p => { const s = st.parties[p.id].seats;
-        return `<tr><td>${sw(p.colour)}${p.name}</td><td class="n">${s.district}</td><td class="n">${s.list}</td>` +
+        return `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}><td>${sw(p.colour)}${p.name}</td>` +
+               `<td class="n">${s.district}</td><td class="n">${s.list}</td>` +
                `<td class="n">${s.functional}</td><td class="n"><b>${Engine.partyTotal(st, p.id)}</b></td></tr>`;
       }).join("") + "</tbody>";
   }

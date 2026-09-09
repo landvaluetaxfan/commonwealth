@@ -184,6 +184,25 @@ tr.sel td{background:#dfe4d3;}
 
 /* ---------- chamber ---------- */
 .legend{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:10px;padding:4px 5px;border-top:1px solid var(--chrome-dk);}
+
+/* --- the chamber (Westminster) --- */
+.chlab{font-family:var(--f-ui);font-size:9px;letter-spacing:.16em;fill:var(--ink-soft);
+  text-transform:uppercase;}
+.chlab.sub{font-size:8px;letter-spacing:.1em;fill:var(--chrome-dkr);text-transform:none;}
+.chtally{display:flex;flex-wrap:wrap;gap:2px 14px;font-family:var(--f-ui);font-size:10px;
+  letter-spacing:.06em;padding:5px 6px;border-top:1px solid var(--chrome-dk);
+  background:var(--chrome-lt);}
+.chtally .ct{white-space:nowrap;text-transform:uppercase;color:var(--ink-soft);}
+.chtally .ct .of{color:var(--chrome-dkr);}
+.chtally .gov::before,.chtally .opp::before,.chtally .cross::before{
+  content:"";display:inline-block;width:7px;height:7px;margin-right:5px;
+  vertical-align:baseline;border:1px solid #2c2f28;}
+.chtally .gov::before{background:var(--ok);}
+.chtally .opp::before{background:var(--alert);}
+.chtally .cross::before{background:var(--chrome-dkr);}
+.legend .ingov{font-style:normal;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ok);border:1px solid var(--ok);padding:0 3px;margin-left:3px;}
+tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .legend span{white-space:nowrap;}
 .seatkey{display:flex;gap:12px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:0 5px 4px;}
 .seatkey b{font-weight:normal;}

@@ -15,7 +15,9 @@ fork-rentiers are a new bloc (§10.5); the tooling section is rewritten (§15.5)
 
 **What changed in v4:** the file lives in the repository and is edited in place
 rather than re-uploaded (§0.3); cabinet-as-data is built and has left the open
-list (§16); §12.12 notes that `terminal.html` is not in the repository.
+list (§16); §12.12 notes that `terminal.html` is not in the repository; the
+parliament diagram becomes Westminster and seats the functional tier as its own
+body (§12.7).
 
 ---
 
@@ -1412,9 +1414,31 @@ which station depends on which anchor; leased tethers are dashed differently.
 Bands are staggered horizontally so no two stack their habitats in the same
 column. Labels are haloed so nothing crossing them destroys legibility.
 
-## 12.7 The parliament diagram — LOCKED
+## 12.7 The parliament diagram — LOCKED, revised v4
 
-Distinguish district, list, and functional members visually (circle, square, triangle). In a parallel system this instantly shows how brittle a caucus is — a bench of list members is loyal and rootless; a bench of district members has local bases and opinions. When someone defects, move them across the chamber. Coalition math made physical.
+**Westminster, not a hemicycle.** The chamber is drawn as facing benches with
+the Speaker holding the end, the table and mace on the floor between them, and
+the two lines two sword-lengths apart.
+
+The hemicycle was wrong for this chamber and was replaced. A semicircle renders
+a legislature as a *spectrum*, and nothing in this game is a spectrum:
+confidence is binary, the whip panel spends capital moving whole benches across
+a floor, and §3.5 makes losing a confidence vote a loss condition. Facing
+benches make "who is in government" the first thing the diagram says.
+
+**The functional tier sits crosswise at the Bar**, as its own body, whatever
+party badge its members wear. This is the load-bearing part. Under dual majority
+(§4.6.1) the functional bench is a separate electorate that must carry a measure
+separately, so seating those forty members with their parties would conceal the
+one fact the player most needs: **a government majority is not a majority.**
+The diagram should make a player who has just counted 141 look right and then
+look again.
+
+Glyph shape still carries tier per §12.2 — circle district, square list,
+triangle functional — so the split visual language survives the change.
+
+Geometry derives from the seat counts rather than being fixed, so the diagram
+tightens when a party crosses the floor instead of leaving a hole.
 
 ## 12.8 Documents — LOCKED
 
