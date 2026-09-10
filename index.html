@@ -93,7 +93,7 @@
           </div>
           <div class="panel">
             <h2><span id="bill-hdr"></span> <em id="bill-ref"></em></h2>
-            <div class="pbody" id="bill-detail" data-bill="divergence"></div>
+            <div class="pbody" id="bill-detail"></div>
           </div>
           <div class="panel">
             <h2>Order paper time <em>the currency that buys partners</em></h2>
@@ -201,7 +201,8 @@
               </div>
               <div id="cx-nav"></div>
             </div>
-            <div id="cx-body"><div id="cx-article"></div></div>
+            <div id="cx-body"><!-- tabindex -1: not a tab stop, but focus lands here
+              after a navigation so the keyboard starts at the new article --><div id="cx-article" tabindex="-1"></div></div>
           </div>
         </div>
       </div>
@@ -247,6 +248,7 @@
 <script src="content/index.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/focus.js"></script>
 <script src="js/orbitchart.js"></script>
 <script src="js/papers.js"></script>
 <script src="js/encyclopedia.js"></script>

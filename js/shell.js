@@ -202,6 +202,9 @@ const Shell = (function () {
     document.getElementById("menu").classList.remove("on");
     document.body.classList.remove("menu-on");
     document.getElementById("shell").classList.add("on");
+    /* A different game is a different set of rows; carrying the last
+       one's selection into it points at things that may not exist. */
+    if (typeof Focus !== "undefined") Focus.reset();
     if (typeof Papers !== "undefined") Papers.reset();
     UI.boot(state, C);
     if (!stateStr) saveNow(true);

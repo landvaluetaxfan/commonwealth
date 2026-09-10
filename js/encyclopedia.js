@@ -20,8 +20,8 @@ const Concordance = (function () {
     return String(text).replace(/\[\[([a-z0-9_]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
       const a = byId[id];
       return a
-        ? `<a class="cx-link" data-go="${id}">${label || a.title}</a>`
-        : `<a class="cx-link cx-red" data-go="${id}" title="This article does not exist.">${label || id}</a>`;
+        ? `<a class="cx-link" tabindex="0" data-go="${id}">${label || a.title}</a>`
+        : `<a class="cx-link cx-red" tabindex="0" data-go="${id}" title="This article does not exist.">${label || id}</a>`;
     });
   }
 
@@ -226,7 +226,7 @@ const Concordance = (function () {
     document.getElementById("cx-nav").innerHTML = keys.map(k =>
       `<div class="cx-navcat">${k}</div>` +
       cats[k].sort((p, q) => p.title.localeCompare(q.title)).map(a =>
-        `<a class="cx-navlink${a.id === current.id ? " on" : ""}" data-go="${a.id}">${a.title}` +
+        `<a class="cx-navlink${a.id === current.id ? " on" : ""}" tabindex="0" data-go="${a.id}">${a.title}` +
         (a.generated ? "" : " <em>&sect;</em>") + `</a>`).join("")
     ).join("");
   }
@@ -243,7 +243,7 @@ const Concordance = (function () {
 
     const toc = (a.sections || []).filter(s => s.h).length > 1
       ? `<nav class="cx-toc"><b>Contents</b><ol>` +
-        a.sections.filter(s => s.h).map((s, i) => `<li><a data-anchor="cx-s${i}">${s.h}</a></li>`).join("") +
+        a.sections.filter(s => s.h).map((s, i) => `<li><a tabindex="0" data-anchor="cx-s${i}">${s.h}</a></li>`).join("") +
         `</ol></nav>` : "";
 
     const body = (a.sections || []).map((s, i) =>
@@ -252,7 +252,7 @@ const Concordance = (function () {
     const see = (a.see || []).filter(id => byId[id]);
     const seeAlso = see.length
       ? `<h3>See also</h3><ul class="cx-see">${see.map(id =>
-          `<li><a class="cx-link" data-go="${id}">${byId[id].title}</a></li>`).join("")}</ul>` : "";
+          `<li><a class="cx-link" tabindex="0" data-go="${id}">${byId[id].title}</a></li>`).join("")}</ul>` : "";
 
     const ed = a.edited || {};
     const foot = `<div class="cx-foot">` +
@@ -272,8 +272,12 @@ const Concordance = (function () {
   }
 
   function bind() {
-    document.querySelectorAll("#cx-body [data-go]").forEach(n =>
-      n.addEventListener("click", () => { render(st, C, n.dataset.go); document.getElementById("cx-body").scrollTop = 0; }));
+    /* [data-go] IS NOT BOUND HERE. It used to be, and js/ui.js also had a
+       delegated capture listener for the same links, so one click ran the
+       whole render twice - measured with a calibrated MutationObserver:
+       two wholesale replacements of #cx-nav per click. Navigation belongs
+       to the delegated handler in ui.js, which is also what the keyboard
+       reaches through Focus. One path. */
     document.querySelectorAll("#cx-body [data-anchor]").forEach(n =>
       n.addEventListener("click", () => {
         const t = document.getElementById(n.dataset.anchor);

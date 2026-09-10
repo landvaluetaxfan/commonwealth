@@ -21,7 +21,19 @@
 const Papers = (function () {
   "use strict";
 
-  let st, C, sel = null, drawn = {}, onChange = null;
+  let st, C, drawn = {}, onChange = null;
+
+  /* THE REGISTER'S SELECTION LIVES IN Focus, not here. It used to be a
+     closure variable, which worked and was also the third of four
+     different places the game kept "which row is chosen" - see the
+     header of js/focus.js. One store, so a re-render can put the player
+     back where they were. */
+  Focus.region("pp-list", {
+    rows: "tr[data-doc]",
+    key: tr => tr.dataset.doc,
+    activate: () => render(st, C)
+  });
+  const chosen = () => Focus.selected("pp-list");
 
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -290,7 +302,15 @@ const Papers = (function () {
   function render(state, content) {
     st = state; C = content;
     const list = items();
-    if (!list.some(i => i.id === sel)) sel = list.length ? list[0].id : null;
+    /* The register grows and shrinks with the state: an instrument that
+       is revoked takes its row with it. If the chosen document is gone,
+       choose the first one - seeded rather than set, because we are
+       already inside the render it would otherwise trigger. */
+    let sel = chosen();
+    if (!list.some(i => i.id === sel)) {
+      sel = list.length ? list[0].id : null;
+      Focus.seed("pp-list", sel);
+    }
 
     document.getElementById("pp-list").innerHTML = list.length ? list.map(i =>
       `<tr class="${i.id === sel ? "sel" : ""}" data-doc="${i.id}">
@@ -301,7 +321,7 @@ const Papers = (function () {
       : `<tr><td class="note">The register is empty. Divisions and instruments appear here.</td></tr>`;
 
     document.getElementById("pp-list").querySelectorAll("[data-doc]").forEach(n =>
-      n.addEventListener("click", () => { sel = n.dataset.doc; render(st, C); }));
+      n.addEventListener("click", () => Focus.activate("pp-list", n.dataset.doc)));
 
     const it = list.find(i => i.id === sel);
     const box = document.getElementById("pp-doc");
@@ -329,7 +349,10 @@ const Papers = (function () {
     if (doc.ceremonial || doc.drawSig) {
       const paper = box.querySelector(".paper");
       const path = box.querySelector("#sigpath") || box.querySelector(".sigpath");
-      if (path && paper) {
+      /* getTotalLength is SVG geometry, which a DOM without layout does
+         not implement — the same shape of absence as Web Audio in a
+         headless run. A missing flourish is never worth an exception. */
+      if (path && paper && typeof path.getTotalLength === "function") {
         const len = path.getTotalLength();
         paper.style.setProperty("--len", len);
         if (drawn[it.id]) paper.classList.add("sig-done");
@@ -341,7 +364,7 @@ const Papers = (function () {
     }
   }
 
-  function reset() { drawn = {}; sel = null; }
+  function reset() { drawn = {}; Focus.seed("pp-list", null); }
   function onUpdate(fn) { onChange = fn; }
 
   return { render, reset, onUpdate };

@@ -60,33 +60,77 @@ const UI = (function () {
     }, true);
     /* Saving, loading and starting a game belong to Shell now — they are
        session concerns, not rendering ones, and they live in the topbar. */
+
+    /* THE THREE TABLES WHOSE ROWS ARE CONTROLS. A region is the container,
+       how to find its rows, what identifies one, and what activating it
+       does. Focus owns the selection and the keyboard from here; this
+       file keeps the knowledge of what a bill or a station is, which is
+       the only reason the fallbacks are functions and not strings. */
+    Focus.region("gov-bills", {
+      rows: "tr[data-bill]",
+      key: tr => tr.dataset.bill,
+      fallback: () => (C.bills[0] || {}).id,
+      /* The whole panel, not just the detail. drawBill renders #bill-detail
+         alone, so activating from it left the list's own highlight on the
+         previous row - which is how the hardcoded one went unnoticed for so
+         long. The renderer owns .sel; the way to move it is to re-render. */
+      /* drawStatus too: the ambient line names the open bill, so a
+         selection that does not refresh it leaves the status bar
+         describing the bill you just navigated away from. */
+      activate: () => { drawGovernment(); drawStatus(); }
+    });
+    Focus.region("orbit-table", {
+      rows: "tr[data-station]",
+      key: tr => tr.dataset.station,
+      fallback: () => (C.stations[0] || {}).id,
+      activate: id => pickStation(id)
+    });
+    Focus.wire();
+
+    /* THE CONCORDANCE, in one function instead of four copies of it.
+       Every way of getting to an article - a link in the body, a link in
+       the nav, the search box, the back button - ends here, and the
+       article takes focus afterwards so a keyboard reader lands at the
+       top of what they just opened rather than at the top of the page. */
+    const goCx = (id, push) => {
+      if (!id) return;
+      cxCurrent = id;
+      Focus.around(() => Concordance.render(st, C, cxCurrent, push));
+      $("#cx-body").scrollTop = 0;      /* after the restore, deliberately */
+      const a = $("#cx-article"); if (a) a.focus({ preventScroll: true });
+    };
     const goSearch = () => {
       const hit = Concordance.search($("#cx-q").value);
-      if (hit) { cxCurrent = hit; Concordance.render(st, C, cxCurrent, true); $("#cx-body").scrollTop = 0; }
-      else $("#cx-q").select();
+      if (hit) goCx(hit, true); else $("#cx-q").select();
     };
     $("#cx-goto").addEventListener("click", goSearch);
     $("#cx-q").addEventListener("keydown", e => { if (e.key === "Enter") goSearch(); });
+    /* Capture, because the article this is on is about to be replaced. */
     document.getElementById("cx-body").addEventListener("click", e => {
       const g = e.target.closest("[data-go]");
-      if (g) { cxCurrent = g.dataset.go; Concordance.render(st, C, cxCurrent, true); $("#cx-body").scrollTop = 0; }
+      if (g) goCx(g.dataset.go, true);
     }, true);
-    $("#cx-back").addEventListener("click", () => {
-      const prev = Concordance.back();
-      if (prev) { cxCurrent = prev; Concordance.render(st, C, cxCurrent, false); $("#cx-body").scrollTop = 0; }
-    });
+    $("#cx-back").addEventListener("click", () => goCx(Concordance.back(), false));
     document.getElementById("cx-nav").addEventListener("click", e => {
       const g = e.target.closest("[data-go]");
-      if (g) { cxCurrent = g.dataset.go; Concordance.render(st, C, cxCurrent, true); $("#cx-body").scrollTop = 0; }
+      if (g) goCx(g.dataset.go, true);
     });
 
     drawAll();
   }
 
+  /* EVERY REDRAW GOES THROUGH Focus.around. This is the one place that
+     needs to know it: twenty-five containers are about to be replaced,
+     and whatever the player had hold of has to be given back afterwards.
+     Nested redraws - a bill detail inside a government redraw - are
+     absorbed by the wrapper's own depth count, so the capture happens
+     once on the outside and not four times. */
   function drawAll() {
-    drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
-    if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
-    if (typeof Papers !== "undefined") Papers.render(st, C);
+    Focus.around(() => {
+      drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
+      if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
+      if (typeof Papers !== "undefined") Papers.render(st, C);
+    });
   }
 
   /* ---------- title / status ---------- */
@@ -165,7 +209,7 @@ const UI = (function () {
   function ambient() {
     const note = SCREEN_NOTE[screen] || "";
     if (screen !== "gov" && screen !== "cham") return note;
-    const id = ($("#bill-detail") && $("#bill-detail").dataset.bill) || "divergence";
+    const id = Focus.selected("gov-bills");
     const b = (C.bills || []).find(x => x.id === id);
     if (!b) return note;
     return b.title + " \u2014 " + (b.dualMajority ? "dual test applies" : "simple majority");
@@ -255,21 +299,29 @@ const UI = (function () {
     });
     $("#gov-currents").innerHTML = ch + "</tbody>";
 
+    /* WHICH BILL IS OPEN. This used to be the string "divergence", hard
+       coded, so the order paper marked the same row for the whole of a
+       game however many other bills you opened. The renderer asks the
+       selection store, and the store asks content for its default. */
+    const sel = Focus.selected("gov-bills");
     let bh = "<thead><tr><th>Bill</th><th>Stage</th><th class='n'>Pop.</th><th class='n'>Func.</th><th>Test</th></tr></thead><tbody>";
     C.bills.forEach(b => {
       const bs = st.bills[b.id];
       const d = Engine.division(st, C, b.id);
       const dead = bs.dead || bs.stage === "withdrawn";
-      bh += `<tr class="${b.id === "divergence" ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
+      bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
         `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
         `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
         `<td><span class="flag ${b.dualMajority ? "bad" : ""}">${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
     });
     $("#gov-bills").innerHTML = bh + "</tbody>";
+    /* ONE activation path. A click and an Enter both land in
+       Focus.activate, which sets the selection, redraws, and leaves
+       focus on the row it just opened. */
     $("#gov-bills").querySelectorAll("tr[data-bill]").forEach(tr =>
-      tr.addEventListener("click", () => drawBill(tr.dataset.bill)));
+      tr.addEventListener("click", () => Focus.activate("gov-bills", tr.dataset.bill)));
 
-    drawBill($("#bill-detail").dataset.bill || "divergence");
+    drawBill(sel);
 
     const meters = [
       ["Party loyalty", "party_loyalty", 15], ["Public standing", "public_standing", 20],
@@ -388,7 +440,6 @@ const UI = (function () {
   function drawBill(id) {
     const b = C.billById[id], bs = st.bills[id], d = Engine.division(st, C, id);
     const det = $("#bill-detail");
-    det.dataset.bill = id;
     $("#bill-hdr").textContent = b.title;
     $("#bill-ref").textContent = b.ref;
     det.innerHTML =
@@ -835,11 +886,14 @@ const UI = (function () {
   function drawOrbit() {
     /* No hardcoded content id here: the engine names no station and neither
        should the renderer. */
-    const selId = $("#station-detail").dataset.station || C.stations[0].id;
+    const selId = Focus.selected("orbit-table");
     $("#orbit-chart").innerHTML = OrbitChart.render(st, C, selId);
     $("#orbit-key").innerHTML = OrbitChart.key();
+    /* The schematic's chips select a station without stealing focus: the
+       player clicked a chip, not a row, and dragging their place into a
+       table they were not looking at is not help. */
     $("#orbit-chart").querySelectorAll("[data-station]").forEach(n =>
-      n.addEventListener("click", () => pickStation(n.dataset.station)));
+      n.addEventListener("click", () => Focus.set("orbit-table", n.dataset.station)));
 
     const seats = C.stations.reduce((n, s0) => n + s0.seats, 0);
     $("#orbit-count").textContent = `${C.stations.length} \u00b7 ${seats} seats`;
@@ -854,14 +908,15 @@ const UI = (function () {
           `<td class="n">${s.seats}</td></tr>`;
       }).join("") + "</tbody>";
     $("#orbit-table").querySelectorAll("tr[data-station]").forEach(tr =>
-      tr.addEventListener("click", () => pickStation(tr.dataset.station)));
+      tr.addEventListener("click", () => Focus.activate("orbit-table", tr.dataset.station)));
 
     drawStation(selId);
     drawSeats(selId);
   }
 
-  /* A player action, not a redraw: it may make a sound and it may write the
-     status line. drawOrbit(), which it calls, may do neither. */
+  /* The orbit region's activate. A player action, not a redraw: it may
+     make a sound and it may write the status line. drawOrbit(), which it
+     calls, may do neither. */
   function pickStation(id) {
     drawStation(id); drawSeats(id); drawOrbit();
     const s = st.stations[id];
@@ -882,7 +937,7 @@ const UI = (function () {
      what stops this one changing height with the seat count. */
   function drawStation(id) {
     const s = st.stations[id];
-    const d = $("#station-detail"); d.dataset.station = id;
+    const d = $("#station-detail");
     $("#station-hdr").textContent = s.name;
     $("#station-sub").textContent =
       (s.type === "bundled" ? `bundled, ${s.settlements} settlements` : s.type) +

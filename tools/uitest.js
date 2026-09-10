@@ -35,7 +35,7 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/index.js",
-  "js/audio.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/audio.js","js/focus.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -362,6 +362,160 @@ try {
     .concat(css2.match(/[^}]*:focus[a-z-]*[^{}]*\{[^}]*transition[^}]*\}/g) || []);
   ok("no transition on a selection or a focus state", anim.length === 0, anim.join(" | "));
 } catch (e) { ok("selection semantics", false, e.message); }
+
+/* FOCUS RESTORATION.
+
+   drawAll() replaces twenty-five containers on every state change, so
+   before this phase focus went to document.body every single time. These
+   are the two cases that matter: the row is still there, and the row is
+   gone. */
+try {
+  /* --- the row survives --- */
+  w.eval(`
+    var rows = Focus.rows("orbit-table");
+    window.__key = rows[8].dataset.station;
+    Focus.activate("orbit-table", window.__key);
+    window.__before = document.activeElement.getAttribute("data-station");
+  `);
+  ok("activating a row puts focus on it",
+     w.eval("window.__before") === w.eval("window.__key"), w.eval("window.__before"));
+
+  w.eval("Engine.advance(UI.state(), CONTENT); UI.boot(UI.state(), CONTENT);");
+  const after = w.eval('document.activeElement.getAttribute && document.activeElement.getAttribute("data-station")');
+  ok("focus is on the same logical row after a full state advance",
+     after === w.eval("window.__key"),
+     "wanted " + w.eval("window.__key") + ", got " +
+     (w.document.activeElement === w.document.body ? "document.body" : after));
+  ok("and the selection is on that row too",
+     w.eval('Focus.selected("orbit-table")') === w.eval("window.__key"));
+
+  /* --- the row is gone ---
+     The register is state-shaped: making an instrument adds a row and
+     unmaking it takes that row away. Focus should land beside where it
+     was, never on the body. */
+  w.eval(`
+    var st = UI.state();
+    window.__si = Object.keys(st.instruments)[0];
+    st.instruments[window.__si].made = true;
+    st.instruments[window.__si].madeAt = st.sitting;
+    UI.boot(st, CONTENT);
+    Focus.activate("pp-list", window.__si);
+    window.__had = document.activeElement.getAttribute("data-doc");
+    window.__siblings = Focus.rows("pp-list").length;
+  `);
+  ok("the register carries the instrument, and it has focus",
+     w.eval("window.__had") === w.eval("window.__si") && w.eval("window.__siblings") > 1,
+     w.eval("window.__had") + " of " + w.eval("window.__siblings") + " rows");
+
+  w.eval(`
+    var st2 = UI.state();
+    st2.instruments[window.__si].made = false;
+    Engine.advance(st2, CONTENT);
+    UI.boot(st2, CONTENT);
+  `);
+  const gone = w.document.activeElement;
+  ok("the row is gone", w.eval(`Focus.rowFor("pp-list", window.__si)`) === null);
+  ok("focus landed on a surviving sibling, not the body",
+     gone !== w.document.body && !!gone.closest && !!gone.closest("#pp-list"),
+     gone === w.document.body ? "document.body" : gone.tagName + " " + (gone.id || gone.className));
+
+  /* --- scroll ---
+     Reproduces the real failure deterministically: a render clobbers the
+     scroll position (a browser clamps it when the new content is
+     shorter), and the wrapper has to put it back. */
+  const scrollers = w.eval(`
+    (function () {
+      var ns = [].slice.call(document.querySelectorAll(
+        "#viewport,.pbody,#cx-body,#cx-side,#pp-doc,.callsheet,#tabstrip"));
+      ns.forEach(function (n, i) { n.scrollTop = 40 + i; });
+      Focus.around(function () { ns.forEach(function (n) { n.scrollTop = 0; }); });
+      return ns.filter(function (n, i) { return n.scrollTop !== 40 + i; }).length +
+             "/" + ns.length;
+    })()
+  `);
+  ok("scroll survives a re-render on every scrollable panel",
+     scrollers.split("/")[0] === "0" && +scrollers.split("/")[1] > 4,
+     scrollers.split("/")[1] + " panels, " + scrollers.split("/")[0] + " lost");
+} catch (e) { ok("focus restoration", false, e.message); }
+
+/* THE CONCORDANCE WITHOUT A MOUSE.
+
+   101 links against 3 focusable controls before this phase: the article
+   links are <a> with no href, which are not focusable and not
+   activatable. tabindex makes them reachable and Enter sends them down
+   the delegated click path the mouse already uses - not a second one. */
+try {
+  /* the harness stubs anchor clicks so that a download link cannot throw;
+     deleting the override falls back to HTMLElement's real one. */
+  delete w.HTMLAnchorElement.prototype.click;
+
+  const links = [...w.document.querySelectorAll("#s-cx [data-go], #s-cx [data-anchor]")];
+  const unreachable = links.filter(a => a.getAttribute("tabindex") !== "0");
+  ok("every Concordance link is a tab stop", links.length > 50 && unreachable.length === 0,
+     links.length + " links, " + unreachable.length + " unreachable");
+
+  const nav = w.document.querySelector("#cx-nav .cx-navlink:not(.on)[data-go]");
+  const want = nav.dataset.go;
+  nav.focus();
+  ok("a Concordance link can take focus", w.document.activeElement === nav);
+  nav.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  ok("Enter follows the link", !!w.document.querySelector('#cx-nav .cx-navlink.on[data-go="' + want + '"]'),
+     "wanted " + want);
+  ok("and focus moves into the article it opened",
+     w.document.activeElement === w.document.getElementById("cx-article"),
+     w.document.activeElement.id || w.document.activeElement.tagName);
+
+  /* ONE ACTIVATION PATH. #cx-body links used to be bound twice - a
+     delegated capture listener in ui.js and a per-node bubble listener in
+     encyclopedia.js - so a single click rendered the article twice. */
+  const src = fs.readFileSync(path.join(root, "js/encyclopedia.js"), "utf8");
+  ok("the Concordance binds [data-go] in exactly one file",
+     !/querySelectorAll\("#cx-body \[data-go\]"\)/.test(src));
+} catch (e) { ok("Concordance keyboard navigation", false, e.message); }
+
+/* ENTER AND A CLICK REACH THE SAME HANDLER, ONCE EACH.
+
+   The failure this guards against is a keyboard path that both calls the
+   handler and synthesises a click, so one press does the thing twice. */
+try {
+  w.eval(`
+    window.__hits = [];
+    Focus.region("pp-list", { rows: "tr[data-doc]", key: function (tr) { return tr.dataset.doc; },
+                              activate: function (k) { window.__hits.push(k); } });
+    var rows = Focus.rows("pp-list");
+    window.__pick = rows[rows.length - 1].dataset.doc;
+    window.__hits.length = 0;
+    rows[rows.length - 1].click();
+  `);
+  ok("a click fires the handler exactly once",
+     w.eval("window.__hits.length") === 1 && w.eval("window.__hits[0]") === w.eval("window.__pick"),
+     JSON.stringify(w.eval("window.__hits")));
+
+  w.eval(`
+    window.__hits.length = 0;
+    var r = Focus.rowFor("pp-list", window.__pick);
+    r.focus();
+    r.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  `);
+  ok("and Enter fires the same handler exactly once",
+     w.eval("window.__hits.length") === 1 && w.eval("window.__hits[0]") === w.eval("window.__pick"),
+     JSON.stringify(w.eval("window.__hits")));
+
+  w.eval(`
+    window.__hits.length = 0;
+    var r2 = Focus.rowFor("pp-list", window.__pick);
+    r2.focus();
+    r2.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+  `);
+  ok("an arrow key moves selection by one, once",
+     w.eval("window.__hits.length") === 1 && w.eval("window.__hits[0]") !== w.eval("window.__pick"),
+     JSON.stringify(w.eval("window.__hits")));
+
+  /* put the real region back */
+  w.eval(`Focus.region("pp-list", { rows: "tr[data-doc]",
+     key: function (tr) { return tr.dataset.doc; },
+     activate: function () { Papers.render(UI.state(), CONTENT); } });`);
+} catch (e) { ok("one activation path", false, e.message); }
 
 /* TAB ORDER AND FOCUS.
 

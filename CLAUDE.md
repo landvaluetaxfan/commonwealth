@@ -98,6 +98,8 @@ js/coverage.js        what-to-do-next analysis
 js/orbitchart.js      the habitat schematic
 js/shell.js           main menu, save slots, options, player preferences
 js/audio.js           the sound bus. Read its header before adding a cue.
+js/focus.js           what survives a re-render: focus, selection, scroll.
+                      The only selection store. Read its header first.
 tools/                checks, index generator, image pipeline, bundle
 ```
 
@@ -153,6 +155,25 @@ Kept here because they will otherwise happen again.
   `.vacant` and the editor's `.here` say what they mean, and each differs from
   the others in form as well as hue. `tools/uitest.js` fails if a row carries
   `.sel` without being clickable, or if a fourth `"sel"` literal appears.
+
+- Every renderer replaces its container wholesale, so focus lands on
+  document.body after every state change unless something puts it back.
+  `js/focus.js` does, by DATA KEY and never by index — the row at position
+  four after a render may be a different bill. It also owns the selection,
+  because selection used to live in four places in three mechanisms and
+  nothing kept them in step; that is how the order paper came to hardcode
+  its highlight to one bill and mark the wrong row for a whole game.
+- `.focus()` scrolls its target into view. Restoring focus to a row below
+  the fold therefore undoes a scroll position restored a line earlier —
+  measured at 0 becoming 676 on the station roster. Restore focus with
+  `{preventScroll: true}`, restore scroll after it, and scroll into view
+  only when the player asked to move.
+- Two listeners for one action is not twice as safe. `[data-go]` in the
+  Concordance was bound both by a delegated capture listener in `js/ui.js`
+  and per-node in `js/encyclopedia.js`, so every link click rendered the
+  article twice — invisibly, because both renders produced the same page.
+  A keyboard path must reach the existing handler (`el.click()`), never
+  add a second one. `tools/uitest.js` counts handler calls.
 
 - Sound is triggered by engine effects and user actions ONLY. Nothing reachable
   from `drawAll()` may make a noise — a redraw happens on a tab switch, on a
