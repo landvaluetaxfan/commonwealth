@@ -610,14 +610,18 @@ const UI = (function () {
     const crossRows = Math.max(1, Math.ceil(cross.length / 5));
 
     const X0 = 66;                                    // clear of the Chair
-    const GAP = 26;                                   // floor to front bench
+    /* THE FLOOR IS EMPTY. There was a table of the House with the mace on
+       it and two dashed sword lines, and none of it carried information:
+       the diagram already says who is in government by which side of the
+       gap they sit on. The gap is now narrow enough to read as facing
+       benches rather than as two unrelated blocks. */
+    const GAP = 17;                                   // floor to front bench
     const FLOOR = 24 + (ROWS - 1) * RH + GAP;   // headroom for the label
     const govFront = FLOOR - GAP, oppFront = FLOOR + GAP;
     const govTop = govFront - (ROWS - 1) * RH;
     const oppBot = oppFront + (ROWS - 1) * RH;
 
     const CX = X0 + benchW / 2 - CW / 2;              // bench centre
-    const TW = Math.min(benchW - 60, 170), TX = CX - TW / 2;
 
     const crossX = X0 + benchW + 30;
     const crossTop = FLOOR - ((crossRows - 1) * 10.5) / 2;
@@ -642,13 +646,6 @@ const UI = (function () {
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
 
     $("#chamber").innerHTML =
-      /* the table of the House, centred on the benches, and the mace on it */
-      `<rect x="${TX.toFixed(0)}" y="${FLOOR-6}" width="${TW.toFixed(0)}" height="12" fill="#b9bcae" stroke="#75776e" stroke-width=".8"><title>Table of the House, with the mace on it</title></rect>` +
-      `<line x1="${(TX+14).toFixed(0)}" y1="${FLOOR}" x2="${(TX+TW-14).toFixed(0)}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2" stroke-linecap="round"><title>The mace</title></line>` +
-      `<circle cx="${(TX+14).toFixed(0)}" cy="${FLOOR}" r="3" fill="#8a6d24"/>` +
-      /* the two lines, two sword-lengths apart */
-      `<line x1="${X0-8}" y1="${FLOOR-15}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR-15}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
-      `<line x1="${X0-8}" y1="${FLOOR+15}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR+15}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
       /* the Chair holds the end, one member and not a piece of furniture */
       (chair ? glyph(30, FLOOR, chair) : "") +
       label(30, FLOOR + 17, "SPEAKER") +

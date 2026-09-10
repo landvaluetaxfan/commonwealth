@@ -110,7 +110,11 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
 .g-gov{grid-template-columns:300px minmax(0,1.3fr) 300px;}
-.g-cham{grid-template-columns:minmax(0,1fr) 300px;}
+/* The seating plan is drawn at a fixed size and the composition tables were
+   cramped into 300px beside it, so the one panel that could not use its
+   width had most of it and the two that could had none. Three columns
+   instead, with the plan on the remainder. */
+.g-cham{grid-template-columns:minmax(0,660px) minmax(250px,310px) minmax(0,500px);}
 .g-orb{
   grid-template-columns:216px minmax(0,1fr) 268px;
   grid-template-rows:minmax(0,1fr) auto;
@@ -285,7 +289,6 @@ tr.sel td{background:#dfe4d3;}
 tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .legend span{white-space:nowrap;}
 .seatkey{display:flex;gap:12px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:0 5px 4px;}
-.seatkey b.mace{color:var(--ink-soft);letter-spacing:0;text-transform:none;}
 .seatkey b{font-weight:normal;}
 
 /* ---------- ORBIT: the technical drawing ---------- */
