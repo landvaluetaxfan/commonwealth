@@ -214,7 +214,7 @@ opencode's lane, per `AGENTS.md`. Engine work above is worthless without it.
 
 ## PART E — ACCEPTANCE
 
-The seven checks must all pass. Added by this phase and not to be regressed:
+The eight checks must all pass. Added by this phase and not to be regressed:
 
 | check | assertion |
 |---|---|

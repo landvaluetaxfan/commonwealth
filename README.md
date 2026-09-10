@@ -69,7 +69,7 @@ takes `js/`, `tools/`, tests and structural work; **opencode** takes
 
 ```
 npm install      # once, for jsdom
-npm run check    # all seven, about three seconds
+npm run check    # all eight, about three seconds
 ```
 
 | | |
