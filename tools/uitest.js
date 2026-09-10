@@ -35,7 +35,7 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/index.js",
-  "js/audio.js","js/focus.js","js/stream.js","js/wait.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/audio.js","js/focus.js","js/stream.js","js/wait.js","js/tips.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -159,8 +159,8 @@ try {
 try {
   $("#tb-options").click();
   const boxes = w.document.querySelectorAll("#tb-optpanel [data-opt]").length;
-  /* six now: autosave, animations, confirm, mute, room tone, type text out */
-  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 6,
+  /* seven: autosave, animations, confirm, explain, mute, room tone, type out */
+  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 7,
      boxes + " toggles");
 } catch (e) { ok("options panel opens", false, e.message); }
 
@@ -629,6 +629,108 @@ try {
             'Stream.reveal(d, {}); var t = d.textContent; Shell.setOpt("stream", true);' +
             'd.remove(); return t; })()') === "a sentence that would take a moment");
 } catch (e) { ok("the teletype", false, e.message); }
+
+/* THE TERMINAL EXPLAINING ITSELF.
+
+   The failure this guards against is a data-tip attribute pointing at a
+   key nobody wrote, which shows nothing and looks exactly like a token
+   that simply has no explanation yet. Every annotation on the page has to
+   resolve, and every article a tip names has to exist. */
+try {
+  const anchors = [...w.document.querySelectorAll("#shell [data-tip]")];
+  const keys = [...new Set(anchors.map(a => a.getAttribute("data-tip")))];
+  ok("the readouts are annotated", anchors.length > 20 && keys.length > 10,
+     anchors.length + " anchors, " + keys.length + " distinct keys");
+
+  const dangling = keys.filter(k => !w.eval('Tips.find("' + k + '")'));
+  ok("every annotation resolves to an explanation", dangling.length === 0,
+     dangling.join(", "));
+
+  /* A tip may hand off to the Concordance rather than restate it. If it
+     names an article, the article has to be there. */
+  const bad = w.eval(`
+    (function () {
+      return Tips.keys().map(function (k) {
+        var t = Tips.find(k);
+        if (!t || !t.go) return null;
+        return CONTENT.encyclopediaById[t.go] ? null : k + " -> " + t.go;
+      }).filter(Boolean).join(", ");
+    })()
+  `);
+  ok("every Concordance hand-off names a real article", bad === "", bad);
+
+  /* THE FALLTHROUGH: the terminal explains the terminal, the world
+     explains the world. An entry with no body of its own has to come back
+     with the glossary's or the Concordance's words. */
+  const dual = w.eval('Tips.find("dual")');
+  ok("a world term falls through to the Concordance",
+     dual && dual.body.length > 30 && dual.go === "dual_majority",
+     dual && dual.body.slice(0, 50));
+  const closure = w.eval('Tips.find("closure")');
+  ok("and to the glossary when that is where it lives",
+     closure && closure.body.length > 20, closure && closure.body.slice(0, 50));
+  const loyalty = w.eval('Tips.find("loyalty")');
+  ok("a terminal term is explained here, in terms of the engine",
+     loyalty && /75/.test(loyalty.body) && /100/.test(loyalty.body),
+     loyalty && loyalty.body.slice(0, 50));
+
+  /* KEYBOARD PARITY, and the mode that buys it. A tooltip only a mouse
+     can reach is a reward for owning a mouse; a column heading that is
+     permanently in the tab order is fifty stops between the player and
+     the button they wanted. ? is the trade. */
+  w.eval('Shell.setOpt("tips", true);');
+  /* Only the screen you are looking at is marked - putting a hidden tab's
+     headings into the tab order would be worse than not marking them. */
+  w.document.querySelector('.tab[data-t="gov"]').click();
+  const th = w.document.querySelector("#gov-bills th[data-tip]");
+  ok("a heading is not a tab stop by default", th.getAttribute("tabindex") === null);
+
+  w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "?", bubbles: true }));
+  ok("? puts the readouts into the tab order",
+     w.eval("Tips.explaining()") === true && th.getAttribute("tabindex") === "0",
+     "tabindex " + th.getAttribute("tabindex"));
+  const marked = [...w.document.querySelectorAll('[data-tip][tabindex="0"]')];
+  ok("all of the ones on screen, and none with a positive value", marked.length > 12 &&
+     marked.every(n => n.getAttribute("tabindex") === "0"), marked.length + " marked");
+  const hidden = [...w.document.querySelectorAll('.screen:not(.on) [data-tip][tabindex]')];
+  ok("and nothing on a screen you cannot see", hidden.length === 0, hidden.length + " marked");
+
+  th.focus();
+  const cardShown = w.document.getElementById("tipcard");
+  ok("focusing an annotated readout shows the card",
+     !!cardShown && cardShown.hidden === false,
+     !cardShown ? "no card" : cardShown.hidden ? "still hidden" : "");
+  ok("and the card says which readout it is describing",
+     th.getAttribute("aria-describedby") === "tipcard");
+
+  /* The mode has to survive a redraw, because a redraw replaces every one
+     of the nodes it just marked. */
+  w.eval("UI.boot(UI.state(), CONTENT)");
+  const th2 = w.document.querySelector("#gov-bills th[data-tip]");
+  ok("and the mode survives a re-render", th2.getAttribute("tabindex") === "0");
+
+  w.document.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  ok("Escape leaves the mode and takes the tab stops with it",
+     w.eval("Tips.explaining()") === false &&
+     w.document.querySelector("#gov-bills th[data-tip]").getAttribute("tabindex") === null);
+  ok("and the card is down", w.document.getElementById("tipcard").hidden === true);
+
+  /* The card must never become a place focus can land. */
+  const css = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  ok("the card cannot be hovered or clicked", /#tipcard\{[^}]*pointer-events:none/.test(css));
+  const tsrc = fs.readFileSync(path.join(root, "js/tips.js"), "utf8");
+  ok("and is never given a tabindex", !/tipcard[\s\S]{0,300}tabindex/.test(tsrc));
+
+  /* Off means off. */
+  w.eval('Shell.setOpt("tips", false);');
+  w.eval("Tips.hide()");
+  th.focus();
+  ok("turning them off turns them off",
+     w.document.getElementById("tipcard").hidden === true);
+  const stored = JSON.parse(w.localStorage.getItem("wm.opts") || "{}");
+  ok("and that is a player preference, not save state", stored.tips === false);
+  w.eval('Shell.setOpt("tips", true);');
+} catch (e) { ok("tips", false, e.message); }
 
 /* TAB ORDER AND FOCUS.
 

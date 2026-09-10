@@ -103,6 +103,8 @@ js/focus.js           what survives a re-render: focus, selection, scroll.
 js/stream.js          text arriving a character at a time. Never called
                       from a renderer; see its header for why.
 js/wait.js            the three ways the terminal says it is thinking.
+js/tips.js            what the abbreviations mean. Explains the TERMINAL;
+                      defers to the Concordance for the WORLD.
 tools/                checks, index generator, image pipeline, bundle
 ```
 
@@ -198,6 +200,21 @@ Kept here because they will otherwise happen again.
   on `file://`, `fetch()` and `XMLHttpRequest` both fail — measured — which
   is the same reason content is `.js` and not `.json`. Base64 in a `.js`
   file, through `atob` into `decodeAudioData`, is the route that works.
+
+- A tooltip only a mouse can reach is a reward for owning a mouse, and a
+  column heading permanently in the tab order is fifty stops between the
+  player and the button they wanted. `?` is the trade: it puts the annotated
+  readouts on the visible screen into the tab order and takes them out
+  again. Only the visible screen — marking a hidden tab's headings puts
+  unreachable nodes in the tab order.
+- `js/tips.js` explains the TERMINAL — what a column is, what a number does.
+  The Concordance and the glossary explain the WORLD. A tip with no body of
+  its own falls through to the glossary, then to the Concordance article of
+  the same id, so nothing restates canon and nothing invents any (§2.7).
+  `tools/uitest.js` fails on a `data-tip` key that resolves to nothing, which
+  is otherwise indistinguishable from a token with no explanation yet.
+- `CONTENT.encyclopedia` is an OBJECT — `meta`, `banners`, `articles` — not a
+  list. `content/index.js` indexes `.articles`.
 
 - Sound is triggered by engine effects and user actions ONLY. Nothing reachable
   from `drawAll()` may make a noise — a redraw happens on a tab switch, on a

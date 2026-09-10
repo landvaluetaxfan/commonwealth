@@ -22,6 +22,10 @@ const CONTENT = (function () {
   C.billById = idx(BILLS);
   C.eventById = idx(EVENTS);
   C.functionalById = (C.functional||[]).reduce((m,f)=>(m[f.id]=f,m),{});
+  /* the authored articles only; the Concordance generates its own for
+     parties, stations and persons and keeps those to itself. The
+     encyclopedia is an OBJECT - meta, banners, articles - not a list. */
+  C.encyclopediaById = ((C.encyclopedia||{}).articles||[]).reduce((m,a)=>(m[a.id]=a,m),{});
   C.glossaryByTerm = GLOSSARY.reduce((m,g)=>(m[g.term.toLowerCase()]=g,m),{});
   return C;
 })();

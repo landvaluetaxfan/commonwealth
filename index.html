@@ -220,15 +220,15 @@
   </div>
 
   <div id="statusbar">
-    <span id="sb-state">READY</span>
-    <span id="sb-chapter"></span>
-    <span id="sb-slots"></span>
-    <span id="sb-sig"></span>
-    <span id="sb-conf"></span>
-    <span id="sb-margin"></span>
+    <span id="sb-state" data-tip="state">READY</span>
+    <span id="sb-chapter" data-tip="chapter"></span>
+    <span id="sb-slots" data-tip="slots"></span>
+    <span id="sb-sig" data-tip="signatures"></span>
+    <span id="sb-conf" data-tip="confidence"></span>
+    <span id="sb-margin" data-tip="margin"></span>
     <!-- written only by UI.setStatus; see js/ui.js for the priority -->
     <span class="grow" id="sb-msg"></span>
-    <span id="sb-thermal"></span>
+    <span id="sb-thermal" data-tip="thermal_margin"></span>
   </div>
 </div>
 
@@ -253,6 +253,7 @@
 <script src="js/focus.js"></script>
 <script src="js/stream.js"></script>
 <script src="js/wait.js"></script>
+<script src="js/tips.js"></script>
 <script src="js/orbitchart.js"></script>
 <script src="js/papers.js"></script>
 <script src="js/encyclopedia.js"></script>

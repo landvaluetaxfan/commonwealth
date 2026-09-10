@@ -54,7 +54,10 @@ const Shell = (function () {
     /* Text arrives a character at a time, fast. A player who reads
        quickly should never be waiting for the machine to finish saying
        something they finished reading. */
-    stream: true, streamSpeed: "fast"
+    stream: true, streamSpeed: "fast",
+    /* The terminal explaining itself. On by default because the terminal
+       is full of abbreviations that carry rules. */
+    tips: true
   };
   /* MUTATED IN PLACE, NEVER REASSIGNED. `options` below hands this object
      out; reassigning it on load would leave every holder pointing at the
@@ -248,6 +251,7 @@ const Shell = (function () {
       ${row("autosave", "Autosave", "Write to the current slot after every sitting")}
       ${row("motion", "Animations", "The signature ceremony and other transitions")}
       ${row("confirmDestructive", "Confirm overwrites", "Ask before replacing or deleting a save")}
+      ${row("tips", "Explain the readouts", "Hover a column, a flag or a meter. Press ? to tab through them.")}
       <div class="opt-sep"></div>
       <div class="opt-title">Sound</div>
       ${row("mute", "Mute", "Silence everything, without losing the levels below")}

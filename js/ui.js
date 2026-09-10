@@ -90,6 +90,7 @@ const UI = (function () {
        document. Neither is ever called from a draw function. */
     if (typeof Stream !== "undefined") Stream.wire();
     if (typeof Wait !== "undefined") Wait.wire();
+    if (typeof Tips !== "undefined") Tips.wire();
 
     /* THE CONCORDANCE, in one function instead of four copies of it.
        Every way of getting to an article - a link in the body, a link in
@@ -132,9 +133,15 @@ const UI = (function () {
      once on the outside and not four times. */
   function drawAll() {
     Focus.around(() => {
+      /* A tip is positioned in viewport coordinates against a node that is
+         about to be replaced. Take it down first. */
+      if (typeof Tips !== "undefined") Tips.hide();
       drawTitle(); drawPrices(); drawGovernment(); drawSitting(); drawChamber(); drawFunctional(); drawOrbit(); drawLog(); drawStatus();
       if (typeof Concordance !== "undefined") Concordance.render(st, C, cxCurrent, false);
       if (typeof Papers !== "undefined") Papers.render(st, C);
+      /* the annotated nodes are all new, so explain mode has to be put
+         back onto them */
+      if (typeof Tips !== "undefined") Tips.remark();
     });
   }
 
@@ -268,7 +275,7 @@ const UI = (function () {
       const base = h[0], chg = v - base;
       const cls = chg > 2 ? "up" : chg < -2 ? "down" : "";
       return `<div class="prow">
-        <div class="plab">${m.label}<em>${m.unit}</em></div>
+        <div class="plab" data-tip="scarcity">${m.label}<em>${m.unit}</em></div>
         ${spark(h.slice(-40), 76, 18)}
         <div class="pval ${cls}">${v.toFixed(0)}<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></div>
       </div>`;
@@ -282,9 +289,10 @@ const UI = (function () {
     const conf = Engine.confidence(st), maj = Engine.majority(st);
     $("#gov-coalition-hdr").textContent = `${conf}/${Engine.chamberTotal(st)}`;
 
-    let h = "<thead><tr><th>Party</th><th class='n'>Seats</th><th class='n'>Loy</th></tr></thead><tbody>";
+    let h = "<thead><tr><th>Party</th><th class='n' data-tip='seats'>Seats</th>" +
+      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
     st.coalition.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} ${id === st.playerParty ? "<span class='flag'>GOV</span>" : ""}</td>` +
+      h += `<tr><td>${mark(id)}${pn(id)} ${id === st.playerParty ? "<span class='flag' data-tip='gov'>GOV</span>" : ""}</td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
     });
     st.confidenceSupply.forEach(id => {
@@ -297,7 +305,8 @@ const UI = (function () {
       ? "Working majority of nil. Confidence carries on the exact number."
       : `Working majority of ${conf - maj}. Majority is ${maj}.`;
 
-    let ch = "<thead><tr><th>Current</th><th class='n'>MPs</th><th class='n'>Loy</th></tr></thead><tbody>";
+    let ch = "<thead><tr><th>Current</th><th class='n' data-tip='mps'>MPs</th>" +
+      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
     C.currents.filter(c => c.party === st.playerParty).forEach(c => {
       const s = st.currents[c.id];
       ch += `<tr class="${s.loyalty < 20 ? "warn" : ""}"><td>${c.name}</td><td class="n">${s.members}</td><td class="n">${s.loyalty}</td></tr>`;
@@ -309,7 +318,9 @@ const UI = (function () {
        game however many other bills you opened. The renderer asks the
        selection store, and the store asks content for its default. */
     const sel = Focus.selected("gov-bills");
-    let bh = "<thead><tr><th>Bill</th><th>Stage</th><th class='n'>Pop.</th><th class='n'>Func.</th><th>Test</th></tr></thead><tbody>";
+    let bh = "<thead><tr><th>Bill</th><th data-tip='stage'>Stage</th>" +
+      "<th class='n' data-tip='popular'>Pop.</th><th class='n' data-tip='functional'>Func.</th>" +
+      "<th data-tip='dual'>Test</th></tr></thead><tbody>";
     C.bills.forEach(b => {
       const bs = st.bills[b.id];
       const d = Engine.division(st, C, b.id);
@@ -317,7 +328,8 @@ const UI = (function () {
       bh += `<tr class="${b.id === sel ? "sel" : ""}" data-bill="${b.id}" style="cursor:pointer">` +
         `<td>${b.title.replace(/ Bill$/, "")}</td><td>${dead ? "Withdrawn" : bs.stage.replace(/_/g, " ")}</td>` +
         `<td class="n">${d.popular.aye}</td><td class="n">${b.dualMajority ? d.functional.aye : "&mdash;"}</td>` +
-        `<td><span class="flag ${b.dualMajority ? "bad" : ""}">${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
+        `<td><span class="flag ${b.dualMajority ? "bad" : ""}" data-tip="${b.dualMajority ? "dual" : "simple"}">` +
+        `${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
     });
     $("#gov-bills").innerHTML = bh + "</tbody>";
     /* ONE activation path. A click and an Enter both land in
@@ -336,18 +348,20 @@ const UI = (function () {
     $("#gov-meters").innerHTML = meters.map(([lab, k, warn]) => {
       const v = st.scalars[k];
       const cls = v <= warn ? "warn" : v >= 65 ? "good" : "";
-      return `<div class="meterrow"><label>${lab}</label><div class="meter ${cls}"><i style="width:${v}%"></i></div><output>${v}</output></div>`;
+      return `<div class="meterrow"><label data-tip="${k}">${lab}</label>` +
+        `<div class="meter ${cls}"><i style="width:${v}%"></i></div><output>${v}</output></div>`;
     }).join("");
 
     /* the ledger: signed, permanent, and shown exactly */
     const partners = st.coalition.concat(st.confidenceSupply).filter(p => p !== st.playerParty);
     $("#gov-ledger").innerHTML =
-      "<thead><tr><th>Partner</th><th class='n'>Ledger</th><th class='n'>Loy</th></tr></thead><tbody>" +
+      "<thead><tr><th>Partner</th><th class='n' data-tip='ledger'>Ledger</th>" +
+      "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>" +
       partners.map(id => {
         const c = st.capital[id] || 0;
         const cls = c > 0 ? "good" : c < 0 ? "bad" : "";
         return `<tr><td>${mark(id)}${pn(id)}</td>` +
-          `<td class="n"><span class="flag ${cls}">${c > 0 ? "+" : ""}${c}</span></td>` +
+          `<td class="n"><span class="flag ${cls}" data-tip="ledger">${c > 0 ? "+" : ""}${c}</span></td>` +
           `<td class="n">${st.parties[id].loyalty}</td></tr>`;
       }).join("") + "</tbody>";
     $("#gov-ledger-note").innerHTML =
@@ -361,7 +375,7 @@ const UI = (function () {
       `Giving a partner's bill time puts them in your debt. Giving your own advances nothing but your programme.</div>` +
       `<table><tbody>${C.bills.filter(b => !st.bills[b.id].dead).map(b =>
         `<tr><td>${b.owner ? mark(b.owner) : "<i class='swatch' style='background:var(--chrome-dk)'></i>"}${b.title.replace(/ Bill$/, "")}` +
-        `${b.priority ? " <span class='flag'>PRIORITY</span>" : ""}</td>` +
+        `${b.priority ? " <span class='flag' data-tip='priority'>PRIORITY</span>" : ""}</td>` +
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
         `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}>Grant</button></td></tr>`
       ).join("")}</tbody></table>`;
@@ -388,7 +402,7 @@ const UI = (function () {
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
       return `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}">
         <td>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
-        <td class="n"><span class="flag ${cls}">${status}</span></td>
+        <td class="n"><span class="flag ${cls}" data-tip="${s.inForce ? "prayer" : "instrument"}">${status}</span></td>
         <td class="n">${s.made ? "" :
           `<button class="btn sibtn" data-make="${si.id}"${chk.ok ? "" : " disabled title='" + esc(chk.reason) + "'"}>Make</button>`}
           ${s.inForce && window > 0 ? `<button class="btn sibtn" data-pray="${si.id}">Pray</button>` : ""}</td>
@@ -423,9 +437,9 @@ const UI = (function () {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
       return `<tr class="${s.holder ? "" : "vacant"}">
-        <td>${p.name}${p.senior ? " <span class='flag'>SENIOR</span>" : ""}</td>
+        <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
         <td>${s.holder ? (ch ? ch.name.replace(/^Rt\. Hon\. /, "") : s.holder.replace(/_/g," "))
-                       : "<span class='flag bad'>VACANT</span>"}</td>
+                       : "<span class='flag bad' data-tip='vacant'>VACANT</span>"}</td>
         <td class="n">${s.party ? mark(s.party) : ""}</td></tr>`;
     }).join("");
 
@@ -434,7 +448,7 @@ const UI = (function () {
       `<dt>Relations</dt><dd>${st.president.relationship}</dd></div>` +
       `<div class="rulehead">Reserve powers</div>` +
       `<table><tbody>${st.president.powers.map(p =>
-        `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
+        `<tr><td style="text-transform:capitalize">${p}</td><td class="n"><span class="flag ${st.president.relationship < 35 ? "bad" : ""}" data-tip="live">${st.president.relationship < 35 ? "LIVE" : "DORMANT"}</span></td></tr>`
       ).join("")}</tbody></table>`;
 
     $("#gov-wire").innerHTML = st.wire.length
@@ -553,7 +567,7 @@ const UI = (function () {
 
     return `<div class="rulehead">The whip</div>` +
       `<table class="whiptab"><thead><tr><th>Party</th><th>Bench</th><th class="n">Seats</th>` +
-      `<th class="n">Rate</th><th>Move</th></tr></thead><tbody>${rows}</tbody></table>` +
+      `<th class="n" data-tip="whip">Rate</th><th data-tip="whip">Move</th></tr></thead><tbody>${rows}</tbody></table>` +
       (cost.seats
         ? `<div class="whipcost">Plan: <b>${cost.seats}</b> seats. ` +
           (capLines ? "Capital " + capLines + ". " : "") +
@@ -1158,7 +1172,8 @@ const UI = (function () {
     const ap = Engine.apportionment(C);
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
-      "<th class='n'>Ratio</th><th class='n'>Held</th></tr></thead><tbody>" +
+      "<th class='n' data-tip='ratio'>Ratio</th><th class='n' data-tip='held'>Held</th>" +
+      "</tr></thead><tbody>" +
       mine.map(k => {
         const r = Engine.seatsFor(st, k.id);
         const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);

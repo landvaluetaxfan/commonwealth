@@ -1038,3 +1038,37 @@ body.busy, body.busy *{cursor:progress;}
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
 }
+
+/* ---------- the terminal explaining itself ----------
+
+   js/tips.js. Positioned in viewport coordinates, so it is taken down by
+   anything that moves the page or replaces the node it points at. Not
+   focusable and not clickable: a tooltip you can tab into is a trap. */
+[data-tip]{cursor:help;}
+th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
+  text-decoration:underline dotted var(--chrome-dkr);text-underline-offset:2px;
+}
+#tipcard{
+  position:fixed;z-index:300;max-width:264px;
+  background:var(--chrome-lt);color:var(--ink);padding:5px 7px;
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  box-shadow:2px 2px 0 rgba(27,29,25,.28);
+  pointer-events:none;   /* it can never be hovered, so it can never trap */
+}
+#tipcard b{
+  display:block;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:2px;
+}
+#tipcard span{display:block;font-size:11px;line-height:1.45;}
+#tipcard i{
+  display:block;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
+  font-style:normal;font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
+}
+
+/* Explain mode: ? puts every annotated readout into the tab order, and
+   says so, because a tab stop you cannot see is a tab stop you fall into.
+   The marker is an inset bar and NOT an outline: focus is a 1px dotted
+   rectangle everywhere in this game and nothing else may compete with it,
+   so a mode marker has to say what it means in some other way. */
+body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
