@@ -35,7 +35,7 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/index.js",
-  "js/audio.js","js/focus.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/audio.js","js/focus.js","js/stream.js","js/wait.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -159,8 +159,8 @@ try {
 try {
   $("#tb-options").click();
   const boxes = w.document.querySelectorAll("#tb-optpanel [data-opt]").length;
-  /* five now: autosave, animations, confirm, mute, room tone */
-  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 5,
+  /* six now: autosave, animations, confirm, mute, room tone, type text out */
+  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 6,
      boxes + " toggles");
 } catch (e) { ok("options panel opens", false, e.message); }
 
@@ -261,9 +261,15 @@ try {
    switching tabs, loading a slot, a mirrored panel repainting itself - so a
    cue fired from a draw function fires at random and four times over. The
    spy replaces Sound.play at the module boundary, which catches a call made
-   transitively through Papers or the Concordance as readily as a direct one. */
+   transitively through Papers or the Concordance as readily as a direct one.
+
+   Sound.type is spied too. The teletype is a second way to make a noise and
+   would otherwise be a second way to break the rule: the text streamer is
+   started by an action and never by a renderer, and this is what holds it
+   to that. */
 try {
-  w.eval('window.__cues = []; Sound.play = function (n) { window.__cues.push(n); };');
+  w.eval('window.__cues = []; Sound.play = function (n) { window.__cues.push(n); };' +
+         'Sound.type = function (r) { window.__cues.push("type:" + r); };');
   w.eval('window.__cues.length = 0; UI.boot(UI.state(), CONTENT);');
   const fromDraw = w.eval("window.__cues.slice()");
   ok("a full redraw makes no sound", fromDraw.length === 0, fromDraw.join(", "));
@@ -516,6 +522,113 @@ try {
      key: function (tr) { return tr.dataset.doc; },
      activate: function () { Papers.render(UI.state(), CONTENT); } });`);
 } catch (e) { ok("one activation path", false, e.message); }
+
+/* UI-1: TIME, STREAMING AND THE DIVISION.
+
+   The whole design of the division dialog is that THE STATE RESOLVES
+   FIRST and the dialog reads out numbers that are already final. So the
+   test that matters is not "does the animation look right" - it is
+   whether the presentation can move a number. It cannot, and here is why
+   that is checkable: the same division run twice from the same save, once
+   with sound and streaming on and once with both off, has to produce
+   byte-identical state, and skipping it has to produce that same state
+   again. The engine has no Math.random in it, so identical is the
+   standard, not "close enough". */
+try {
+  w.eval('window.__snap = Engine.save(UI.state()); window.__bill = CONTENT.bills[0].id;');
+
+  const divide = (mute, stream, skip, flag) => w.eval(`
+    (function () {
+      Shell.setOpt("mute", ${mute}); Shell.setOpt("stream", ${stream});
+      var st = Engine.load(window.__snap, CONTENT);
+      ${flag ? 'st.flags["' + flag + '"] = true;' : ""}
+      UI.boot(st, CONTENT);
+      Focus.activate("gov-bills", window.__bill);
+      var b = document.getElementById("btn-divide");
+      if (!b) return "NO DIVIDE BUTTON";
+      b.click();
+      window.__pop = document.getElementById("dv-pop");
+      window.__stalled = !!document.querySelector(".wait-seg i.stall");
+      ${skip ? "Wait.skip();" : "Wait.skip();"}
+      return Engine.save(UI.state());
+    })()
+  `);
+
+  const loud = divide(false, true, false);
+  ok("the division resolves at all", loud !== "NO DIVIDE BUTTON" && loud.length > 100,
+     String(loud).slice(0, 60));
+  const quiet = divide(true, false, false);
+  ok("muted and unstreamed reaches the same final state, byte for byte",
+     quiet === loud, quiet === loud ? "" : "the presentation moved a number");
+  const skipped = divide(false, true, true);
+  ok("an instant skip reaches it too", skipped === loud);
+
+  /* The screen has to agree with the engine after a skip, not just the
+     state. Skip runs every remaining step and only then detaches the
+     dialog, so the node still carries what it was left showing. */
+  const shownPop = w.eval("window.__pop && window.__pop.textContent");
+  const want = w.eval(`
+    (function () {
+      var d = Engine.division(Engine.load(window.__snap, CONTENT), CONTENT, window.__bill);
+      return d.popular.aye + " / " + d.popular.need;
+    })()
+  `);
+  ok("and the running total on screen is the engine's own number",
+     shownPop === want, "screen " + shownPop + ", engine " + want);
+
+  /* TIER 3. A stall the player cannot cause is an annoyance; one the
+     fiction chose is a scene. It fires from a content flag and from
+     nothing else - there is no roll to get lucky on. */
+  divide(false, true, true);
+  ok("no stall without the flag", w.eval("window.__stalled") === false);
+  divide(false, true, true, "division_stalled");
+  ok("the stall fires from its flag", w.eval("window.__stalled") === true);
+
+  const src = fs.readFileSync(path.join(root, "js/wait.js"), "utf8");
+  ok("and nothing in the dialog rolls dice", !/Math\.random/.test(src));
+} catch (e) { ok("the division dialog", false, e.message); }
+
+/* STREAMING IS A PLAYER PREFERENCE, so it lives in Shell.opts with the
+   audio levels and not in the save. Same rule, same place, same test. */
+try {
+  w.eval('Shell.setOpt("stream", false); Shell.setOpt("streamSpeed", "slow");');
+  const stored = JSON.parse(w.localStorage.getItem("wm.opts") || "{}");
+  const save = JSON.parse(w.eval("Engine.save(UI.state())"));
+  ok("streaming settings are written to Shell.opts",
+     stored.stream === false && stored.streamSpeed === "slow", JSON.stringify(stored));
+  ok("and never to the save state",
+     !("stream" in save) && !("streamSpeed" in save) && !("opts" in save));
+  w.eval("Shell.boot(CONTENT)");
+  ok("they survive a reload",
+     w.eval('Shell.opt("stream")') === false && w.eval('Shell.opt("streamSpeed")') === "slow");
+  w.eval('Shell.setOpt("stream", true); Shell.setOpt("streamSpeed", "fast");');
+} catch (e) { ok("streaming preferences", false, e.message); }
+
+/* THE TELETYPE'S REGISTERS. "silent" is a register, spelt out, not an
+   omission - the President's text makes no sound because somebody decided
+   that, and the table has to say so out loud or the next person to touch
+   it will "fix" the gap. */
+try {
+  ok("silent is a register the audio bus knows",
+     w.eval("Sound.registers").indexOf("silent") >= 0, w.eval("Sound.registers").join(" "));
+  ok("the President is silent", w.eval('Stream.registerFor({ speaker: "tenaya" })') === "silent");
+  ok("the press is not", w.eval('Stream.registerFor({ speaker: "ceyhan" })') === "press");
+  ok("and content can override a speaker's default",
+     w.eval('Stream.registerFor({ speaker: "ceyhan", register: "broadcast" })') === "broadcast");
+  ok("an unattributed block still has a voice",
+     w.eval("Stream.registerFor({})") === "office");
+
+  /* The rate caps are the difference between a keyboard and a buzzer, so
+     they are written down as constants rather than tuned inline. */
+  const ssrc = fs.readFileSync(path.join(root, "js/stream.js"), "utf8");
+  ok("the cue rate is capped in both directions",
+     /CUE_MIN_CHARS\s*=\s*3/.test(ssrc) && /CUE_MAX_PER_SEC\s*=\s*15/.test(ssrc));
+  ok("streaming off renders instantly rather than slowly",
+     w.eval('(function(){ Shell.setOpt("stream", false); var d = document.createElement("div");' +
+            'd.textContent = "a sentence that would take a moment"; document.body.appendChild(d);' +
+            'Stream.reveal(d, {}); var t = d.textContent; Shell.setOpt("stream", true);' +
+            'd.remove(); return t; })()') === "a sentence that would take a moment");
+} catch (e) { ok("the teletype", false, e.message); }
 
 /* TAB ORDER AND FOCUS.
 

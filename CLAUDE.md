@@ -100,6 +100,9 @@ js/shell.js           main menu, save slots, options, player preferences
 js/audio.js           the sound bus. Read its header before adding a cue.
 js/focus.js           what survives a re-render: focus, selection, scroll.
                       The only selection store. Read its header first.
+js/stream.js          text arriving a character at a time. Never called
+                      from a renderer; see its header for why.
+js/wait.js            the three ways the terminal says it is thinking.
 tools/                checks, index generator, image pipeline, bundle
 ```
 
@@ -174,6 +177,27 @@ Kept here because they will otherwise happen again.
   article twice — invisibly, because both renders produced the same page.
   A keyboard path must reach the existing handler (`el.click()`), never
   add a second one. `tools/uitest.js` counts handler calls.
+
+- A division does not resolve inside its own animation. `Engine.divide()`
+  runs on the click and settles everything — whips paid, stage moved, logged,
+  sent to the President — and the dialog then reads out numbers that are
+  already final. That is what makes skipping safe and what makes "muted and
+  unstreamed reaches the same state" a testable claim rather than a hope.
+  `tools/uitest.js` runs the same division three ways and compares the saved
+  state byte for byte.
+- Streaming text is a USER ACTION, not a render. `drawSitting()` always puts
+  the finished text on the page, complete and silent; the action handlers ask
+  `js/stream.js` to reveal it. If the streamer ran from a draw function the
+  same paragraph would retype itself, with sound, on every tab switch — which
+  is the audio rule below, arrived at from the other direction. `Sound.type`
+  is spied in `tools/uitest.js` alongside `Sound.play` for exactly this.
+- Blanking text to type it out collapses the block to nothing, and everything
+  below it jumps up and then walks back down as it fills. `js/stream.js`
+  measures the height before emptying and holds it.
+- There is NO ASSET LOADING in this game and there cannot be a simple one:
+  on `file://`, `fetch()` and `XMLHttpRequest` both fail — measured — which
+  is the same reason content is `.js` and not `.json`. Base64 in a `.js`
+  file, through `atob` into `decodeAudioData`, is the route that works.
 
 - Sound is triggered by engine effects and user actions ONLY. Nothing reachable
   from `drawAll()` may make a noise — a redraw happens on a tab switch, on a

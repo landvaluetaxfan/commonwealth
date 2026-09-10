@@ -31,7 +31,7 @@ const UI = (function () {
   function boot(state, content) {
     st = state; C = content;
     currentEvent = null; lastResult = null;
-    if (wired) { drawAll(); return; }   /* Shell re-boots on every load */
+    if (wired) { drawAll(); reveal(); return; }   /* Shell re-boots on every load */
     wired = true;
     document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach(o => o.setAttribute("aria-selected", "false"));
@@ -86,6 +86,10 @@ const UI = (function () {
       activate: id => pickStation(id)
     });
     Focus.wire();
+    /* Both capture their own skip listeners; both are no-ops without a
+       document. Neither is ever called from a draw function. */
+    if (typeof Stream !== "undefined") Stream.wire();
+    if (typeof Wait !== "undefined") Wait.wire();
 
     /* THE CONCORDANCE, in one function instead of four copies of it.
        Every way of getting to an article - a link in the body, a link in
@@ -117,6 +121,7 @@ const UI = (function () {
     });
 
     drawAll();
+    reveal();     /* AFTER drawAll, and outside it. Once per event. */
   }
 
   /* EVERY REDRAW GOES THROUGH Focus.around. This is the one place that
@@ -364,7 +369,7 @@ const UI = (function () {
       btn.addEventListener("click", () => {
         const b = C.bills.find(x => x.id === btn.dataset.slot);
         Engine.grantSlot(st, C, btn.dataset.slot);
-        cue("stamp");
+        cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(240);
         setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
                   " \u00b7 " + (st.slots.total - st.slots.used) + " of " +
                   st.slots.total + " slots left", "transient");
@@ -394,7 +399,7 @@ const UI = (function () {
       const r = Engine.makeInstrument(st, C, b.dataset.make);
       if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); alert(r.reason); }
       else {
-        cue("stamp");
+        cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(320);
         setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
                   "transient");
       }
@@ -406,7 +411,7 @@ const UI = (function () {
         (f.carries ? "The prayer would carry and the order would be annulled." :
                      "The prayer would be defeated and the order would stand."))) return;
       Engine.prayAgainst(st, C, b.dataset.pray);
-      cue(f.carries ? "aye" : "nay");
+      cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
       setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
                 (f.carries ? " carried \u2014 the order is annulled"
                            : " defeated \u2014 the order stands"), "transient");
@@ -479,21 +484,29 @@ const UI = (function () {
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
     $("#btn-divide").addEventListener("click", () => {
+      /* THE DIVISION RESOLVES HERE, ON THE CLICK, BEFORE ANYTHING IS
+         SHOWN. Engine.divide pays the whips, moves the stage, logs it and
+         puts the bill in front of the President; the dialog that follows
+         reads out numbers that are already final. That is deliberate and
+         it is what makes the whole thing safe to skip: there is no state
+         left inside the animation to lose. Presentation only - the
+         arithmetic is untouched. */
       const out = Engine.divide(st, C, id) || {};
       const r = out.result || {};
-      /* A dual bill can carry the House and still fall, which is the whole
-         argument of the game, so the line names BOTH tests and not just the
-         verdict. Assent is a third gate again: carrying sends it to the
-         President, who may refer it rather than sign. */
-      cue(r.carries ? "aye" : "nay");
-      const tally = (r.popular ? " \u00b7 popular " + r.popular.aye + "/" + r.popular.need : "") +
-        (b.dualMajority && r.functional
-          ? " \u00b7 functional " + r.functional.aye + "/" + r.functional.need : "");
-      setStatus(b.title + " \u2014 " +
-                (!r.carries ? "not carried"
-                  : out.assent && out.assent.referred ? "carried, and referred for review"
-                  : "carried") + tally, "transient");
-      drawAll(); afterAction();
+      divisionTheatre(b, out).then(() => {
+        /* A dual bill can carry the House and still fall, which is the
+           whole argument of the game, so the line names BOTH tests and not
+           just the verdict. Assent is a third gate again: carrying sends it
+           to the President, who may refer it rather than sign. */
+        const tally = (r.popular ? " \u00b7 popular " + r.popular.aye + "/" + r.popular.need : "") +
+          (b.dualMajority && r.functional
+            ? " \u00b7 functional " + r.functional.aye + "/" + r.functional.need : "");
+        setStatus(b.title + " \u2014 " +
+                  (!r.carries ? "not carried"
+                    : out.assent && out.assent.referred ? "carried, and referred for review"
+                    : "carried") + tally, "transient");
+        drawAll(); afterAction();
+      });
     });
   }
 
@@ -556,6 +569,120 @@ const UI = (function () {
       `<i class="yes" style="width:${pct}%;background:${r.carries ? "var(--ok)" : "var(--alert)"}"></i>` +
       `<span class="thr" style="left:${r.need / r.total * 100}%"></span>` +
       `<span class="lbl">${r.aye} / ${r.total} &middot; need ${r.need}</span></div></div>`;
+  }
+
+  /* ---------- the division, read out ----------
+
+     §4.6.7: both majorities on screen throughout. A dual bill can carry
+     the popular benches and fall on the functional forty, and a player
+     who only ever sees the verdict never learns that. So the two columns
+     fill side by side, and the functional one fills SLOWER - it is the
+     smaller number, it is the one that kills bills, and it should be the
+     one you are still watching when the popular column has finished.
+
+     Every number here comes out of the result Engine.divide already
+     returned. Nothing is recomputed and nothing is rounded again. */
+  function divisionTheatre(b, out) {
+    const r = out.result || {};
+    const rows = (r.rows || []).filter(x => x.popularSeats + x.functionalSeats > 0);
+    if (!rows.length || typeof Wait === "undefined") return Promise.resolve();
+
+    const dual = !!b.dualMajority;
+    let popRun = 0, funcRun = 0, shown = 0;
+    let tbody = null, popCell = null, funcCell = null, verdict = null;
+
+    const paint = () => {
+      if (!popCell) return;
+      popCell.textContent = popRun + " / " + r.popular.need;
+      popCell.className = "n " + (popRun >= r.popular.need ? "ok" : "");
+      funcCell.textContent = dual ? funcRun + " / " + r.functional.need : "\u2014";
+      funcCell.className = "n " + (dual && funcRun >= r.functional.need ? "ok" : "");
+    };
+
+    const steps = [];
+
+    /* The bell. The same bell the government hears when it falls, which is
+       not an economy: a division is the thing that can end you. */
+    steps.push({
+      label: "The House divides",
+      ms: 300,
+      run: () => cue("knell"),
+      /* TIER 3. Only from a flag content set, never from a roll. Nothing
+         in content sets this yet; that is the point of it being a hook. */
+      stall: { flag: "division_stalled",
+               label: "The Clerk is recounting the functional bench",
+               ms: 1100 }
+    });
+
+    rows.forEach((row, i) => steps.push({
+      label: pn(row.party) + " reports",
+      ms: 105,
+      run: () => {
+        popRun += row.popularAye;
+        /* THE FUNCTIONAL COLUMN LAGS, one party behind every second
+           report, and is squared off by the catch-up step below. */
+        if (i % 2 === 1 || i === rows.length - 1) {
+          while (shown <= i) { funcRun += rows[shown].functionalAye; shown++; }
+        }
+        if (tbody) tbody.insertAdjacentHTML("beforeend",
+          `<tr><td>${mark(row.party)}${pn(row.party)}</td>` +
+          `<td class="n">${row.popularAye}<i>/${row.popularSeats}</i></td>` +
+          `<td class="n">${dual ? row.functionalAye + "<i>/" + row.functionalSeats + "</i>" : "\u2014"}</td></tr>`);
+        paint();
+      }
+    }));
+
+    steps.push({
+      label: dual ? "The functional benches are counted separately" : "The count is complete",
+      ms: 420,
+      run: () => {
+        /* Squared off against the engine's own totals rather than the
+           running sum, so a skip can never leave a different number on
+           screen from the one that resolved. */
+        popRun = r.popular.aye;
+        while (shown < rows.length) { funcRun += rows[shown].functionalAye; shown++; }
+        funcRun = r.functional.aye;
+        paint();
+      }
+    });
+
+    steps.push({
+      label: "The result",
+      ms: 520,
+      run: () => {
+        cue(r.carries ? "aye" : "nay");
+        if (!verdict) return;
+        verdict.textContent = r.carries
+          ? (out.assent && out.assent.referred
+              ? "Carried \u2014 and referred for constitutional review"
+              : "Carried")
+          : (dual && r.popular.carries && !r.functional.carries
+              ? "Not carried \u2014 the House was with you and the functional bench was not"
+              : "Not carried");
+        verdict.className = "wait-verdict " + (r.carries ? "ok" : "bad");
+      }
+    });
+
+    return Wait.run({
+      title: "Division",
+      sub: b.title,
+      /* This module asks the state; Wait never sees a flag. */
+      stalled: f => !!(st.flags && st.flags[f]),
+      steps: steps,
+      mount: el => {
+        el.innerHTML =
+          `<table class="divtally"><thead><tr><th>Party</th>` +
+          `<th class="n">Popular</th><th class="n">Functional</th></tr></thead>` +
+          `<tbody></tbody><tfoot><tr><th>Running</th>` +
+          `<th class="n" id="dv-pop">0 / ${r.popular.need}</th>` +
+          `<th class="n" id="dv-func">${dual ? "0 / " + r.functional.need : "\u2014"}</th>` +
+          `</tr></tfoot></table><div class="wait-verdict" id="dv-verdict">&nbsp;</div>`;
+        tbody = el.querySelector("tbody");
+        popCell = el.querySelector("#dv-pop");
+        funcCell = el.querySelector("#dv-func");
+        verdict = el.querySelector("#dv-verdict");
+      }
+    });
   }
 
   /* ---------- glossary annotation ----------
@@ -637,6 +764,31 @@ const UI = (function () {
       `<div class="cap"><span>${img.caption || ""}</span><em>${img.credit || ""}</em></div></div>`;
   }
 
+  /* ---------- text arriving ----------
+
+     STREAMING IS AN ACTION, NOT A RENDER. drawSitting() always puts the
+     finished text on the page, complete and silent; these two functions
+     are called by the handlers for choosing, rising and arriving, and by
+     boot() once for the decision you open on. Nothing reachable from
+     drawAll() can get here, which is what keeps js/audio.js's hard rule
+     true - a tab switch would otherwise retype the paragraph, with sound,
+     every time you looked away and back.
+
+     `shown` is session memory, not save state: it describes what this
+     player has watched arrive, not anything about the world. */
+  const shown = Object.create(null);
+
+  function revealNode(el, block) {
+    if (typeof Stream === "undefined" || !el) return;
+    Stream.reveal(el, block);
+  }
+  function reveal() {
+    const e = currentEvent;
+    if (!e || shown[e.id]) return;
+    shown[e.id] = true;
+    revealNode($("#sitting-prose"), e);
+  }
+
   /* ---------- sitting ---------- */
   function drawSitting() {
     const box = $("#sitting-body");
@@ -653,7 +805,7 @@ const UI = (function () {
       $("#btn-advance").addEventListener("click", () => {
         Engine.advance(st, C); currentEvent = null; lastResult = null;
         setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
-        drawAll(); saved(); afterAction();
+        drawAll(); saved(); afterAction(); reveal();
       });
       return;
     }
@@ -663,10 +815,10 @@ const UI = (function () {
     box.innerHTML =
       plate(e.image) +
       (spk ? portrait(spk) + `<div class="rulehead">${spk.name} &mdash; ${spk.role}</div>` : "") +
-      `<div class="prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
+      `<div class="prose" id="sitting-prose">${annotate(e.body.split(/\n\n/).map(p => `<p>${p.replace(/\n/g, " ")}</p>`).join(""))}</div>` +
       `<div style="clear:both"></div>` +
       (lastResult
-        ? `<div class="decl" style="margin-top:8px"><b>Outcome</b><br>${lastResult}</div>
+        ? `<div class="decl" style="margin-top:8px"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>
            <div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`
         : `<div class="rulehead">Decision</div>` +
           e.choices.map((c, i) => `<div class="btnrow" style="margin-top:3px"><button class="btn choice" data-i="${i}" style="text-align:left">${c.label}</button></div>`).join(""));
@@ -676,7 +828,7 @@ const UI = (function () {
       $("#btn-advance").addEventListener("click", () => {
         Engine.advance(st, C); currentEvent = null; lastResult = null;
         setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
-        drawAll(); saved(); afterAction();
+        drawAll(); saved(); afterAction(); reveal();
       });
     } else {
       bindGlossary(box);
@@ -686,6 +838,9 @@ const UI = (function () {
         setStatus(e.title + " \u2014 " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
         saved();
         drawAll(); afterAction();
+        /* The outcome is new text, so it arrives the way new text arrives.
+           The body above it does not retype: you have read that already. */
+        revealNode($("#sitting-outcome"), e);
       }));
     }
   }

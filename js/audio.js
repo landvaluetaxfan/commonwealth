@@ -156,6 +156,38 @@ const Sound = (function () {
     try { CUES[name](); } catch (e) { /* a cue is never worth an exception */ }
   }
 
+  /* ---------- the teletype ----------
+
+     One short key-press per few characters while a block of text is being
+     typed onto the screen. The REGISTER says whose voice it is, and each
+     register sits in its own narrow band, so the reader learns to hear the
+     difference between the House, the press and a broadcast before they
+     read the byline.
+
+     "silent" is a register like any other and is spelt out in the table as
+     nothing, rather than left out of it: the President's text makes no
+     sound, and that is a decision somebody made, not an omission.
+
+     THIS IS STILL SUBJECT TO THE HARD RULE AT THE TOP OF THE FILE. It is
+     called by the streamer, which is started by a player action - arriving
+     at a decision, choosing, rising - and never by a draw function. A
+     redraw re-renders the text complete and silent. */
+  const BAND = {
+    office:    1240,   /* the House and its members */
+    press:     880,    /* a paper, in a hurry */
+    primer:    1560,   /* the induction pack, teaching */
+    broadcast: 660,    /* a voice from a deck, over a link */
+    silent:    0       /* the presidency. Deliberate. */
+  };
+
+  function type(register) {
+    const f = BAND[register];
+    if (!live() || !f) return;
+    /* plus or minus three per cent, so a run of characters is a texture
+       rather than one note held down. */
+    blip("ui", f * (0.97 + Math.random() * 0.06), 0.011, "square", 0.02);
+  }
+
   /* ---------- room tone ----------
      Air handling, a long way off, through a bulkhead. Filtered noise for the
      plant and a low sine for the structure. It is meant to be noticed only
@@ -208,7 +240,8 @@ const Sound = (function () {
   }
 
   return {
-    init: init, play: play, room: room,
+    init: init, play: play, type: type, room: room,
+    registers: Object.keys(BAND),
     setMute: setMute, setGain: setGain, apply: apply,
     categories: CATS, gainKey: GAIN_KEY,
     /* for the checks: is there a graph at all */

@@ -684,3 +684,34 @@ Names.bill()                    // Shed Order (Registration) Bill
 Names.roll("press")             // The Perigee Review
 Names.setSeed(4711)             // deterministic — a rolled roster regenerates identically
 ```
+
+## Making a division stop
+
+A division is read out party by party in a modal dialog, and the bar can be
+made to **stall at a named point** — the count halts, the segment turns red,
+and the dialog says why. It fires from a flag and from nothing else; there is
+no roll behind it, so a stall is always something the fiction chose:
+
+```js
+effects:[ { flag:"division_stalled" } ]
+```
+
+Set it and the next division pauses on the bell while the Clerk recounts the
+functional bench. Clear it with `{unflag:"division_stalled"}` when the scene
+that wanted it is over — nothing clears it for you, and a permanent stall is
+just a slow game.
+
+## Whose voice a block is in
+
+Text arrives a character at a time, with a key-press sound pitched to the
+**register** of whoever is speaking. The register comes from the speaker by
+default — the press sounds like a press wire, the House sounds like a room,
+the President makes no sound at all — so most blocks need nothing. Override it
+on the block when the default is wrong:
+
+```js
+{ id:"...", speaker:"ceyhan", register:"broadcast", body:`...` }
+```
+
+`office` · `press` · `primer` · `broadcast` · `silent`. Use `silent` when the
+text should land without a voice; it is a choice, not an absence.

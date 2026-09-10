@@ -973,3 +973,68 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
   padding:3px 2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--ink-soft);}
 .optlvl input[type=range]{width:100%;height:14px;accent-color:var(--rule);margin:0;}
+
+/* ---------- the terminal thinking ----------
+
+   Three tiers, from js/wait.js. The bar is SEGMENTED and never smooth: a
+   smooth bar is a claim about progress nobody is measuring, and a chunked
+   one is an honest list of things that have to happen, each labelled. */
+body.busy, body.busy *{cursor:progress;}
+
+.wait-back{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(27,29,25,.55);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.wait-dlg{width:min(460px,100%);max-height:88vh;overflow:auto;}
+.wait-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
+
+/* one chunk per sub-step, 1px apart, in a bevelled well */
+.wait-seg{
+  display:flex;gap:1px;height:11px;margin-bottom:5px;background:var(--chrome-dk);
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+  padding:1px;
+}
+.wait-seg i{flex:1 1 0;min-width:2px;background:var(--field);}
+.wait-seg i.on{background:var(--rule);}
+.wait-seg i.done{background:var(--ok);}
+/* a stall is a different colour because it is a different event: the bar
+   has not slowed down, it has stopped, and it says why */
+.wait-seg i.stall{background:var(--alert);}
+.wait-step{
+  font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
+  min-height:13px;margin-bottom:6px;
+}
+.wait-skip{margin-top:7px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;}
+.wait-verdict{
+  margin-top:6px;padding:3px 5px;font-family:var(--f-disp);font-size:15px;
+  min-height:20px;border-top:1px solid var(--chrome-dk);
+}
+.wait-verdict.ok{color:var(--ok);}
+.wait-verdict.bad{color:var(--alert);}
+
+/* BOTH MAJORITIES ON SCREEN THROUGHOUT (bible 4.6.7). The functional
+   column is never collapsed away, even on a simple-majority bill, so the
+   second test is a thing the player knows exists before it kills a bill. */
+.divtally td i{font-style:normal;color:var(--ink-soft);font-size:9px;}
+.divtally tfoot th{background:var(--chrome-lt);font-family:var(--f-data);font-size:10px;
+  text-transform:none;letter-spacing:0;}
+.divtally tfoot th.ok{color:var(--ok);}
+.divtally tbody td{padding:1px 4px;font-size:10.5px;}
+
+/* Text still arriving. The block holds the height it will end up with -
+   js/stream.js measures it before emptying it - so nothing below moves
+   while it fills, and the caret is the only thing that does. `.typing` is
+   on the paragraph currently being filled, not on the block: a cursor
+   parked under three empty paragraphs is a bullet point. */
+.typing::after{content:"\2588";color:var(--rule);font-family:var(--f-data);
+  font-size:.85em;vertical-align:baseline;}
+
+/* the speed picker, in the terminal's own chrome rather than the OS's */
+.optlvl select{
+  width:100%;font-family:var(--f-ui);font-size:11px;color:var(--ink);
+  background:var(--field);padding:1px 3px;
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}

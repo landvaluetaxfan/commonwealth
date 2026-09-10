@@ -50,7 +50,11 @@ const Shell = (function () {
   const DEFAULTS = {
     autosave: true, motion: true, confirmDestructive: true,
     mute: false, roomTone: true,
-    gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7
+    gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7,
+    /* Text arrives a character at a time, fast. A player who reads
+       quickly should never be waiting for the machine to finish saying
+       something they finished reading. */
+    stream: true, streamSpeed: "fast"
   };
   /* MUTATED IN PLACE, NEVER REASSIGNED. `options` below hands this object
      out; reassigning it on load would leave every holder pointing at the
@@ -252,6 +256,15 @@ const Shell = (function () {
       ${slider("gainRoom", "Room")}
       ${slider("gainEvent", "Events")}
       <div class="opt-sep"></div>
+      <div class="opt-title">Text</div>
+      ${row("stream", "Type text out", "New text arrives a character at a time. Any key skips it.")}
+      <label class="optlvl"><span>Speed</span>
+        <select data-pick="streamSpeed" aria-label="Streaming speed">
+          ${(typeof Stream !== "undefined" ? Stream.speeds : ["slow", "normal", "fast"])
+            .map(v => `<option value="${v}"${opts.streamSpeed === v ? " selected" : ""}>` +
+                      v.charAt(0).toUpperCase() + v.slice(1) + `</option>`).join("")}
+        </select></label>
+      <div class="opt-sep"></div>
       <button class="mbtn sm wide" data-act="export">Export to file</button>
       <button class="mbtn sm wide" data-act="import">Import from file</button>
       <div class="opt-sep"></div>
@@ -276,6 +289,10 @@ const Shell = (function () {
     }));
     /* input, not change: a volume slider that only lands when you let go is
        a slider you cannot aim. */
+    /* change, not input: a select lands when it lands. */
+    p.querySelectorAll("[data-pick]").forEach(sel => sel.addEventListener("change", () => {
+      setOpt(sel.dataset.pick, sel.value);
+    }));
     p.querySelectorAll("[data-lvl]").forEach(sl => sl.addEventListener("input", () => {
       opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts();
     }));
