@@ -146,7 +146,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* thirty-four rows have to fit in one column with no scrollbar */
 #orbit-table td{padding:1px 6px;font-size:10.5px;line-height:1.35;}
 #orbit-table td .sub{display:inline;margin-left:5px;font-size:8.5px;}
-#orbit-table tr.sel td{background:var(--field);}
 
 /* ---- a station's seats, listed in full ---- */
 #cons-table td{padding:2px 6px;vertical-align:top;}
@@ -221,7 +220,48 @@ th{
 }
 td{padding:2px 4px;border:1px solid var(--chrome-dk);background:var(--field);vertical-align:top;}
 td.n,th.n{text-align:right;font-family:var(--f-data);font-size:10px;}
-tr.sel td{background:#dfe4d3;}
+/* ---------- selection, and the three things it used to mean ----------
+
+   .sel MEANS ONE THING: this row is the one you picked, and clicking a row
+   in this table is what picked it. Three tables qualify - #gov-bills,
+   #orbit-table and #pp-list - and the rule is global because .sel appears
+   nowhere else. It is a solid inverted block: unmistakable at a glance, and
+   impossible to confuse with the 1px dotted rectangle that means focus.
+
+   NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection you
+   are not sure you made. The click lands, the block is there.
+
+   The other three states below used to borrow .sel, which is how a row that
+   was merely disloyal came to look identical to a row you had chosen. They
+   differ from each other in FORM and not only in hue - a block, a gutter, a
+   hatch, a ghost - so they stay legible next to each other and to anyone who
+   reads the colours differently. */
+tr.sel td{background:var(--bar);color:var(--bar-txt);border-color:var(--chrome-dkr);}
+tr.sel td b{font-weight:600;}
+/* everything a row can carry has to survive the inversion. --alert and --ok
+   are chosen against a paper field and go nearly black on the bar. */
+tr.sel td .note,tr.sel td .sub,tr.sel td i.sub{color:var(--chrome);opacity:1;}
+tr.sel td .flag{color:var(--bar-txt);border-color:var(--chrome-dk);}
+tr.sel td .flag.good{color:#9fc48f;border-color:#9fc48f;}
+tr.sel td .flag.bad{color:#e0907f;border-color:#e0907f;}
+tr.sel td .hn,tr.sel td .det{color:var(--chrome);}
+
+/* A GUTTER: something is wrong with this row. #gov-currents, loyalty under 20. */
+tr.warn td{background:#efe0da;}
+tr.warn td:first-child{box-shadow:inset 3px 0 0 var(--alert);}
+
+/* A HATCH: this instrument is live. #gov-si, in force. Texture rather than a
+   tint, so it does not read as a paler selection. */
+tr.inforce td{
+  background:var(--field);
+  background-image:repeating-linear-gradient(45deg,
+    rgba(61,92,51,.13) 0 2px,transparent 2px 6px);
+}
+
+/* A GHOST: nobody holds this post. #gov-cabinet, vacant. The row recedes
+   instead of announcing itself; the VACANT flag does the announcing. */
+tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
+
 .swatch{display:inline-block;width:9px;height:9px;vertical-align:-1px;margin-right:4px;border:1px solid rgba(0,0,0,.45);}
 
 /* ---------- small parts ---------- */
@@ -758,7 +798,6 @@ body.no-motion *{animation:none !important;}
 /* --- constituency and functional listings --- */
 i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
   color:var(--ink-soft);letter-spacing:.02em;font-weight:400;}
-#orbit-table tr.sel td{background:var(--chrome-lt);box-shadow:inset 2px 0 0 var(--rule);}
 #orbit-table td b{font-weight:600;}
 .conslist{width:100%;border-collapse:collapse;margin:2px 0 6px;}
 .conslist td{padding:3px 4px;border-bottom:1px solid var(--chrome-dk);vertical-align:top;}

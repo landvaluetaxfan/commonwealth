@@ -102,6 +102,12 @@ textarea.ed-body{
 }
 
 .ed-arch{background:#e0e4d6;padding:4px 6px;border-left:3px solid var(--rule);margin-bottom:6px;}
+
+/* "you are here" in the sibling-constituency list. This used to be .sel, but
+   the row is not clickable and nothing selects it - it is simply the record
+   already open in the form. .sel now means selection and only selection. */
+tr.here td{background:var(--chrome-lt);font-weight:600;}
+tr.here td:first-child{box-shadow:inset 3px 0 0 var(--rule);}
 .ed-warnbox{
   background:#f4eddb;border-left:3px solid #8a6d22;padding:4px 7px;margin:4px 0 6px;
   font-size:11px;line-height:1.4;

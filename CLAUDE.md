@@ -145,6 +145,15 @@ Kept here because they will otherwise happen again.
 - Player preferences go in `Shell.opts`, in localStorage; world state goes in
   the save. Mute in a save file silences somebody else's machine on import.
   `tools/uitest.js` asserts the audio preferences are in one and not the other.
+- A CSS class named for an appearance gets borrowed for whatever wants that
+  appearance. `.sel` was a pale tint, so it came to mean four things at once:
+  the row you picked, a disloyal current, an instrument in force, and a vacant
+  post. Restyling selection would have made three of those loud and wrong.
+  `.sel` now means selection and only selection; `.warn`, `.inforce`,
+  `.vacant` and the editor's `.here` say what they mean, and each differs from
+  the others in form as well as hue. `tools/uitest.js` fails if a row carries
+  `.sel` without being clickable, or if a fourth `"sel"` literal appears.
+
 - Sound is triggered by engine effects and user actions ONLY. Nothing reachable
   from `drawAll()` may make a noise — a redraw happens on a tab switch, on a
   load and on a mirrored panel repainting, so a cue fired from a draw function

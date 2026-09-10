@@ -251,7 +251,7 @@ const UI = (function () {
     let ch = "<thead><tr><th>Current</th><th class='n'>MPs</th><th class='n'>Loy</th></tr></thead><tbody>";
     C.currents.filter(c => c.party === st.playerParty).forEach(c => {
       const s = st.currents[c.id];
-      ch += `<tr class="${s.loyalty < 20 ? "sel" : ""}"><td>${c.name}</td><td class="n">${s.members}</td><td class="n">${s.loyalty}</td></tr>`;
+      ch += `<tr class="${s.loyalty < 20 ? "warn" : ""}"><td>${c.name}</td><td class="n">${s.members}</td><td class="n">${s.loyalty}</td></tr>`;
     });
     $("#gov-currents").innerHTML = ch + "</tbody>";
 
@@ -329,7 +329,7 @@ const UI = (function () {
       else if (s.inForce) { status = window > 0 ? "in force · prayable " + window : "in force"; cls = "good"; }
       else if (s.awaitingApproval) { status = "awaiting approval"; }
       else status = si.procedure === "affirmative" ? "affirmative" : "negative";
-      return `<tr data-si="${si.id}" class="${s.inForce ? "sel" : ""}">
+      return `<tr data-si="${si.id}" class="${s.inForce ? "inforce" : ""}">
         <td>${si.title.replace(/ Order 2287$/, "")}<div class="note">${si.number} &middot; ${si.author.replace(/_/g,' ')}</div></td>
         <td class="n"><span class="flag ${cls}">${status}</span></td>
         <td class="n">${s.made ? "" :
@@ -365,7 +365,7 @@ const UI = (function () {
     $("#gov-cabinet").innerHTML = (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
-      return `<tr class="${s.holder ? "" : "sel"}">
+      return `<tr class="${s.holder ? "" : "vacant"}">
         <td>${p.name}${p.senior ? " <span class='flag'>SENIOR</span>" : ""}</td>
         <td>${s.holder ? (ch ? ch.name.replace(/^Rt\. Hon\. /, "") : s.holder.replace(/_/g," "))
                        : "<span class='flag bad'>VACANT</span>"}</td>

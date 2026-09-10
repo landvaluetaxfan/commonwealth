@@ -532,7 +532,7 @@ const Editor = (function () {
     ${txt_("material_interest", (k.material_interest || []).join(", "), "", 520)}
     <div class="rulehead">Sibling constituencies</div>
     <table><tbody>${sib.map(c =>
-      `<tr${c.id === k.id ? ' class="sel"' : ""}><td>${esc(c.name)}</td>` +
+      `<tr${c.id === k.id ? ' class="here"' : ""}><td>${esc(c.name)}</td>` +
       `<td class="n">${c.magnitude}</td><td class="n">${c.electorate.toLocaleString()}</td></tr>`).join("")}</tbody></table>`;
   }
 

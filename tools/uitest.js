@@ -327,6 +327,42 @@ try {
      w.eval('Shell.opt("gainEvent")') === 0.25);
 } catch (e) { ok("audio preferences persist in Shell.opts", false, e.message); }
 
+/* SELECTION MEANS ONE THING.
+
+   .sel is the solid inverted block, and it belongs only to a row that a click
+   selects. It used to be borrowed for three other meanings - a disloyal
+   current, an instrument in force, a vacant post - which is exactly the kind
+   of drift a check should catch the second time it happens. Both halves are
+   asserted: what is on the page, and what the source is allowed to emit. */
+try {
+  const rows = [...w.document.querySelectorAll("tr.sel")];
+  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc]"));
+  ok(".sel is only on a row a click selects", rows.length >= 2 && stray.length === 0,
+     rows.length + " selected, " + stray.length + " on rows that do nothing");
+
+  /* three quoted literals, in three files, and no more: #gov-bills,
+     #orbit-table, #pp-list. A fourth is a regression. */
+  const jssrc = ["js/ui.js", "js/papers.js", "js/editor.js", "js/shell.js",
+                 "js/encyclopedia.js", "js/orbitchart.js"]
+    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+  const lits = jssrc.match(/["']sel["']/g) || [];
+  ok("nothing else emits a sel class", lits.length === 3, lits.length + " literals");
+
+  /* the three replacements differ in form as well as hue - a gutter, a hatch,
+     a ghost - so they cannot be read as paler selections */
+  const css2 = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  ["tr.warn td", "tr.inforce td", "tr.vacant td"].forEach(sel =>
+    ok("a rule of its own for " + sel, css2.includes(sel)));
+  ok("selection is distinct from all three",
+     /tr\.sel td\{background:var\(--bar\)/.test(css2));
+
+  /* NOTHING ABOUT PICKING A ROW FADES. A selection that eases in is one you
+     are not sure you made, and the same goes for focus. */
+  const anim = (css2.match(/[^}]*\.(sel|warn|inforce|vacant)[^{}]*\{[^}]*transition[^}]*\}/g) || [])
+    .concat(css2.match(/[^}]*:focus[a-z-]*[^{}]*\{[^}]*transition[^}]*\}/g) || []);
+  ok("no transition on a selection or a focus state", anim.length === 0, anim.join(" | "));
+} catch (e) { ok("selection semantics", false, e.message); }
+
 /* TAB ORDER AND FOCUS.
 
    Every control the player can reach with a pointer this phase is a real
