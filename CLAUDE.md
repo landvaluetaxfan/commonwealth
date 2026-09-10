@@ -63,7 +63,7 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all six, about two seconds
+npm run check    # all eight, about two seconds
 ```
 
 | | |
