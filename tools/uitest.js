@@ -35,7 +35,8 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/index.js",
-  "js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js","js/ui.js","js/shell.js"];
+  "js/audio.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
   if (!fs.existsSync(p)) return;
@@ -158,7 +159,8 @@ try {
 try {
   $("#tb-options").click();
   const boxes = w.document.querySelectorAll("#tb-optpanel [data-opt]").length;
-  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 3,
+  /* five now: autosave, animations, confirm, mute, room tone */
+  ok("options panel opens", $("#tb-optpanel").classList.contains("on") && boxes === 5,
      boxes + " toggles");
 } catch (e) { ok("options panel opens", false, e.message); }
 
@@ -229,6 +231,138 @@ ok("the station list lists every station",
   catch (e) { len = 0; }
   ok("the chart still draws from that save", len > 1000, len + " chars");
 }
+
+
+
+/* =============================================================
+   UI-0: THE STATUS BAR, THE AUDIO BUS, FOCUS AND TAB ORDER
+   ============================================================= */
+
+/* THE AUDIO BUS MUST SURVIVE HAVING NO AUDIO.
+
+   jsdom implements no AudioContext, which is exactly the condition a
+   locked-down or embedded browser presents. Every entry point has to be a
+   no-op rather than an exception: a player with no Web Audio still has a
+   game, they just have a quiet one. Any throw here also surfaces as a
+   window error at the bottom of this file. */
+try {
+  ok("audio module loaded", w.eval("typeof Sound") === "object");
+  ok("no audio context in this environment", w.eval("Sound.available()") === false);
+  w.eval('Sound.init(); Sound.play("click"); Sound.play("aye"); Sound.play("nope");');
+  w.eval('Sound.room(true); Sound.room(false); Sound.apply();');
+  w.eval('Sound.setMute(true); Sound.setGain("ui", 0.4);');
+  ok("a headless run with no audio context does not throw", true);
+} catch (e) { ok("a headless run with no audio context does not throw", false, e.message); }
+
+/* NO SOUND MAY COME OUT OF A REDRAW.
+
+   This is the rule at the top of js/audio.js, tested rather than inspected.
+   A redraw happens for reasons that have nothing to do with the player -
+   switching tabs, loading a slot, a mirrored panel repainting itself - so a
+   cue fired from a draw function fires at random and four times over. The
+   spy replaces Sound.play at the module boundary, which catches a call made
+   transitively through Papers or the Concordance as readily as a direct one. */
+try {
+  w.eval('window.__cues = []; Sound.play = function (n) { window.__cues.push(n); };');
+  w.eval('window.__cues.length = 0; UI.boot(UI.state(), CONTENT);');
+  const fromDraw = w.eval("window.__cues.slice()");
+  ok("a full redraw makes no sound", fromDraw.length === 0, fromDraw.join(", "));
+
+  /* and the spy is live, so the assertion above means something */
+  w.eval('window.__cues.length = 0;');
+  w.document.querySelector('.tab[data-t="cham"]')
+   .dispatchEvent(new w.MouseEvent("pointerdown", { bubbles: true }));
+  ok("a player action does make one", w.eval("window.__cues.length") === 1,
+     w.eval("JSON.stringify(window.__cues)"));
+} catch (e) { ok("audio fires from actions and not from redraws", false, e.message); }
+
+/* THE STATUS LINE. One writer, three levels, transient on top. */
+try {
+  w.document.querySelector('.tab[data-t="cham"]').click();
+  const ambient = $("#sb-msg").textContent;
+  ok("the status line carries an ambient message", ambient.length > 10,
+     JSON.stringify(ambient));
+  w.eval('UI.setStatus("A DIVISION HAS BEEN CALLED", "transient")');
+  ok("a transient message wins", $("#sb-msg").textContent === "A DIVISION HAS BEEN CALLED" &&
+     $("#sb-msg").classList.contains("live"));
+  w.eval('UI.setStatus("", "transient")');
+  ok("and the ambient one comes back", $("#sb-msg").textContent === ambient &&
+     !$("#sb-msg").classList.contains("live"));
+
+  /* setStatus is called from more than one place. Counted in the source
+     rather than at runtime: most of the call sites need a division or a
+     signature to reach, and the acceptance is about the shape of the code. */
+  const uisrc = fs.readFileSync(path.join(root, "js/ui.js"), "utf8");
+  const sites = (uisrc.match(/setStatus\(/g) || []).length -
+                (uisrc.match(/function setStatus\(/g) || []).length;
+  ok("setStatus is called from at least three sites", sites >= 3, sites + " calls");
+} catch (e) { ok("the status line", false, e.message); }
+
+/* PLAYER PREFERENCES LIVE IN Shell.opts, NOT IN THE SAVE.
+
+   Mute describes the person at the terminal; the save describes the
+   Commonwealth. Asserted here rather than in roundtrip.js, which tests
+   content serialisation and has no view of a browser's storage at all. */
+try {
+  $("#tb-options").click();
+  const mute = w.document.querySelector('#tb-optpanel [data-opt="mute"]');
+  const lvl  = w.document.querySelector('#tb-optpanel [data-lvl="gainEvent"]');
+  ok("the options panel offers sound", !!mute && !!lvl);
+  mute.checked = true;
+  mute.dispatchEvent(new w.Event("change", { bubbles: true }));
+  lvl.value = "25";
+  lvl.dispatchEvent(new w.Event("input", { bubbles: true }));
+
+  const stored = JSON.parse(w.localStorage.getItem("wm.opts") || "{}");
+  ok("mute and gains are written to Shell.opts",
+     stored.mute === true && stored.gainEvent === 0.25, JSON.stringify(stored));
+
+  const save = JSON.parse(w.eval("Engine.save(UI.state())"));
+  ok("and never to the save state",
+     !("mute" in save) && !("gainEvent" in save) && !("opts" in save));
+
+  /* across a reload: Shell.boot re-reads localStorage */
+  w.eval("Shell.boot(CONTENT)");
+  ok("they survive a reload", w.eval('Shell.opt("mute")') === true &&
+     w.eval('Shell.opt("gainEvent")') === 0.25);
+} catch (e) { ok("audio preferences persist in Shell.opts", false, e.message); }
+
+/* TAB ORDER AND FOCUS.
+
+   Every control the player can reach with a pointer this phase is a real
+   button or input, so tab order is document order and needs no tabindex to
+   arrange it. A POSITIVE tabindex is the thing that breaks that: it jumps
+   ahead of the whole document and reorders everything after it. */
+try {
+  const src = ["index.html", "js/ui.js", "js/shell.js", "js/papers.js",
+               "js/encyclopedia.js", "js/orbitchart.js"]
+    .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
+  const pos = src.match(/tabindex\s*=\s*["'`]?\s*[1-9]/g) || [];
+  ok("no positive tabindex reorders the document", pos.length === 0, pos.join(" "));
+
+  /* one rule owns focus, and it is dotted so that it can never be confused
+     with a selected row */
+  const css = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
+  ok("focus is a dotted outline", /:focus-visible\{outline:1px dotted/.test(css));
+  const solid = (css.match(/:focus[a-z-]*\{[^}]*outline:\s*\d+px solid/g) || []);
+  ok("nothing else draws a solid focus ring", solid.length === 0, solid.join(" | "));
+
+  /* The shell's own chrome: three in the topbar, seven tabs, and the
+     Concordance's back and go. All twelve are real buttons, so they are in
+     tab order by being in the document, and none of them needs arranging.
+     jsdom has no layout, so this counts them rather than measuring them. */
+  const chrome = [...w.document.querySelectorAll(
+    "#titlebar button, #tabstrip button, #cx-side button")]
+    .filter(b => !b.closest("#tb-optpanel"));   /* the popover is not chrome */
+  ok("every control in the shell chrome is a real button",
+     chrome.length === 12 && chrome.every(b => b.tagName === "BUTTON"),
+     chrome.length + " buttons");
+  ok("the search field is a real input",
+     (w.document.querySelector("#cx-q") || {}).tagName === "INPUT");
+  const bad = [...w.document.querySelectorAll('#shell [role="button"], #shell [onclick]')];
+  ok("nothing is an improvised control", bad.length === 0,
+     bad.map(n => n.tagName).join(" "));
+} catch (e) { ok("tab order and focus", false, e.message); }
 
 
 console.log("");

@@ -96,7 +96,8 @@ js/schema.js          the content vocabulary, machine-readable
 js/refs.js            reference tracking for safe rename
 js/coverage.js        what-to-do-next analysis
 js/orbitchart.js      the habitat schematic
-js/shell.js           main menu, save slots, options
+js/shell.js           main menu, save slots, options, player preferences
+js/audio.js           the sound bus. Read its header before adding a cue.
 tools/                checks, index generator, image pipeline, bundle
 ```
 
@@ -134,6 +135,21 @@ Kept here because they will otherwise happen again.
 - An inline `<svg>` with a viewBox and no `width` fills its container, so
   shrinking the coordinate space only magnifies the drawing. `drawChamber()`
   sets width and height in px; the CSS scales it down and never up.
+- Setting `scrollbar-color` or `scrollbar-width` on an element makes Chromium
+  ignore every `::-webkit-scrollbar` rule for it, silently, and hand back the
+  default rounded overlay bar. The standard properties are fenced behind
+  `@supports not selector(::-webkit-scrollbar)` so only Gecko sees them.
+- `overflow-x:auto` forces `overflow-y` to `auto` as well. With real
+  (non-overlay) scrollbars that reserved a 16px vertical bar down the side of
+  the tab strip. Anything that scrolls in one axis says so in both.
+- Player preferences go in `Shell.opts`, in localStorage; world state goes in
+  the save. Mute in a save file silences somebody else's machine on import.
+  `tools/uitest.js` asserts the audio preferences are in one and not the other.
+- Sound is triggered by engine effects and user actions ONLY. Nothing reachable
+  from `drawAll()` may make a noise — a redraw happens on a tab switch, on a
+  load and on a mirrored panel repainting, so a cue fired from a draw function
+  fires four times for no reason. `tools/uitest.js` proves it by spying on
+  `Sound.play` across a full redraw.
 
 ## Authoring
 

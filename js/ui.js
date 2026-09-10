@@ -39,7 +39,25 @@ const UI = (function () {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
       $("#s-" + t.dataset.t).classList.add("on");
       $("#viewport").scrollTop = 0;
+      screen = t.dataset.t;
+      setStatus(ambient(), "ambient");
     }));
+
+    /* THE TERMINAL'S OWN CLICK, delegated once.
+
+       Every control in the game is a real button or a row with a click
+       handler, so one listener at the document gives all of them a voice
+       and keeps the audio bus out of every render function. Registered on
+       pointerdown rather than click so the sound lands with the press, and
+       in the capture phase so a handler that stops propagation is still
+       audible. A disabled control answers differently, which is the only
+       feedback a disabled control can give. */
+    document.addEventListener("pointerdown", e => {
+      const t = e.target.closest && e.target.closest(
+        "button, [data-station], [data-bill], [data-doc], [data-go]");
+      if (!t) return;
+      cue(t.disabled ? "deny" : t.classList.contains("tab") ? "tab" : "click");
+    }, true);
     /* Saving, loading and starting a game belong to Shell now — they are
        session concerns, not rendering ones, and they live in the topbar. */
     const goSearch = () => {
@@ -87,6 +105,89 @@ const UI = (function () {
     const loss = Engine.checkLoss(st, C);
     $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN — " + loss.reason.toUpperCase() : "READY";
     $("#sb-state").style.color = loss.lost ? "var(--alert)" : "";
+    setStatus(ambient(), "ambient");
+  }
+
+  /* ---------- the status line ----------
+
+     One line, three sources, in a fixed priority. Deciding the priority
+     once, here, is the point of the whole thing: without it every feature
+     that wants to say something writes over whatever the last one said.
+
+       1  transient   what the player just did. Wins, briefly.
+       2  referral    D.3 contextual referral - the section of the induction
+                      pack that covers what is on screen. NOTHING WRITES
+                      THIS YET. Part D has never been built, so the slot is
+                      a hook and not a feature: it exists so that when the
+                      induction pack lands it has a defined place in the
+                      priority, rather than a fight with the ambient line.
+       3  ambient     what the terminal is looking at.
+
+     setStatus is the only writer of #sb-msg, and each level has exactly one
+     owner: transient is written by the handlers for player actions, ambient
+     by drawStatus, referral by nobody. Two writers on one level is how a
+     status bar turns into a race. */
+  const STATUS = { transient: "", referral: "", ambient: "" };
+  let statusTimer = null, screen = "sit";
+
+  function setStatus(text, level) {
+    const k = level === "transient" || level === "referral" ? level : "ambient";
+    STATUS[k] = text || "";
+    if (k === "transient") {
+      clearTimeout(statusTimer);
+      /* setTimeout is absent in no browser, but a headless harness may run
+         without a live timer queue; the line simply stays up if so. */
+      if (typeof setTimeout === "function")
+        statusTimer = setTimeout(() => { STATUS.transient = ""; paintStatus(); }, 4500);
+    }
+    paintStatus();
+  }
+
+  function paintStatus() {
+    const m = $("#sb-msg");
+    if (!m) return;
+    m.textContent = STATUS.transient || STATUS.referral || STATUS.ambient;
+    m.classList.toggle("live", !!STATUS.transient);
+  }
+
+  /* what the current screen is for, plus the one live legislative fact that
+     screen is about. Derived, never stored. */
+  const SCREEN_NOTE = {
+    sit:  "One decision, then the House rises",
+    gov:  "Coalition, order paper and the whip",
+    cham: "280 seats \u00b7 a bill needs 141, and a dual bill needs 21 of the functional 40",
+    orb:  "Thirty-four habitats by altitude band and closure",
+    pap:  "Instruments in force, and the register of what has been done",
+    cx:   "Public reference \u00b7 attestation is a political act",
+    log:  "Every decision this government has taken"
+  };
+
+  function ambient() {
+    const note = SCREEN_NOTE[screen] || "";
+    if (screen !== "gov" && screen !== "cham") return note;
+    const id = ($("#bill-detail") && $("#bill-detail").dataset.bill) || "divergence";
+    const b = (C.bills || []).find(x => x.id === id);
+    if (!b) return note;
+    return b.title + " \u2014 " + (b.dualMajority ? "dual test applies" : "simple majority");
+  }
+
+  /* ---------- cues ----------
+     The ONLY place in this file that names the audio bus, apart from one
+     delegated listener in boot(). Audio follows actions and outcomes; see
+     the header of js/audio.js for why a draw function may never reach here. */
+  function cue(name) { if (typeof Sound !== "undefined") Sound.play(name); }
+
+  /* Called after anything that moved the game on. A government falls once,
+     so the knell is edge-triggered rather than drawn from the current state
+     - which is also why this cannot live in drawStatus. */
+  let fallen = false;
+  function afterAction() {
+    const loss = Engine.checkLoss(st, C);
+    if (loss.lost && !fallen) {
+      fallen = true;
+      cue("knell");
+      setStatus("The government has fallen \u2014 " + loss.reason, "transient");
+    } else if (!loss.lost) fallen = false;
   }
 
   /* ---------- scarcity prices ----------
@@ -208,7 +309,15 @@ const UI = (function () {
         `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}>Grant</button></td></tr>`
       ).join("")}</tbody></table>`;
     $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
-      btn.addEventListener("click", () => { Engine.grantSlot(st, C, btn.dataset.slot); drawAll(); }));
+      btn.addEventListener("click", () => {
+        const b = C.bills.find(x => x.id === btn.dataset.slot);
+        Engine.grantSlot(st, C, btn.dataset.slot);
+        cue("stamp");
+        setStatus("Order paper time granted to " + (b ? b.title : btn.dataset.slot) +
+                  " \u00b7 " + (st.slots.total - st.slots.used) + " of " +
+                  st.slots.total + " slots left", "transient");
+        drawAll(); afterAction();
+      }));
 
     /* ---- instruments: the fast, deniable tool ---- */
     $("#gov-si").innerHTML = (C.instruments || []).map(si => {
@@ -229,15 +338,27 @@ const UI = (function () {
       </tr>`;
     }).join("");
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
+      const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = Engine.makeInstrument(st, C, b.dataset.make);
-      if (!r.ok) alert(r.reason); drawAll();
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); alert(r.reason); }
+      else {
+        cue("stamp");
+        setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
+                  "transient");
+      }
+      drawAll(); afterAction();
     }));
     $("#gov-si").querySelectorAll("[data-pray]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.prayerForecast(st, C, b.dataset.pray);
       if (!confirm(`Pray against this order?\n\nForecast ${f.aye} of ${f.total}, needs ${f.need}.\n` +
         (f.carries ? "The prayer would carry and the order would be annulled." :
                      "The prayer would be defeated and the order would stand."))) return;
-      Engine.prayAgainst(st, C, b.dataset.pray); drawAll();
+      Engine.prayAgainst(st, C, b.dataset.pray);
+      cue(f.carries ? "aye" : "nay");
+      setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
+                (f.carries ? " carried \u2014 the order is annulled"
+                           : " defeated \u2014 the order stands"), "transient");
+      drawAll(); afterAction();
     }));
 
     /* ---- cabinet ---- */
@@ -307,8 +428,21 @@ const UI = (function () {
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
     $("#btn-divide").addEventListener("click", () => {
-      Engine.divide(st, C, id);
-      drawAll();
+      const out = Engine.divide(st, C, id) || {};
+      const r = out.result || {};
+      /* A dual bill can carry the House and still fall, which is the whole
+         argument of the game, so the line names BOTH tests and not just the
+         verdict. Assent is a third gate again: carrying sends it to the
+         President, who may refer it rather than sign. */
+      cue(r.carries ? "aye" : "nay");
+      const tally = (r.popular ? " \u00b7 popular " + r.popular.aye + "/" + r.popular.need : "") +
+        (b.dualMajority && r.functional
+          ? " \u00b7 functional " + r.functional.aye + "/" + r.functional.need : "");
+      setStatus(b.title + " \u2014 " +
+                (!r.carries ? "not carried"
+                  : out.assent && out.assent.referred ? "carried, and referred for review"
+                  : "carried") + tally, "transient");
+      drawAll(); afterAction();
     });
   }
 
@@ -465,7 +599,11 @@ const UI = (function () {
     if (!currentEvent) {
       box.innerHTML = `<div class="note">Nothing on the order paper demands a decision this sitting.</div>` +
         `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
-      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); saved(); });
+      $("#btn-advance").addEventListener("click", () => {
+        Engine.advance(st, C); currentEvent = null; lastResult = null;
+        setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
+        drawAll(); saved(); afterAction();
+      });
       return;
     }
     const e = currentEvent;
@@ -484,13 +622,19 @@ const UI = (function () {
 
     if (lastResult) {
       bindGlossary(box);
-      $("#btn-advance").addEventListener("click", () => { Engine.advance(st, C); currentEvent = null; lastResult = null; drawAll(); saved(); });
+      $("#btn-advance").addEventListener("click", () => {
+        Engine.advance(st, C); currentEvent = null; lastResult = null;
+        setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
+        drawAll(); saved(); afterAction();
+      });
     } else {
       bindGlossary(box);
       box.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
         lastResult = Engine.choose(st, C, e, +b.dataset.i) || "Noted.";
+        cue("stamp");
+        setStatus(e.title + " \u2014 " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
         saved();
-        drawAll();
+        drawAll(); afterAction();
       }));
     }
   }
@@ -716,8 +860,13 @@ const UI = (function () {
     drawSeats(selId);
   }
 
+  /* A player action, not a redraw: it may make a sound and it may write the
+     status line. drawOrbit(), which it calls, may do neither. */
   function pickStation(id) {
     drawStation(id); drawSeats(id); drawOrbit();
+    const s = st.stations[id];
+    if (s) setStatus(s.name + " \u00b7 " + s.band + " band \u00b7 " + s.seats +
+                     (s.seats === 1 ? " seat" : " seats"), "transient");
   }
 
   /* population-weighted mean of a station's constituency ratios */
@@ -853,5 +1002,7 @@ const UI = (function () {
       : "<tbody><tr><td>No decisions recorded.</td></tr></tbody>";
   }
 
-  return { boot, state: () => st, annotate };
+  /* setStatus is exported so that Shell and, later, the induction pack can
+     write the line without reaching into #sb-msg themselves. */
+  return { boot, state: () => st, annotate, setStatus };
 })();

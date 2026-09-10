@@ -88,7 +88,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   color:var(--ink);font-weight:bold;
   position:relative;top:1px;
 }
-.tab:focus-visible{outline:2px solid var(--alert);outline-offset:-2px;}
 
 #viewport{flex:1 1 auto;overflow:auto;padding:5px;}
 .screen{display:none;}
@@ -105,7 +104,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
   padding:1px 6px;white-space:nowrap;
 }
-#statusbar span.grow{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;}
+#statusbar span.grow{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+/* A transient line is something that just happened, so it is not the same
+   voice as the ambient one it briefly replaces. */
+#sb-msg.live{background:var(--chrome-lt);font-weight:bold;}
 
 /* ---------- panels ---------- */
 .grid{display:grid;gap:5px;}
@@ -171,7 +173,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   color:#d7dccb;font:inherit;font-size:10.5px;cursor:pointer;text-align:left;}
 .ochip:hover{border-color:#6d7566;background:#212719;}
 .ochip.on{border-color:var(--alert-lt,#c9a227);background:#272d1d;}
-.ochip:focus-visible{outline:2px solid #c9a227;outline-offset:-2px;}
 /* .plate svg is width:100% for the full-bleed diagrams; a chip glyph is a
    13px icon and must win that. */
 .plate .oglyph,.okey .oglyph{display:block;flex:0 0 13px;width:13px;height:13px;}
@@ -242,7 +243,6 @@ tr.sel td{background:#dfe4d3;}
   padding:2px 9px;font-size:11px;
 }
 .btn:active{border-top-color:var(--chrome-dkr);border-left-color:var(--chrome-dkr);border-bottom-color:var(--chrome-lt);border-right-color:var(--chrome-lt);}
-.btn:focus-visible{outline:2px solid var(--alert);outline-offset:1px;}
 .btn[disabled]{color:var(--chrome-dkr);cursor:default;}
 .btnrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 
@@ -450,7 +450,6 @@ img.dith{
 
 /* ---------- glossary: first use gets a footnote, not a wiki ---------- */
 .gl{border-bottom:1px dotted var(--rule);cursor:help;}
-.gl:focus{outline:1px solid var(--alert);outline-offset:1px;}
 .glbox{
   display:block;margin:4px 0 6px;padding:4px 7px;
   background:var(--field);border-left:3px solid var(--rule);
@@ -812,3 +811,126 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 .trknote.good{border-left-color:#3d5c33;}
 .trknote.bad{border-left-color:#8c3a32;}
 .trknote.warn{border-left-color:#a5762c;}
+
+
+/* =============================================================
+   FOCUS, SELECTION AND THE PARTS THAT DEPRESS
+   ============================================================= */
+
+/* FOCUS IS A DOTTED RECTANGLE, EVERYWHERE, AND NOTHING ELSE.
+
+   It has to stay distinct from selection, which is a solid block: a row can
+   be selected and not focused, focused and not selected, or both at once,
+   and if the two share a treatment the keyboard becomes unreadable. Dotted
+   is also what the era did, and it costs no colour.
+
+   :focus-visible rather than :focus so a mouse click does not leave a ring
+   behind it, with a :focus fallback for the elements that ask for focus
+   programmatically. */
+:focus-visible{outline:1px dotted var(--ink);outline-offset:1px;}
+/* the titlebar is nearly black; ink on it is invisible */
+#titlebar :focus-visible{outline-color:var(--bar-txt);}
+/* SVG: outline lands on the bounding box in every engine that draws it */
+.ochip:focus-visible{outline-offset:-2px;}
+.gl:focus-visible{outline-offset:1px;}
+
+/* THINGS THAT DEPRESS ARE BEVELLED. THINGS THAT HOLD DATA ARE NOT.
+
+   The bevel means "this moves when you push it". Buttons, tab strips,
+   scrollbar parts and window chrome move; a table cell does not, and putting
+   a bevel on 140 cells turns a roll of the House into corrugated iron. Data
+   tables keep the flat 1px rules they have. */
+
+/* --- scrollbars ---
+   WebKit and Blink only; Firefox gets the two-colour scrollbar-color below
+   and Gecko has no way to bevel one. Sized to the era: wide enough to have
+   a face, with stepper buttons at both ends. */
+/* SETTING scrollbar-color DISABLES ::-webkit-scrollbar.
+
+   Chromium honours the standard properties OR the pseudo-elements, never
+   both: the moment scrollbar-color or scrollbar-width is set on an element,
+   every ::-webkit-scrollbar rule for it is dropped and you get the default
+   rounded overlay bar back. So the standard two-colour fallback is fenced
+   off behind a query for engines that have no pseudo-elements to lose,
+   which today means Gecko. */
+@supports not selector(::-webkit-scrollbar){
+  *{scrollbar-color:var(--chrome) var(--chrome-lt);scrollbar-width:auto;}
+}
+::-webkit-scrollbar{width:16px;height:16px;background:var(--chrome-lt);}
+::-webkit-scrollbar-track{
+  background:var(--chrome-lt);
+  box-shadow:inset 1px 1px 0 var(--chrome-dk);
+}
+::-webkit-scrollbar-thumb{
+  background:var(--chrome);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  min-height:26px;
+}
+::-webkit-scrollbar-thumb:active{
+  border-top-color:var(--chrome-dkr);border-left-color:var(--chrome-dkr);
+  border-bottom-color:var(--chrome-lt);border-right-color:var(--chrome-lt);
+}
+::-webkit-scrollbar-corner{background:var(--chrome-lt);}
+/* THE TAB STRIP IS THE ONE PLACE A REAL SCROLLBAR HURT.
+
+   overflow-x:auto forces overflow-y to auto as well, and once the bars are
+   no longer overlays that reserved a full 16px vertical scrollbar down the
+   right of the strip - a stepper and a track, on a row 22px tall, next to
+   the last tab. The strip only ever scrolls sideways, and only on a narrow
+   screen, so it gets no vertical bar and a slim horizontal one with no
+   steppers to squeeze. */
+#tabstrip{overflow-y:hidden;}
+#tabstrip::-webkit-scrollbar{height:7px;}
+#tabstrip::-webkit-scrollbar-button{display:none;width:0;height:0;}
+#tabstrip::-webkit-scrollbar-thumb{min-width:34px;}
+/* Steppers. A scrollbar part takes no pseudo-element, so the arrow is a
+   background image rather than a border triangle. */
+::-webkit-scrollbar-button:single-button{
+  background:var(--chrome);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  background-repeat:no-repeat;background-position:center;background-size:7px 7px;
+  /* the universal box-sizing rule does not reach a pseudo-element, and
+     without this the stepper's borders push the whole bar out to 18px */
+  box-sizing:border-box;display:block;height:16px;width:16px;
+}
+::-webkit-scrollbar-button:single-button:active{
+  border-top-color:var(--chrome-dkr);border-left-color:var(--chrome-dkr);
+  border-bottom-color:var(--chrome-lt);border-right-color:var(--chrome-lt);
+}
+::-webkit-scrollbar-button:vertical:decrement{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 1 L7 6 L1 6 Z' fill='%231b1d19'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:increment{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M4 7 L1 2 L7 2 Z' fill='%231b1d19'/></svg>");
+}
+::-webkit-scrollbar-button:horizontal:decrement{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M1 4 L6 1 L6 7 Z' fill='%231b1d19'/></svg>");
+}
+::-webkit-scrollbar-button:horizontal:increment{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path d='M7 4 L2 7 L2 1 Z' fill='%231b1d19'/></svg>");
+}
+
+/* --- window chrome --- */
+/* The titlebar buttons were flat outlines on the dark bar. They depress, so
+   they get the same bevel as everything else, in the bar's own values. */
+.tbbtn{
+  border:0;
+  border-top:1px solid rgba(233,234,226,.42);border-left:1px solid rgba(233,234,226,.42);
+  border-bottom:1px solid rgba(0,0,0,.45);border-right:1px solid rgba(0,0,0,.45);
+  background:rgba(233,234,226,.07);
+}
+.tbbtn:active{
+  border-top-color:rgba(0,0,0,.45);border-left-color:rgba(0,0,0,.45);
+  border-bottom-color:rgba(233,234,226,.42);border-right-color:rgba(233,234,226,.42);
+}
+/* the three dummy window boxes already carry it; the options popover should
+   read as a panel that came out of the bar */
+#tb-optpanel{border-width:1px;}
+
+/* --- volume sliders in the options panel --- */
+.optlvl{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;
+  padding:3px 2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-soft);}
+.optlvl input[type=range]{width:100%;height:14px;accent-color:var(--rule);margin:0;}

@@ -35,18 +35,43 @@ const Shell = (function () {
     delete memory[k];
   }
 
-  /* ---------- options ---------- */
-  const DEFAULTS = { autosave: true, motion: true, confirmDestructive: true };
-  let opts = Object.assign({}, DEFAULTS);
+  /* ---------- options ----------
+
+     THE LINE BETWEEN THIS AND THE SAVE: anything describing the PLAYER
+     lives here, in localStorage; anything describing the WORLD lives in
+     the save. Mute, volumes and animation are facts about the person at
+     the terminal and the machine they are at. Carry them in the save and
+     importing a friend's game silences your speakers.
+
+     Keys are flat rather than nested because stored options are merged
+     over the defaults SHALLOWLY: one nested object written by an older
+     build would replace the whole default and take its missing keys with
+     it, and the failure would be a volume of undefined. */
+  const DEFAULTS = {
+    autosave: true, motion: true, confirmDestructive: true,
+    mute: false, roomTone: true,
+    gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7
+  };
+  /* MUTATED IN PLACE, NEVER REASSIGNED. `options` below hands this object
+     out; reassigning it on load would leave every holder pointing at the
+     defaults for the rest of the session. */
+  const opts = Object.assign({}, DEFAULTS);
   function loadOpts() {
-    try { opts = Object.assign({}, DEFAULTS, JSON.parse(read(OPTS) || "{}")); }
-    catch (e) { opts = Object.assign({}, DEFAULTS); }
+    let stored = {};
+    try { stored = JSON.parse(read(OPTS) || "{}") || {}; } catch (e) { stored = {}; }
+    Object.keys(opts).forEach(k => delete opts[k]);
+    Object.assign(opts, DEFAULTS, stored);
     applyOpts();
   }
   function saveOpts() { write(OPTS, JSON.stringify(opts)); applyOpts(); }
   function applyOpts() {
     document.body.classList.toggle("no-motion", !opts.motion);
+    /* Audio is optional at every level: the module may not be loaded, and
+       if it is it may have no graph yet. Both are silence, not an error. */
+    if (typeof Sound !== "undefined") Sound.apply();
   }
+  function opt(k) { return opts[k]; }
+  function setOpt(k, v) { opts[k] = v; saveOpts(); }
 
   /* ---------- slots ---------- */
   function slot(n) {
@@ -209,10 +234,20 @@ const Shell = (function () {
   function optionsHTML() {
     const row = (k, label, note) => `<label class="opt"><input type="checkbox" data-opt="${k}"
       ${opts[k] ? "checked" : ""}><span><b>${label}</b><i>${note}</i></span></label>`;
+    const slider = (k, label) => `<label class="optlvl"><span>${label}</span>
+      <input type="range" data-lvl="${k}" min="0" max="100" step="5"
+        value="${Math.round((opts[k] || 0) * 100)}" aria-label="${label} volume"></label>`;
     return `<div class="opt-title">Options</div>
       ${row("autosave", "Autosave", "Write to the current slot after every sitting")}
       ${row("motion", "Animations", "The signature ceremony and other transitions")}
       ${row("confirmDestructive", "Confirm overwrites", "Ask before replacing or deleting a save")}
+      <div class="opt-sep"></div>
+      <div class="opt-title">Sound</div>
+      ${row("mute", "Mute", "Silence everything, without losing the levels below")}
+      ${row("roomTone", "Room tone", "The air handling, a long way off")}
+      ${slider("gainUi", "Terminal")}
+      ${slider("gainRoom", "Room")}
+      ${slider("gainEvent", "Events")}
       <div class="opt-sep"></div>
       <button class="mbtn sm wide" data-act="export">Export to file</button>
       <button class="mbtn sm wide" data-act="import">Import from file</button>
@@ -224,10 +259,22 @@ const Shell = (function () {
     const p = document.getElementById("tb-optpanel");
     const open = force != null ? force : !p.classList.contains("on");
     p.classList.toggle("on", open);
-    if (!open) return;
+    if (!open) {
+      /* Shutting a popover under the keyboard leaves focus on a hidden node
+         and the next Tab starts again from the top of the document. Put it
+         back on the control that opened it. */
+      const b = document.getElementById("tb-options");
+      if (b && p.contains(document.activeElement)) b.focus();
+      return;
+    }
     p.innerHTML = optionsHTML();
     p.querySelectorAll("[data-opt]").forEach(cb => cb.addEventListener("change", () => {
       opts[cb.dataset.opt] = cb.checked; saveOpts();
+    }));
+    /* input, not change: a volume slider that only lands when you let go is
+       a slider you cannot aim. */
+    p.querySelectorAll("[data-lvl]").forEach(sl => sl.addEventListener("input", () => {
+      opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts();
     }));
     p.querySelector('[data-act="export"]').addEventListener("click", exportFile);
     p.querySelector('[data-act="import"]').addEventListener("click", () =>
@@ -268,6 +315,15 @@ const Shell = (function () {
     document.getElementById("tb-options").addEventListener("click", e => {
       e.stopPropagation(); toggleOptions();
     });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      const p = document.getElementById("tb-optpanel");
+      if (p && p.classList.contains("on")) toggleOptions(false);
+    });
+    /* The audio bus only installs its unlock listener here. It builds no
+       graph and makes no sound until the player's first click or keypress,
+       because every browser refuses to start one before that anyway. */
+    if (typeof Sound !== "undefined") Sound.init();
     document.addEventListener("click", e => {
       const p = document.getElementById("tb-optpanel");
       if (p.classList.contains("on") && !p.contains(e.target)) toggleOptions(false);
@@ -292,5 +348,6 @@ const Shell = (function () {
     showMenu(null);
   }
 
-  return { boot: boot, autosave: autosave, save: saveNow, options: opts };
+  return { boot: boot, autosave: autosave, save: saveNow, options: opts,
+           opt: opt, setOpt: setOpt, flash: flash };
 })();
