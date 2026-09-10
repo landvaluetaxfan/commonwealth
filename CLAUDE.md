@@ -125,6 +125,15 @@ Kept here because they will otherwise happen again.
   (closure, suspended, attested).
 - A blank screen is invisible to every static check. `tools/uitest.js` asserts
   each screen actually put content on the page.
+- `#s-orb.screen{display:block}` was written to make the orbit screen a
+  full-height column. An id outranks `.screen{display:none}`, so the habitat
+  map appeared on every tab at once and every static check still passed,
+  because each screen was rendering its own content correctly. Any rule whose
+  *subject* is a `#s-…` screen must include `.on`. `tools/uitest.js` reads the
+  stylesheet as text and fails on one that does not.
+- An inline `<svg>` with a viewBox and no `width` fills its container, so
+  shrinking the coordinate space only magnifies the drawing. `drawChamber()`
+  sets width and height in px; the CSS scales it down and never up.
 
 ## Authoring
 

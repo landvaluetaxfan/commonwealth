@@ -538,12 +538,16 @@ const UI = (function () {
       for (let i = 0; i < s.functional; i++) cross.push({ c: col, t: "f", p: id });
     });
 
+    /* No outline. A stroke on a 3px mark is a third of its area, so 280 of
+       them read as a grey mesh with colour trapped inside it. Bare fills
+       let the benches read as blocks of party at a glance, which is the
+       only thing this diagram is for. */
     const glyph = (x, y, s) => {
-      const st_ = ` fill="${s.c}" stroke="#2c2f28" stroke-width=".6"`;
-      if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4"${st_}/>`;
-      if (s.t === "l") return `<rect x="${(x-3.5).toFixed(1)}" y="${(y-3.5).toFixed(1)}" width="7" height="7"${st_}/>`;
-      return `<path d="M${x.toFixed(1)} ${(y-4.4).toFixed(1)}L${(x+4.2).toFixed(1)} ${(y+3.2).toFixed(1)}` +
-             `L${(x-4.2).toFixed(1)} ${(y+3.2).toFixed(1)}Z"${st_}/>`;
+      const st_ = ` class="sg" fill="${s.c}"`;
+      if (s.t === "d") return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4"${st_}/>`;
+      if (s.t === "l") return `<rect x="${(x-3).toFixed(1)}" y="${(y-3).toFixed(1)}" width="6" height="6"${st_}/>`;
+      return `<path d="M${x.toFixed(1)} ${(y-3.8).toFixed(1)}L${(x+3.6).toFixed(1)} ${(y+2.7).toFixed(1)}` +
+             `L${(x-3.6).toFixed(1)} ${(y+2.7).toFixed(1)}Z"${st_}/>`;
     };
 
     /* PARTIES STACK HORIZONTALLY. Seats fill column by column, five deep,
@@ -552,7 +556,7 @@ const UI = (function () {
        benches actually work. Filling row-major instead made each party a
        horizontal band and stacked the parties vertically, which reads as a
        bar chart lying on its side rather than as a chamber. */
-    const ROWS = 5, CW = 12, RH = 13;
+    const ROWS = 5, CW = 9, RH = 10;
     const cols = n => Math.ceil(n / ROWS);
 
     function bench(seats, x0, yFront, dir) {
@@ -566,11 +570,36 @@ const UI = (function () {
 
     /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
-      let out = "", COLS = 5, CS = 15, RS = 14;
+      let out = "", COLS = 5, CS = 11, RS = 10.5;
       seats.forEach((s, i) => {
         out += glyph(x0 + (i % COLS) * CS, yTop + Math.floor(i / COLS) * RS, s);
       });
       return out;
+    }
+
+    /* THE CHAIR. One constituency in content carries `speaker:true`; the
+       member for it takes the Chair. The glyph is the same district circle
+       as everyone else's, in the colour of whichever party holds that seat
+       on the roll — impartial in the House, partisan on the map, which is
+       the true state of affairs. Drawing it as a piece of furniture said
+       the chamber contained a chair; drawing it as a member says the
+       chamber contains a member who is not on either bench.
+
+       The seat is moved out of its bench rather than added, so the plan
+       still shows 280 marks for 280 seats. */
+    const govN = gov.length, oppN = opp.length, crossN = cross.length;
+    const spkSeat = (C.constituencies || []).find(k => k.speaker);
+    let chair = null, chairParty = null, chairName = spkSeat ? spkSeat.member : null;
+    if (spkSeat) {
+      const held = Engine.seatsFor(st, spkSeat.id).held;
+      chairParty = Object.keys(held).sort((a, b) => held[b] - held[a])[0] || null;
+      const ch = (C.characters || []).find(c => c.seat === spkSeat.name);
+      if (ch) chairName = ch.name;
+      const take = arr => {
+        const i = arr.findIndex(g => g.p === chairParty && g.t === "d");
+        return i >= 0 ? arr.splice(i, 1)[0] : null;
+      };
+      chair = take(gov) || take(opp);
     }
 
     /* Everything is derived from the seat counts, so the diagram tightens
@@ -580,41 +609,49 @@ const UI = (function () {
     const benchW = Math.max(govCols, oppCols) * CW;
     const crossRows = Math.max(1, Math.ceil(cross.length / 5));
 
-    const X0 = 104;                                   // clear of the Speaker
-    const GAP = 34;                                   // floor to front bench
-    const FLOOR = 30 + (ROWS - 1) * RH + GAP;   // headroom for the label
+    const X0 = 66;                                    // clear of the Chair
+    const GAP = 26;                                   // floor to front bench
+    const FLOOR = 24 + (ROWS - 1) * RH + GAP;   // headroom for the label
     const govFront = FLOOR - GAP, oppFront = FLOOR + GAP;
     const govTop = govFront - (ROWS - 1) * RH;
     const oppBot = oppFront + (ROWS - 1) * RH;
 
     const CX = X0 + benchW / 2 - CW / 2;              // bench centre
-    const TW = Math.min(benchW - 40, 300), TX = CX - TW / 2;
+    const TW = Math.min(benchW - 60, 170), TX = CX - TW / 2;
 
-    const crossX = X0 + benchW + 38;
-    const crossTop = FLOOR - ((crossRows - 1) * 14) / 2;
-    const crossBot = crossTop + (crossRows - 1) * 14;
+    const crossX = X0 + benchW + 30;
+    const crossTop = FLOOR - ((crossRows - 1) * 10.5) / 2;
+    const crossBot = crossTop + (crossRows - 1) * 10.5;
 
-    const W = crossX + 5 * 15 + 18;
-    const H = Math.max(oppBot + 30, crossBot + 30) + 10;
+    const W = crossX + 5 * 11 + 14;
+    const H = Math.max(oppBot + 26, crossBot + 26) + 8;
+    /* An inline <svg> with a viewBox and no width defaults to the width of
+       its container, so shrinking the coordinate space only magnified the
+       drawing. Sizing it at 1:1 is what actually makes it smaller; the CSS
+       lets it scale down again on a narrow screen and no further. */
     const svg = document.getElementById("chamber").ownerSVGElement ||
                 document.getElementById("chamber").parentNode;
     svg.setAttribute("viewBox", `0 0 ${Math.round(W)} ${Math.round(H)}`);
+    /* 1.35, not 1: at true 1:1 a 9px label is 9px and the whole House is
+       450px wide in a 1280px panel, which reads as an afterthought rather
+       than as the diagram the tab is named for. */
+    svg.setAttribute("width", Math.round(W * 1.35));
+    svg.setAttribute("height", Math.round(H * 1.35));
 
     const label = (x, y, t, cls) =>
       `<text x="${x.toFixed(0)}" y="${y.toFixed(0)}" text-anchor="middle" class="chlab${cls ? " " + cls : ""}">${t}</text>`;
 
     $("#chamber").innerHTML =
       /* the table of the House, centred on the benches, and the mace on it */
-      `<rect x="${TX.toFixed(0)}" y="${FLOOR-9}" width="${TW.toFixed(0)}" height="18" fill="#b9bcae" stroke="#75776e" stroke-width=".8"/>` +
-      `<line x1="${(TX+22).toFixed(0)}" y1="${FLOOR}" x2="${(TX+TW*0.45).toFixed(0)}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2.2" stroke-linecap="round"/>` +
-      `<circle cx="${(TX+22).toFixed(0)}" cy="${FLOOR}" r="3.4" fill="#8a6d24"/>` +
+      `<rect x="${TX.toFixed(0)}" y="${FLOOR-6}" width="${TW.toFixed(0)}" height="12" fill="#b9bcae" stroke="#75776e" stroke-width=".8"><title>Table of the House, with the mace on it</title></rect>` +
+      `<line x1="${(TX+14).toFixed(0)}" y1="${FLOOR}" x2="${(TX+TW-14).toFixed(0)}" y2="${FLOOR}" stroke="#8a6d24" stroke-width="2" stroke-linecap="round"><title>The mace</title></line>` +
+      `<circle cx="${(TX+14).toFixed(0)}" cy="${FLOOR}" r="3" fill="#8a6d24"/>` +
       /* the two lines, two sword-lengths apart */
-      `<line x1="${X0-8}" y1="${FLOOR-20}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR-20}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
-      `<line x1="${X0-8}" y1="${FLOOR+20}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR+20}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
-      /* the Speaker holds the end */
-      `<rect x="44" y="${FLOOR-22}" width="30" height="44" rx="3" fill="#5d6152" stroke="#2c2f28" stroke-width="1"/>` +
-      `<rect x="50" y="${FLOOR-12}" width="18" height="24" rx="2" fill="#7d8271"/>` +
-      label(59, FLOOR + 36, "SPEAKER") +
+      `<line x1="${X0-8}" y1="${FLOOR-15}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR-15}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      `<line x1="${X0-8}" y1="${FLOOR+15}" x2="${(X0+benchW-4).toFixed(0)}" y2="${FLOOR+15}" stroke="#8c3a32" stroke-dasharray="5 4" stroke-width=".9"/>` +
+      /* the Chair holds the end, one member and not a piece of furniture */
+      (chair ? glyph(30, FLOOR, chair) : "") +
+      label(30, FLOOR + 17, "SPEAKER") +
       bench(gov, X0, govFront, -1) +
       bench(opp, X0, oppFront, +1) +
       crossbench(cross, crossX, crossTop) +
@@ -624,12 +661,13 @@ const UI = (function () {
       label(crossX + 30, crossBot + 22, "functional tier", "sub");
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
-    const govN = gov.length, oppN = opp.length, crossN = cross.length;
     $("#chamber-tally").innerHTML =
       `<span class="ct gov">Government ${seatLine(govN, Engine.popularTotal(st))}</span>` +
       `<span class="ct opp">Opposition ${seatLine(oppN, Engine.popularTotal(st))}</span>` +
       `<span class="ct cross">Functional ${crossN}</span>` +
-      `<span class="ct">Majority ${Engine.majority(st)}</span>`;
+      `<span class="ct">Majority ${Engine.majority(st)}</span>` +
+      (chairName ? `<span class="ct">Speaker ${chairParty ? mark(chairParty) : ""}` +
+                   `${esc(chairName)}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
 
     $("#chamber-legend").innerHTML = C.parties.map(p =>
       `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}` +
@@ -645,12 +683,14 @@ const UI = (function () {
   }
 
   /* ---------- orbit ---------- */
-  /* Three levels — band, station, constituency — and previously two panels,
-     so stations and constituencies competed for the same slot. That is why a
-     panel headed "Constituencies" listed stations while constituencies sat
-     beside it. The levels are separated now: the LIST holds both navigable
-     levels, a station expanding to show the seats it returns, and the panel
-     beside it is a station dossier and nothing else. */
+  /* Three levels - band, station, constituency - and three panels, one per
+     level. The schematic places a station in its band; the list names every
+     station at once and never scrolls; the seat table gives the selected
+     station's constituencies with the member who sits for each. An earlier
+     pass folded the third level into the second as a dropdown, which meant
+     the panel headed "Stations" was sometimes a list of constituencies and
+     the one thing that never varies - the roster of thirty-four - moved
+     every time you clicked. */
   function drawOrbit() {
     /* No hardcoded content id here: the engine names no station and neither
        should the renderer. */
@@ -660,31 +700,27 @@ const UI = (function () {
     $("#orbit-chart").querySelectorAll("[data-station]").forEach(n =>
       n.addEventListener("click", () => pickStation(n.dataset.station)));
 
-    /* One accordion, not a list plus a separate disclosure control:
-       selecting a station and opening it are the same act, so there is only
-       ever one thing to click and one station open. */
+    const seats = C.stations.reduce((n, s0) => n + s0.seats, 0);
+    $("#orbit-count").textContent = `${C.stations.length} \u00b7 ${seats} seats`;
+
     $("#orbit-table").innerHTML =
       "<thead><tr><th>Station</th><th class='n'>Seats</th></tr></thead><tbody>" +
       C.stations.map(s0 => {
         const s = st.stations[s0.id];
-        const on = s.id === selId;
-        return `<tr data-station="${s.id}"${on ? ' class="sel"' : ""} style="cursor:pointer">` +
-            `<td><b>${esc(s.name)}</b><i class="sub">${esc(s.band)}</i></td>` +
-            `<td class="n">${s.seats}</td></tr>` +
-          (on ? `<tr class="oexp"><td colspan="2">${constituencyList(s.id)}</td></tr>` : "");
+        return `<tr data-station="${s.id}"${s.id === selId ? ' class="sel"' : ""}` +
+          ` style="cursor:pointer">` +
+          `<td><b>${esc(s.name)}</b><i class="sub">${esc(s.band)}</i></td>` +
+          `<td class="n">${s.seats}</td></tr>`;
       }).join("") + "</tbody>";
     $("#orbit-table").querySelectorAll("tr[data-station]").forEach(tr =>
       tr.addEventListener("click", () => pickStation(tr.dataset.station)));
+
     drawStation(selId);
+    drawSeats(selId);
   }
 
-  /* Selecting scrolls the chosen station into view rather than leaving it
-     wherever the redraw put it — the list is thirty-four rows and the
-     expansion can be fifteen more. */
   function pickStation(id) {
-    drawStation(id); drawOrbit();
-    const row = $(`#orbit-table tr[data-station="${id}"]`);
-    if (row && row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+    drawStation(id); drawSeats(id); drawOrbit();
   }
 
   /* population-weighted mean of a station's constituency ratios */
@@ -696,9 +732,8 @@ const UI = (function () {
     return mine.reduce((n, k) => n + ap[k.id] * k.magnitude, 0) / seats;
   }
 
-  /* The station dossier. No constituency table: that level lives in the list
-     now, which is also what stops this panel changing height with the seat
-     count and shoving the chart around underneath it. */
+  /* The station dossier. The seats live in their own panel, which is also
+     what stops this one changing height with the seat count. */
   function drawStation(id) {
     const s = st.stations[id];
     const d = $("#station-detail"); d.dataset.station = id;
@@ -732,7 +767,8 @@ const UI = (function () {
       <div class="rulehead">Grievance</div><div class="note">${esc(s.grievance)}</div>`;
   }
 
-  /* Every constituency returned by a station, with who holds it NOW.
+  /* Every constituency a station returns, with the member who sits for it
+     and who holds it NOW.
 
      Holders come from st.roll, not from the authored `held` in content.
      Content is the state of the map at the opening of play; the roll is
@@ -741,23 +777,46 @@ const UI = (function () {
      Showing the authored value would quietly contradict the chamber the
      moment a member crossed the floor.
 
+     The member comes from the roster where a roster character sits for the
+     seat, and otherwise from the seat's own `member`. A backbencher's name
+     is not a character: it is the difference between "Coldwater One, CU"
+     and somebody losing their job.
+
      A vacant seat is shown as vacant rather than omitted. The chamber stays
      280 and the majority stays 141, so an empty seat is a vote the
      government does not have, and the map should say so. */
-  function constituencyList(sid) {
+  function drawSeats(sid) {
+    const s = st.stations[sid];
     const mine = (C.constituencies || []).filter(k => k.station === sid);
-    if (!mine.length) return `<div class="note">No constituency returns this station directly.</div>`;
+    $("#cons-hdr").textContent = s.name;
+    $("#cons-sub").textContent = mine.length
+      ? `${mine.length} ${mine.length === 1 ? "seat" : "seats"} \u00b7 first past the post`
+      : "no district seat";
+    if (!mine.length) {
+      $("#cons-table").innerHTML = `<tbody><tr><td class="note">` +
+        `No constituency returns this station directly. Its electors vote in ` +
+        `the list tier, and in the functional tier where they hold a licence.` +
+        `</td></tr></tbody>`;
+      return;
+    }
     const ap = Engine.apportionment(C);
-    return `<table class="conslist">` + mine.map(k => {
-      const r = Engine.seatsFor(st, k.id);
-      const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
-      const member = (C.characters || []).find(c => c.seat === k.name);
-      return `<tr><td><b>${esc(k.name)}</b><i class="sub">` +
-        (member ? esc(member.name) + " &middot; " : "") +
-        `${k.electorate.toLocaleString()} electors &middot; ratio ${ap[k.id].toFixed(2)}</i></td>` +
-        `<td class="n">${held.map(pid => mark(pid)).join(" ")}` +
-        `${r.vacant ? `<span class="hn vac">vacant</span>` : ""}</td></tr>`;
-    }).join("") + `</table>`;
+    $("#cons-table").innerHTML =
+      "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
+      "<th class='n'>Ratio</th><th class='n'>Held</th></tr></thead><tbody>" +
+      mine.map(k => {
+        const r = Engine.seatsFor(st, k.id);
+        const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
+        const ch = (C.characters || []).find(c => c.seat === k.name);
+        return `<tr><td><b>${esc(k.name)}</b>` +
+          (k.speaker ? ` <i class="chair">Speaker</i>` : "") +
+          `<i class="mp">${r.vacant
+            ? `<span class="hn vac">vacant</span>`
+            : esc(ch ? ch.name : (k.member || "\u2014"))}` +
+            `${!r.vacant && ch && ch.role ? ` <span class="det">${esc(ch.role)}</span>` : ""}</i></td>` +
+          `<td class="n">${k.electorate.toLocaleString()}</td>` +
+          `<td class="n">${ap[k.id].toFixed(2)}</td>` +
+          `<td class="n">${held.map(pid => mark(pid)).join(" ")}</td></tr>`;
+      }).join("") + "</tbody>";
   }
 
   /* The functional tier in full. Every seat here is held by a named party,

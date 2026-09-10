@@ -70,9 +70,12 @@ ok("game starts", $("#shell").classList.contains("on") && !$("#menu").classList.
 ok("slot is named in the topbar", /Test ministry/.test($("#tb-slot").textContent),
    JSON.stringify($("#tb-slot").textContent));
 
-/* the chamber drew, and drew all 280 */
-const seats = w.document.querySelectorAll("#chamber circle, #chamber rect, #chamber path").length;
-ok("chamber renders every seat", seats > 280, seats + " glyphs (280 seats plus furniture)");
+/* The chamber drew, and drew all 280. Counted by class rather than by
+   element, so the furniture is excluded and the Speaker - who is lifted out
+   of a bench and drawn in the Chair - cannot silently cost a seat. */
+const seats = w.document.querySelectorAll("#chamber .sg").length;
+ok("chamber renders every seat", seats === 280, seats + " seat glyphs");
+
 
 /* GLOSSARY ANNOTATION — the regression that prompted this file.
    No attribute fragment may survive into visible text. */
@@ -174,6 +177,37 @@ const CONTENT = w.eval("CONTENT");
 ok("the chart draws every station",
    ($("#orbit-chart").querySelectorAll("[data-station]") || []).length === CONTENT.stations.length,
    $("#orbit-chart").querySelectorAll("[data-station]").length + " of " + CONTENT.stations.length);
+/* A LAYOUT RULE MUST NOT UN-HIDE A SCREEN.
+
+   Screens are hidden by .screen{display:none} and revealed by .screen.on.
+   An id selector outranks both, so `#s-orb.screen{display:block}` - written
+   to make the orbit screen a full-height column - put the habitat map on
+   every tab at once, and nothing caught it because every screen still
+   rendered its own content correctly. Checked as text: jsdom here loads the
+   scripts, not the stylesheet. */
+{
+  const css = require("fs").readFileSync(__dirname + "/../css/terminal.css", "utf8");
+  const bad = [];
+  css.replace(/([^{}]*)\{([^}]*)\}/g, (all, sel, body) => {
+    if (!/(^|;)\s*display\s*:/.test(body)) return all;
+    sel.split(",").forEach(one => {
+      /* only the SUBJECT of the selector matters: a rule on a descendant
+         of a screen cannot reveal the screen. */
+      const subject = one.trim().split(/[\s>+~]+/).pop() || "";
+      if (/#s-[a-z]/.test(subject) && !/\.on\b/.test(subject)) bad.push(one.trim());
+    });
+    return all;
+  });
+  ok("no layout rule un-hides a screen", bad.length === 0, bad.join(" | "));
+}
+
+/* The Chair is a member of a party, not a piece of furniture. */
+ok("exactly one seat carries the Chair",
+   CONTENT.constituencies.filter(k => k.speaker).length === 1);
+ok("every seat names a sitting member",
+   CONTENT.constituencies.every(k => k.member && k.member.length > 2),
+   CONTENT.constituencies.filter(k => !k.member).length + " without one");
+
 ok("the station list lists every station",
    $("#orbit-table").querySelectorAll("tr[data-station]").length === CONTENT.stations.length);
 

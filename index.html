@@ -119,11 +119,11 @@
         <div class="panel">
           <h2>Parliament &mdash; House of Delegates <em>district / list / functional</em></h2>
           <div class="pbody flush">
-            <svg viewBox="0 0 720 348" role="img" aria-label="Seating plan of the House of Delegates">
+            <svg viewBox="0 0 720 348" width="720" height="348" role="img" aria-label="Seating plan of the House of Delegates">
               <g id="chamber"></g>
             </svg>
             <div class="chtally" id="chamber-tally"></div>
-            <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b></div>
+            <div class="seatkey"><b>&#9679; district</b><b>&#9633; list</b><b>&#9650; functional</b><b class="mace">&#9644; table of the House, and the mace on it</b></div>
             <div class="legend" id="chamber-legend"></div>
           </div>
         </div>
@@ -138,20 +138,24 @@
     </section>
 
     <section class="screen" id="s-orb">
-      <div class="grid g-orb" style="margin-bottom:5px">
-        <div class="panel">
-          <h2>Stations <em>select one to see its seats</em></h2>
+      <div class="grid g-orb">
+        <div class="panel p-stat">
+          <h2>Stations <em id="orbit-count"></em></h2>
           <div class="pbody flush"><table id="orbit-table"></table></div>
         </div>
-        <div class="panel">
+        <div class="panel p-cons">
+          <h2><span id="cons-hdr"></span> <em id="cons-sub"></em></h2>
+          <div class="pbody flush"><table id="cons-table"></table></div>
+        </div>
+        <div class="panel p-doss">
           <h2><span id="station-hdr"></span> <em id="station-sub"></em></h2>
           <div class="pbody" id="station-detail"></div>
         </div>
-      </div>
-      <div class="panel" style="margin-bottom:5px">
-        <h2>Habitat schematic <em>altitude bands &middot; not to lateral scale</em></h2>
-        <div class="pbody flush plate" id="orbit-chart"></div>
-        <div class="pbody okeys" id="orbit-key"></div>
+        <div class="panel p-map">
+          <h2>Habitat schematic <em>altitude bands &middot; not to lateral scale</em></h2>
+          <div class="pbody flush plate" id="orbit-chart"></div>
+          <div class="pbody okeys" id="orbit-key"></div>
+        </div>
       </div>
     </section>
 
