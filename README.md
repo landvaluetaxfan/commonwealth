@@ -2,12 +2,9 @@
 
 *A Space Story About Politics and Governance.*
 
-A text-based narrative political thriller with a real electoral simulation, set
-in the Circumterrestrial Commonwealth — a federated republic of thirty-four
-orbital habitats, population 7,006,000. You lead a party in a 280-seat House of
-Delegates. Bills carry on a dual majority: they must pass among the elected
-members AS WELL AS separately among the forty functional members, who are returned by
-trade licence and corporate franchise rather than by place.
+A text-based narrative political thriller with a real electoral simulation, set in the Circumterrestrial Commonwealth, which is a federated republic of thirty-four orbital habitats, population 7,006,000. You lead a party in a 280-seat House of Delegates. Bills carry on a dual majority: they must pass among the elected members and separately among the forty functional members, who are returned by trade licence and corporate franchise rather than by place.
+
+Navigate interparty relations, your governmental coalition, parliament, and foreign affairs.
 
 ---
 
