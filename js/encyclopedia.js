@@ -18,6 +18,7 @@ const Concordance = (function () {
   /* ---------- inline syntax: **emphasis** and [[id]] or [[id|shown text]] ---------- */
   function links(text) {
     return String(text).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+                       .replace(/\*([^*]+)\*/g, "<em>$1</em>")
                        .replace(/\[\[([a-z0-9_]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
       const a = byId[id];
       return a
