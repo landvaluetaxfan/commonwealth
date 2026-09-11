@@ -287,7 +287,9 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("every authored stage is in STAGE_ORDER", strays.length === 0, strays.join(", "));
   }
 
-  ok("cabinet is data", Object.keys(Engine.newGame(CONTENT).cabinet).length === 9);
+  ok("cabinet is data",
+     Object.keys(Engine.newGame(CONTENT).cabinet).length === CONTENT.cabinet.length,
+     CONTENT.cabinet.length + " posts");
   /* Content keeps moving after a save is written. A station added to the
      roster left older saves with a hole in st.stations, and the orbital
      chart read .band off undefined and drew nothing — a blank tab, with no
