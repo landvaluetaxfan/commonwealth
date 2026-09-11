@@ -295,7 +295,14 @@ const Tips = (function () {
   }
 
   function show(el) {
-    const t = find(el.getAttribute("data-tip"));
+    /* An element may carry its own one-off body, for content that is data
+       rather than a fixed token — a functional constituency's roll, seats and
+       leanings, say. The keyed map stays the fallback. */
+    const inline = el.getAttribute("data-tip-body");
+    const t = inline
+      ? { title: el.getAttribute("data-tip-title") || "", body: inline,
+          go: el.getAttribute("data-tip-go") || null }
+      : find(el.getAttribute("data-tip"));
     if (!t) return;
     const c = build();
     c.innerHTML =
