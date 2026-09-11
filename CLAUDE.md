@@ -85,7 +85,36 @@ Kept here because they will otherwise happen again.
 
 ## Authoring
 
-See `CONTENT_GUIDE.md`. The short version: copy an existing entry in
-`content/events.js` and change it. Effects and conditions are a closed
-vocabulary — if it grows past about twenty verbs, content is leaking into the
-engine.
+Two routes.
+
+**Direct.** Copy an existing entry in `content/events.js` and change it. See
+`CONTENT_GUIDE.md`.
+
+**Drafted.** Write markdown in `drafts/` using `AUTHORING_FORMAT.md`, then
+convert it into content files. This is the route to use when Harper writes prose
+by hand, and the one to use for blocking out a chapter as placeholders before
+the writing exists.
+
+Effects and conditions are a closed vocabulary — if it grows past about twenty
+verbs, content is leaking into the engine.
+
+**When converting a draft**, never invent what is missing. §2.7 forbids any pass
+from adding a station, character or glossary term. If a draft references
+something that does not exist, stop and report it.
+
+## The five axes
+
+Positions are signed numbers from −1 to +1, not categories, so a party can be
+moderately anything and the whip table can price partial agreement.
+
+| axis | −1 | +1 |
+|---|---|---|
+| economic | left | right |
+| authority | democratic | technocratic |
+| personhood | restrictionist | expansionist |
+| sovereignty | station | federal |
+| trade | closurist | integrationist |
+
+`authority` exists because the old ownership axis carried two unrelated
+questions. Hullists and the Guild Bench sit at the technocratic pole regardless
+of their economics, which is the crosscutting the coalition maths needs.

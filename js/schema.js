@@ -47,6 +47,10 @@ const SCHEMA = {
                    {k:"value", type:"enum", src:"parties", label:"Party"}],
                    shape:"coalition" },
     wire:        { label:"Push a wire headline", args:[{k:"value", type:"text", label:"Headline", hint:"CAPS"}], shape:"scalarVal" },
+    economy:     { label:"Move the productive economy", args:[
+                   {k:"key", type:"enum", src:"economyKeys", label:"Measure"},
+                   {k:"delta", type:"num", label:"Change"}],
+                   shape:"keyed" },
     price:       { label:"Move a scarcity price", args:[
                    {k:"key", type:"enum", src:"prices", label:"Price"},
                    {k:"delta", type:"int", label:"Change", hint:"index points"}],
@@ -77,6 +81,8 @@ const SCHEMA = {
     loyaltyAbove: { label:"Loyalty above",             form:"map", src:"loyaltyTargets", vtype:"int" },
     loyaltyBelow: { label:"Loyalty below",             form:"map", src:"loyaltyTargets", vtype:"int" },
     billStage:    { label:"Bill is at stage",          form:"map", src:"bills", vtype:"stage" },
+    economyAbove:   { label:"Economy above",           form:"map", src:"economyKeys", vtype:"num" },
+    economyBelow:   { label:"Economy below",           form:"map", src:"economyKeys", vtype:"num" },
     priceAbove:     { label:"Price above",             form:"map", src:"prices", vtype:"int" },
     priceBelow:     { label:"Price below",             form:"map", src:"prices", vtype:"int" },
     capitalAbove:   { label:"Debt above",              form:"map", src:"parties", vtype:"int" },
@@ -90,16 +96,19 @@ const SCHEMA = {
   /* ---------- enumerations the forms draw from ---------- */
   vocab: {
     scalars: ["party_loyalty","public_standing","consumables","thermal_margin","treasury"],
-    laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share",
+    laws: ["divergence_threshold_hours","civic_clock_minimum","suspension_debt_accrual","substrate_public_share","closure_target",
            "shed_order_authority","tier_ratio_district","tier_ratio_list","threshold_pct"],
     tiers: ["district","list","functional"],
     prices: ["thermal","substrate","volume","transit"],
+    economy: ["participation","trade","private"],
     stationFields: ["closure","suspended","attested","population","seats"],
     billFields: ["stage","dead"],
     billStages: ["drafting","first_reading","second_reading","committee","lords",
                  "blocked","withdrawn","passed","defeated"],
-    axes: { ownership:["public","private"], personhood:["expansionist","restrictionist"],
-            sovereignty:["federal","station"], closure:["closurist","integrationist"] },
+    /* Signed numbers, -1 to +1. The editor renders these as sliders. */
+    axes: { economic:["left","right"], authority:["democratic","technocratic"],
+            personhood:["restrictionist","expansionist"], sovereignty:["station","federal"],
+            trade:["closurist","integrationist"] },
     bands: ["ring","far","middle","low","external"],
     stationTypes: ["single","bundled","external"],
     stationForms: ["cylinder","torus","drum","sphere","cluster","yard","surface"],

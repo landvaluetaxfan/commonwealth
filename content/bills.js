@@ -19,7 +19,7 @@ const BILLS = [
             "own rights, own substrate bill, own vote.",
     effectNote:"+1.9M legal persons estimated. Redistribution in six districts.",
     dualMajority:true,
-    axes:{ownership:null,personhood:"expansionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.3, authority:-0.3, personhood:0.9, sovereignty:0.5, trade:0.2},
     stances:{
       /* A stance may split by bench. Popular = district + list. */
       /* These are the forecast counts the whips have given the PM, so they are
@@ -32,7 +32,7 @@ const BILLS = [
       geo: { popular:{for:3},  functional:"against" },
       cl:  { popular:{for:12}, functional:"against" }, /* expansionist in principle, cheap fork-labour in practice */
       sc:  { popular:{for:6},  functional:"against" },
-      hul:"against", fh:"against", gb:"against", des:"against"
+      hul:"against", fh:"against", gb:"against", ind:"against", des:"against"
     },
     onPass:[{law:{divergence_threshold_hours:40}},
             {wire:"DIVERGENCE THRESHOLD CUT TO FORTY HOURS; CENSUS BUREAU BEGINS REGISTRATION"}],
@@ -44,7 +44,7 @@ const BILLS = [
     summary:"Reallocates radiator capacity toward the middle band. Vantage High has been "+
             "below statutory reserve since the radiator fault of 6 April.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:null,sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.6, authority:0.2, personhood:0.0, sovereignty:0.7, trade:0.4},
     stances:{ cu:"for", psa:"for", rv:"for", upl:"for", geo:"for", sc:{forPct:0.4}, cl:{forPct:0.3} },
     onPass:[{station:{vantage:{closure:0.04}}},{scalar:{thermal_margin:9}},
             {price:{thermal:-22}},
@@ -56,7 +56,7 @@ const BILLS = [
     summary:"Places the published shedding priority under civilian review. Touches "+
             "life-support integrity, so the dual test applies.",
     dualMajority:true,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.7, authority:-0.9, personhood:0.5, sovereignty:0.6, trade:0.1},
     stances:{ cu:"for", psa:"for", rv:{for:11}, upl:"for", geo:"for",
               gb:"against", hul:"against", fh:"against", cl:{forPct:0.2}, sc:{forPct:0.35} },
     onPass:[{law:{shed_order_authority:"statute"}},{scalar:{public_standing:6}}],
@@ -67,7 +67,7 @@ const BILLS = [
     summary:"Ratifies renewed terms for the Tether 2 anchor, which stands on the sovereign "+
             "territory of an Earth state.",
     dualMajority:false,
-    axes:{ownership:"private",personhood:null,sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:0.6, authority:0.1, personhood:0.0, sovereignty:0.5, trade:0.95},
     stances:{ cl:"for", cu:{forPct:0.7}, psa:{forPct:0.5}, sc:"against", hul:"against" },
     onPass:[{scalar:{treasury:8}},{station:{kepler:{closure:0.02}}},{price:{transit:-11}}],
     onFail:[{scalar:{treasury:-6}},{wire:"KEPLER CONCESSION LAPSES; EARTH STATE SIGNALS REVIEW"}] },
@@ -78,7 +78,7 @@ const BILLS = [
             "Failing the current test does not reduce a person's income; it suspends them.",
     effectNote:"Estimated 34,000 fewer default suspensions a year. Cost falls on thermal appropriations.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.85, authority:-0.2, personhood:0.6, sovereignty:0.6, trade:0.2},
     stances:{ psa:"for", cu:{forPct:0.8}, upl:"for", geo:"for", rv:{forPct:0.6},
               fh:"against", cl:{forPct:0.25}, hul:"against" },
     onPass:[{scalar:{treasury:-11,public_standing:7}},{loyalty:{psa:12}},
@@ -89,11 +89,11 @@ const BILLS = [
   { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
     title:"Continuity of Person (Registration) Bill",
     summary:"Requires a person to be entered on a continuity register before any instance may be "+
-            "reabsorbed, and gives the instance a right to be heard. Root & Vessel has asked for it "+
+            "reabsorbed, and gives the instance a right to be heard. The Democratic Centre has asked for it "+
             "at every coalition meeting since formation.",
     effectNote:"Adds a procedural step to every reabsorption. Fork-labour costs rise.",
     dualMajority:false,
-    axes:{ownership:null,personhood:"restrictionist",sovereignty:"federal",closure:null},
+    axes:{economic:-0.2, authority:-0.1, personhood:-0.85, sovereignty:0.4, trade:-0.1},
     stances:{ rv:"for", cu:{forPct:0.65}, des:"for", hul:{forPct:0.7}, gb:{forPct:0.5},
               psa:"against", cl:"against", upl:"against" },
     onPass:[{loyalty:{rv:18,psa:-14}},
@@ -108,12 +108,47 @@ const BILLS = [
     effectNote:"Public share of substrate rises from 35 to 60 per cent. Substrate rents fall. "+
                "Four functional seats change hands as corporate voters are extinguished.",
     dualMajority:false,
-    axes:{ownership:"public",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
+    axes:{economic:-0.95, authority:0.1, personhood:0.4, sovereignty:0.7, trade:0.0},
     stances:{ psa:"for", cu:{forPct:0.85}, upl:"for", geo:{forPct:0.6}, rv:{forPct:0.4},
               cl:"against", fh:"against", hul:{forPct:0.3}, gb:{forPct:0.2} },
     onPass:[{law:{substrate_public_share:0.6}},{price:{substrate:-26}},
             {scalar:{treasury:-19,public_standing:5}},{loyalty:{psa:16,cl:-20,fh:-14}},
             {wire:"PUBLIC STAKE TAKEN IN SUBSTRATE PROVIDERS; RENTS EXPECTED TO FALL"}],
     onFail:[{loyalty:{psa:-11}},{price:{substrate:6}}] }
+
+,
+
+  { id:"open_registry", ref:"HC 4/141", stage:"drafting", owner:"cl",
+    title:"Compute Services (External Supply) Bill",
+    summary:"Permits Commonwealth substrate providers to sell mind-hours to Earth states and "+
+            "the belt without prior licence. Compute is the one thing this economy makes that "+
+            "everyone else wants, and at present it may only be sold inward.",
+    effectNote:"Export earnings rise. So does the substrate price at home, because the same "+
+               "radiators serve both markets.",
+    dualMajority:false, referrable:true,
+    axes:{economic:0.55, authority:-0.1, personhood:0.2, sovereignty:0.6, trade:0.95},
+    stances:{ cl:"for", geo:"for", psa:{forPct:0.3}, cu:{forPct:0.25},
+              sc:"against", hul:"against", rv:{forPct:0.4} },
+    onPass:[{economy:{trade:14}},{price:{substrate:9}},{scalar:{treasury:12}},
+            {loyalty:{cl:14,cu_maintenance:-9,psa:-8}},
+            {wire:"COMPUTE EXPORT LICENCE ABOLISHED; SUBSTRATE RENTS EXPECTED TO RISE"}],
+    onFail:[{loyalty:{cl:-10}}] },
+
+  { id:"closure_targets", ref:"HC 4/147", stage:"drafting", owner:"sc",
+    title:"Closure Targets (Low Band) Bill",
+    summary:"Sets a statutory minimum closure ratio of 0.55 for every station, funded federally "+
+            "and enforced by the engineering authority. A station at 0.31 has fourteen days of "+
+            "stored margin and then begins to die.",
+    effectNote:"Every station that reaches its target becomes harder to coerce and easier to "+
+               "lose. This is the development paradox as a single division.",
+    dualMajority:true, referrable:true,
+    axes:{economic:-0.6, authority:0.4, personhood:0.0, sovereignty:-0.7, trade:-0.9},
+    stances:{ sc:"for", hul:"for", cu:{forPct:0.6}, rv:{forPct:0.55}, des:"for",
+              cl:"against", geo:"against", fh:"against", psa:{forPct:0.35} },
+    onPass:[{station:{ashfield:{closure:0.14}, drift:{closure:0.16}, cinder:{closure:0.12},
+                      tannery:{closure:0.13}, tallow:{closure:0.11}}},
+            {economy:{trade:-11}},{scalar:{treasury:-22,public_standing:9}},
+            {wire:"STATUTORY CLOSURE FLOOR SET AT 0.55; LOW BAND WELCOMES, TREASURY DOES NOT"}],
+    onFail:[{loyalty:{sc:-14,des:-9}}] }
 
 ];

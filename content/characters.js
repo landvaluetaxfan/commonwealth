@@ -31,7 +31,7 @@ const CHARACTERS = [
   { id:"ceyhan", portrait:"ceyhan.png",   name:"Ivor Ceyhan", role:"Political editor, The Spindle",
     party:null, relationship:44,
     note:"Will print what he is given and what he is not." },
-  { id:"gb_chair", portrait:"gb_chair.png", name:"Chair, Life Support panel", role:"Guild Bench",
+  { id:"gb_chair", portrait:"gb_chair.png", name:"Chair, Life Support panel", role:"Alliance of Business and Government",
     party:"gb", relationship:18,
     note:"Position unchanged since 2279. The whips do not believe money will move them." },
   { id:"ansar", portrait:"ansar.png",    name:"Sevi Ansar", role:"Deck 9",

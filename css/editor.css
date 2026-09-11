@@ -128,3 +128,10 @@ textarea.ed-body{
 .palrow{display:flex;}
 .palrow i{width:34px;height:16px;border:1px solid var(--chrome-dkr);border-right:none;}
 .palrow i:last-child{border-right:1px solid var(--chrome-dkr);}
+
+.ed-axes{display:flex;flex-direction:column;gap:3px;}
+.axrow{display:grid;grid-template-columns:96px 1fr 96px 44px;gap:6px;align-items:center;}
+.axrow b{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);font-weight:normal;}
+.axrow b.r{text-align:right;}
+.axslide{width:100%;accent-color:var(--rule);}
+.axval{font-family:var(--f-data);font-size:10px;text-align:right;}

@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 4;   // 3 added prices, 4 adds cabinet and instruments
+  const STATE_VERSION = 5;   // 3 prices, 4 cabinet+instruments, 5 the productive economy
 
   /* ---------------------------------------------------------
      1. STATE
@@ -81,6 +81,25 @@ const Engine = (function () {
       prices: { thermal: 100, substrate: 100, volume: 100, transit: 100 },
       priceHistory: { thermal: [100], substrate: [100], volume: [100], transit: [100] },
 
+      /* THE PRODUCTIVE ECONOMY.
+
+         The four prices are the cost of existing. These are the other
+         half — what the Commonwealth makes, sells and employs. Without
+         them it is a closed system with a static labour market, which
+         is not a modern economy however metered it is.
+
+           participation  per cent of adults in paid work
+           trade          balance index, 100 level, above is surplus
+           private        share of the economy in private hands,
+                          EXCLUDING the eleven consortiums whose control
+                          carries a parliamentary vote and which
+                          therefore never float (§7.5.1). There is a real
+                          equity market; it just cannot touch the firms
+                          that hold seats.
+      */
+      economy: { participation: 39, trade: 100, private: 0.72 },
+      economyHistory: { participation: [39], trade: [100] },
+
       president: Object.assign({}, C.setup.president),
 
       flags: {},
@@ -114,6 +133,11 @@ const Engine = (function () {
   function migrate(st) {
     if (!st.version) st.version = 1;
     if (st.chapter == null) st.chapter = 1;   // saves from before chapters existed
+    if (st.version < 5) {                     // the productive economy
+      st.economy = st.economy || { participation: 39, trade: 100, private: 0.72 };
+      st.economyHistory = st.economyHistory || { participation: [39], trade: [100] };
+      st.version = 5;
+    }
     if (st.version < 4) {                     // cabinet and instruments
       st.cabinet = st.cabinet || {};
       st.instruments = st.instruments || {};
@@ -185,7 +209,7 @@ const Engine = (function () {
      bill's own `axes`, so a new bill need not enumerate all of them.
      --------------------------------------------------------- */
 
-  const AXES = ["ownership", "personhood", "sovereignty", "closure"];
+  const AXES = ["economic", "authority", "trade", "personhood", "sovereignty"];
 
   /* Full loyalty delivers every member; none still delivers three quarters,
      because a party is not a coalition of strangers. */
@@ -195,14 +219,18 @@ const Engine = (function () {
     return 0.75 + 0.25 * (loy / 100);
   }
 
+  /* Axes are signed numbers from -1 to +1, so agreement is DISTANCE rather than
+     a match. Two parties can be nearly aligned, which the whip table needs: you
+     buy a party out of its apathy, never out of its position, and apathy is a
+     matter of degree. Returns -1 (opposite) to +1 (identical). */
   function axisAgreement(partyAxes, billAxes) {
     let score = 0, counted = 0;
     AXES.forEach(a => {
       if (billAxes[a] == null || partyAxes[a] == null) return;
       counted++;
-      score += (partyAxes[a] === billAxes[a]) ? 1 : -1;
+      score += 1 - Math.abs(partyAxes[a] - billAxes[a]);   // 1 identical, -1 opposite
     });
-    return counted ? score / counted : 0;   // -1 .. +1
+    return counted ? score / counted : 0;
   }
 
   function resolveStance(st, C, bill, partyId, tier) {
@@ -267,7 +295,10 @@ const Engine = (function () {
   function whipBand(st, C, bill, partyId) {
     const def = C.partyById[partyId];
     const a = def && bill.axes ? axisAgreement(def.axes, bill.axes) : 0;
-    return WHIP_BANDS.find(b => a >= b.min);
+    /* A band must always be found. When content and engine disagree about axes
+       the agreement comes back 0 and an unguarded find() returns undefined,
+       which crashed whippable() rather than degrading. */
+    return WHIP_BANDS.find(b => a >= b.min) || WHIP_BANDS[WHIP_BANDS.length - 1];
   }
 
   function whippable(st, C, billId, partyId, tier) {
@@ -696,6 +727,8 @@ const Engine = (function () {
     siInForce:      (st, v) => [].concat(v).every(k => st.instruments[k] && st.instruments[k].inForce),
     siNotMade:      (st, v) => [].concat(v).every(k => st.instruments[k] && !st.instruments[k].made),
     postVacant:     (st, v) => [].concat(v).every(k => st.cabinet[k] && !st.cabinet[k].holder),
+    economyAbove:   (st, v) => Object.keys(v).every(k => st.economy[k] > v[k]),
+    economyBelow:   (st, v) => Object.keys(v).every(k => st.economy[k] < v[k]),
     priceAbove:     (st, v) => Object.keys(v).every(k => st.prices[k] > v[k]),
     priceBelow:     (st, v) => Object.keys(v).every(k => st.prices[k] < v[k]),
     capitalAbove:   (st, v) => Object.keys(v).every(k => (st.capital[k] || 0) > v[k]),
@@ -756,6 +789,10 @@ const Engine = (function () {
     cabinet: (st, C, v) => Object.keys(v).forEach(post => {
       if (v[post] === null) vacate(st, C, post, "resigned");
       else appoint(st, C, post, v[post].holder, v[post].party);
+    }),
+    economy: (st, C, v) => Object.keys(v).forEach(k => {
+      if (k === "private") st.economy.private = clamp(st.economy.private + v[k], 0, 1);
+      else st.economy[k] = clamp((st.economy[k] || 0) + v[k], 0, 300);
     }),
     price: (st, C, v) => Object.keys(v).forEach(k => {
       st.prices[k] = clamp((st.prices[k] || 100) + v[k], 20, 400);
@@ -882,6 +919,35 @@ const Engine = (function () {
     /* transit: launch windows and delta-v */
     P.transit = clamp(P.transit + drift(P.transit,
       100 - (st.scalars.treasury - 50) * 0.3), 20, 400);
+
+    /* THE PRODUCTIVE SIDE.
+
+       Participation rises when fork-labour is dear and building is
+       cheap. A low divergence threshold turns invisible instance-hours
+       into counted jobs — roughly 380,000 of them — which is the
+       largest single intervention in this labour market anyone has
+       contemplated, and nobody in the chamber discusses it in those
+       terms (textbook ch. 5).
+
+       Trade answers to transit costs, to the substrate price (compute
+       is the export everyone else wants), and to how closurist the
+       settlement is. Autarky is resilient and poor. */
+    const E2 = st.economy;
+    const forkRatio = (st.law.divergence_threshold_hours || 168) / 168;
+    const buildCost = (P.volume + P.transit) / 200;
+    E2.participation = clamp(E2.participation + drift(E2.participation,
+      39 + (1 - forkRatio) * 12 - (buildCost - 1) * 15), 18, 62);
+
+    const closurism = st.law.closure_target ? st.law.closure_target * 24 : 0;
+    E2.trade = clamp(E2.trade + drift(E2.trade,
+      100 + (100 - P.transit) * 0.4 + (100 - P.substrate) * 0.35 - closurism), 40, 190);
+
+    E2.participation = Math.round(E2.participation * 10) / 10;
+    E2.trade = Math.round(E2.trade * 10) / 10;
+    ["participation", "trade"].forEach(k => {
+      const h = st.economyHistory[k] || (st.economyHistory[k] = []);
+      h.push(E2[k]); if (h.length > 60) h.shift();
+    });
 
     Object.keys(P).forEach(k => {
       P[k] = Math.round(P[k] * 10) / 10;

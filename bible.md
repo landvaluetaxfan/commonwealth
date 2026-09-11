@@ -1,6 +1,6 @@
 # THE ORBITAL POLITICAL THRILLER — PROJECT BIBLE
 
-**Version 3 · 31 August 2026**
+**Version 4 · 8 September 2026**
 Supersedes v2. `vault.md` retained separately as raw append-only source material.
 Companion: `textbook.md`, an in-world socioeconomic primer — canon, but written
 in-fiction and not a spec.
@@ -755,6 +755,45 @@ the most objective scarce thing there is.
 
 Marked LEANING rather than LOCKED because it touches every price in the game.
 
+## 7.10 The productive economy — LOCKED
+
+The four scarcity prices are the cost of *existing*. These are what the
+Commonwealth *makes, sells and employs*, and without them it is a closed system
+with a static labour market — which is not a modern economy however metered it
+is.
+
+A rentier economy is not the opposite of a market economy. Modern economies are
+substantially rentier: housing, land, licensure, utilities. That is the Georgist
+critique and it is why the Georgists exist here. So this adds the missing half
+rather than replacing anything.
+
+```
+participation   per cent of adults in paid work, opening 39
+trade           balance index, 100 level, above is surplus
+private         share of the economy in private hands, opening 0.72
+```
+
+**Participation moves on the divergence threshold**, and this is the finding
+worth having: cutting it to forty hours takes participation from 39 to **48 per
+cent** over twenty-six sittings, because invisible instance-hours become counted
+jobs. The bill everyone debates as a personhood measure is the largest
+intervention in this labour market anyone has contemplated, and now the game
+shows it.
+
+**Trade answers to transit costs, to the substrate price, and to closurism.**
+Compute is the export everyone else wants — the one thing this economy makes
+that Earth and the belt will buy — so cheap substrate at home is a trade
+surplus abroad. Autarky is resilient and poor.
+
+**`private` excludes the eleven consortiums** whose control carries a
+parliamentary vote and which therefore never float (§7.5.1). There *is* an
+equity market; it simply cannot touch the firms that hold seats. That is a
+better fact than "no capital markets."
+
+Two bills make it live: **Compute Services (External Supply)**, which abolishes
+the export licence, and **Closure Targets (Low Band)**, which sets a statutory
+floor of 0.55 and is the development paradox as a single division.
+
 ## 7.6 Model depth, and the state object — LOCKED
 
 **Shallow simulation, deep consequence.** No supply-chain or price solver.
@@ -860,14 +899,41 @@ an event gated on a price nothing moves will never fire.
 
 # PART VIII — AXES AND PARTIES
 
-## 8.1 The four axes — LOCKED
+## 8.1 The five axes — LOCKED
 
-Deliberately crosscutting so coalition math is not a straight line.
+Signed numbers from **−1 to +1**, not categories. Categorical axes could not
+express a centre, which left liberals nowhere to stand, and made agreement a
+match rather than a distance — so the whip table could not price partial
+sympathy.
 
-1. **Ownership of life support** — public utility vs private consortium. Air, water, thermal, power, substrate are natural monopolies with captive customers and lethal failure modes: the most legible case for public ownership and the most lucrative case for private ownership.
-2. **Personhood** — expansionist vs restrictionist. Correlates with left/right but does not map onto it.
-3. **Sovereignty** — federal vs station. Scrambles the map like European integration does: left-sovereigntists (a station cooperative wanting to run its own commons without federal technocrats) and right-federalists (a consortium wanting a single regulatory market).
-4. **Closure** — closurist vs integrationist. Autarky is resilient and fragmenting; integration is efficient, fragile, centralising. Four quadrants, each with a real party in it.
+| axis | −1 | +1 |
+|---|---|---|
+| **economic** | left | right |
+| **authority** | democratic | technocratic |
+| **personhood** | restrictionist | expansionist |
+| **sovereignty** | station | federal |
+| **trade** | closurist | integrationist |
+
+**`authority` was extracted from the old ownership axis**, which had been
+carrying two unrelated questions: who should own the utilities, and how far
+engineers should be deferred to. That conflation is why the spectrum read as
+democratic-versus-technocratic with liberals in between. Hullists (+0.95) and
+the Guild Bench (+0.85) now sit at the technocratic pole regardless of their
+economics, which is the crosscutting the coalition maths needs.
+
+**economic** runs PSA −0.80 · CU −0.75 · Uplift −0.60 · R&V −0.45 · Descensionists
+−0.20 · Station Compact −0.10 · Hullists 0.00 · **Georgists +0.05** · Guild Bench
++0.15 · Consortium Liberals +0.70 · Freeholders +0.90. The Georgists sit at the
+centre because that is what they are: classical liberals who want one tax and
+otherwise free markets.
+
+**trade** replaces closure as an axis name because external trade now exists
+(§7.10). Autarky versus openness is the modern protectionism axis in orbital
+dress.
+
+Continuous positions make the whip finer: agreement is `1 − |party − bill|`
+averaged across the axes both define, so a party that half-agrees costs half as
+much to move.
 
 ## 8.2 Depth budget — LOCKED
 
@@ -1597,6 +1663,15 @@ reads that as a bug.
 - **The failed revolution** — needs a date, a cause, and a roster of who stood where.
 - **Real-time persistence** — whether push notifications are required.
 - **Money denominated in thermal rejection capacity** — LEANING, touches every price.
+- **Terminal state** — how many chapters, and whether the campaign ends at the
+  general election or after it. `sweep-brief.md` E.3 proposes five ending at the
+  election. **Blocks content decisions downstream; decide first.**
+- **The district-tier electoral system** — SNTV or 140 single-member seats.
+  Magnitudes currently run 1–4 and track electorate, which makes magnitude
+  bookkeeping rather than political geography. SNTV is the more interesting
+  answer: it forces a party to nominate exactly the right number and split its
+  vote evenly, so co-partisans in a seat are rivals, which gives the currents
+  mechanic teeth. Decide before elections are built, not during.
 - **Foreign affairs and the international map** — deferred. When built, the
   organising axis should be **light-lag**, the way the orbital chart's is
   altitude: a map ordered by delay is a map of how alien each relationship is.
@@ -1608,6 +1683,74 @@ reads that as a bug.
   design; the whip panel says so. Needs its own currency.
 - **Cabinet as data** — the Ministries exist in canon but not in the state object,
   so the President's appointment-refusal power has nothing to refuse.
+
+---
+
+---
+
+# PART XVII — WHAT IS MISSING, AND THE ORDER TO BUILD IT
+
+Full detail in `ROADMAP.md`, which carries acceptance criteria and agent
+assignments. This is the record of the gaps.
+
+## 17.1 Systems not yet built — LOCKED as the backlog
+
+| | why it matters |
+|---|---|
+| **Leadership challenge** | §3.5 loss condition 2. Signatures accumulate — packing two boards reaches five of nine — and nothing reads the counter. |
+| **Confidence votes** | §3.5 loss condition 1. Confidence is derived and never tested. No partner can withdraw. |
+| **Elections** | §3.5 loss condition 3, and §12.5's marquee UI moment. Needs the electoral system settled first. |
+| **Lobbying** | Benches outside the coalition cannot be moved by any means except instruments, which makes the chapter-one trap a puzzle with one solution. |
+| **Coalition negotiation** | No mechanic for a partner threatening to walk or renegotiating terms. Red lines exist in §8.2 as prose only. |
+| **Dissolution** | The President may refuse it (§3.3) and the player cannot request it. |
+| **Induction pack** | `sweep-brief.md` Part D. First-use gloss exists; the pack does not. |
+| **Foreign affairs** | Nothing built. Now has an economic hook it lacked (§7.10). |
+| **Opposition mode** | `in_government` is still not in the state object, and §3.6 warns the retrofit is painful. It gets worse every phase. |
+
+## 17.2 The build order — LEANING
+
+0. **Terminal state.** A design decision, ten minutes, blocks everything downstream.
+1. Leadership challenge — small, and it makes the caucus an antagonist.
+2. Confidence and coalition collapse.
+3. Lobbying.
+4. **Chapters three to five.** The largest phase and the actual project.
+5. Elections.
+6. Induction.
+7. Foreign affairs.
+8. Opposition mode.
+
+## 17.3 The two-agent split — LOCKED
+
+**Claude Code** takes anything in `js/` — engine, schema, UI. A wrong edit there
+is silent and expensive; three of the five bugs recorded in `CLAUDE.md` were
+that shape.
+
+**opencode** takes `content/` and `drafts/`. A wrong edit there is caught by six
+checks in two seconds.
+
+Claude Code writes the spec; opencode executes it. A request is not a spec: name
+the file, the schema verbs, the conditions and the checks.
+
+Neither may invent a station, character or glossary term (§2.7). The correct
+behaviour on encountering a missing reference is to stop and report it.
+
+## 17.4 Authoring — LOCKED
+
+`AUTHORING_FORMAT.md` defines a markdown format for events, chapter skeletons,
+minutes and instruments, written into `drafts/` and converted into content by an
+agent. Prose is then written and versioned separately from generated structure,
+and a chapter can be blocked out as structurally valid placeholders before any
+of it is written — so the graph and the checks work while the writing arrives in
+any order.
+
+## 17.5 The thing that matters more than any phase — LOCKED
+
+The coverage panel currently reports *skeleton*. It will report *one chapter* at
+about twelve more events. **That is the point to stop building and hand it to a
+playtester**, the visual-novel one first, because legibility is the named risk
+(§15.4) and they are the ones who will say whether the prologue works.
+
+Run a session every twenty events rather than when it feels ready.
 
 ---
 

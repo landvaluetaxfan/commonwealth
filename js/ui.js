@@ -99,6 +99,15 @@ const UI = (function () {
      Four index numbers and their histories. Not a market to play; a readout
      of what your legislation did to the cost of existing. */
 
+  /* The four prices are the cost of existing. These two are what the
+     Commonwealth makes and sells. */
+  const ECON_META = [
+    { k:"participation", label:"Participation", unit:"per cent of adults in paid work",
+      fmt:v=>v.toFixed(1)+"%" },
+    { k:"trade", label:"Trade balance", unit:"index, 100 level; above is surplus",
+      fmt:v=>v.toFixed(0) }
+  ];
+
   const PRICE_META = [
     { k:"thermal",   label:"Thermal quota", unit:"per MW-year rejected" },
     { k:"substrate", label:"Substrate rent", unit:"per mind-year, standard clock" },
@@ -129,8 +138,19 @@ const UI = (function () {
         <div class="pval ${cls}">${v.toFixed(0)}<span>${chg >= 0 ? "+" : ""}${chg.toFixed(0)}</span></div>
       </div>`;
     }).join("") +
-    `<div class="note" style="margin-top:4px">Index, 100 at the opening of the series. ` +
-    `Every one of these is set by legislation rather than by a market.</div>`;
+    ECON_META.map(m => {
+      const v = st.economy[m.k], h = st.economyHistory[m.k] || [v];
+      const chg = v - h[0];
+      const cls = chg > 0.6 ? "down" : chg < -0.6 ? "up" : "";
+      return `<div class="prow econ">
+        <div class="plab">${m.label}<em>${m.unit}</em></div>
+        ${spark(h.slice(-40), 76, 18)}
+        <div class="pval ${cls}">${m.fmt(v)}<span>${chg >= 0 ? "+" : ""}${chg.toFixed(1)}</span></div>
+      </div>`;
+    }).join("") +
+    `<div class="note" style="margin-top:4px">The four above are the cost of existing, and each is
+     a legislative output rather than a market outcome. The two below are what the Commonwealth
+     makes and sells.</div>`;
   }
 
   /* ---------- government ---------- */

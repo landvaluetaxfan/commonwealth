@@ -557,3 +557,6 @@ img.dith{
 
 .signbtn{font-size:12px;padding:5px 14px;}
 .sigblock .rule svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
+
+.prow.econ{border-top:1px solid var(--chrome-dkr);}
+.prow.econ:first-of-type{border-top:none;}

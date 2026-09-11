@@ -55,6 +55,7 @@ const Editor = (function () {
     switch (src) {
       case "scalars": return V.scalars.map(v => [v, v.replace(/_/g, " ")]);
       case "prices": return V.prices.map(v => [v, v]);
+      case "economyKeys": return V.economy.map(v => [v, v]);
       case "laws": return V.laws.map(v => [v, v.replace(/_/g, " ")]);
       case "tiers": return V.tiers.map(v => [v, v]);
       case "stationFields": return V.stationFields.map(v => [v, v]);
@@ -323,12 +324,13 @@ const Editor = (function () {
       <label>Functional ${num_("functional", p.seats.functional)}</label>
       <label class="ed-note">Total <b>${p.seats.district + p.seats.list + p.seats.functional}</b></label>
     </div>
-    <div class="rulehead">Axes</div>
-    <div class="ed-grid">${Object.keys(A).map(k =>
-      `<label>${k} <select class="ed-f" data-f="ax_${k}">` +
-      `<option value=""${!p.axes[k] ? " selected" : ""}>— none —</option>` +
-      A[k].map(v => `<option value="${v}"${p.axes[k] === v ? " selected" : ""}>${v}</option>`).join("") +
-      `</select></label>`).join("")}</div>
+    <div class="rulehead">Axes <span class="ed-hint">signed, &minus;1 to +1</span></div>
+    <div class="ed-axes">${Object.keys(A).map(k => {
+      const v = p.axes[k] == null ? 0 : p.axes[k];
+      return `<div class="axrow"><b>${A[k][0]}</b>
+        <input class="ed-f axslide" data-f="ax_${k}" type="range" min="-1" max="1" step="0.05" value="${v}">
+        <b class="r">${A[k][1]}</b><span class="axval">${v > 0 ? "+" : ""}${v}</span></div>`;
+    }).join("")}</div>
     <div class="rulehead">Note</div>
     <textarea class="ed-f ed-body" data-f="note" rows="3">${esc(p.note || "")}</textarea>`;
   }
@@ -673,7 +675,7 @@ const Editor = (function () {
       const al = g("aliases").value.split(",").map(s => s.trim()).filter(Boolean);
       if (al.length) p.aliases = al; else delete p.aliases;
       p.seats = { district: +g("district").value, list: +g("list").value, functional: +g("functional").value };
-      p.axes = {}; Object.keys(SCHEMA.vocab.axes).forEach(k => p.axes[k] = g("ax_" + k).value || null);
+      p.axes = {}; Object.keys(SCHEMA.vocab.axes).forEach(k => p.axes[k] = +g("ax_" + k).value);
       sel.id = p.id;
     }
     else if (sel.tab === "stations") {
