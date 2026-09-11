@@ -25,9 +25,17 @@ The branch is **ahead 1, behind 38**. Its engine half (axes, economy, migration)
 was written against v5 and conflicts with the current v6 engine — **Claude owns
 that rebase.**
 
-**Portable now, low-risk (content only, independent of the axes change):** apply
-the party rename to the *current* `content/parties.js`, keeping its four
-categorical axes. Mapping:
+**DO NOT re-land the rename on `main` yet.** It was landed (`1b6c3b5`) and
+reverted (`55aa28a`) because adding the 12th party `ind` **crashed the chamber,
+orbit and Concordance on existing saves**: `Engine.reconcile()` backfills
+stations and the roll but **not parties**, so `st.parties["ind"]` is `undefined`
+and `drawChamber` (ui.js:893) and `partyArticle` (encyclopedia.js:35) throw. New
+games were fine; only saved games broke. **Engine prerequisite:** teach
+`reconcile()` to backfill missing parties (and currents) from content, the way it
+already does for stations. Only then is the rename safe.
+
+The rename is otherwise content-only and independent of the axes change. Apply it
+to the *current* `content/parties.js`, keeping its four categorical axes. Mapping:
 
 | id | new name | short |
 |---|---|---|
