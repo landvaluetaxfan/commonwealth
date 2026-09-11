@@ -373,6 +373,10 @@ const Editor = (function () {
       <label>Id ${txt_("id", c.id, "", 110)}<button class="btn ed-add" data-act="rename">rename…</button></label>
       <label class="ed-w">Name ${txt_("name", c.name, "", 300)}<button class="btn ed-add" data-act="roll-name">roll</button></label>
       <label class="ed-w">Role ${txt_("role", c.role, "", 240)}</label>
+      <label>Office <select class="ed-f" data-f="office"><option value="">— none —</option>${
+        ["pm","minister","opposition","shadow","leader","whip"].map(o =>
+          `<option value="${o}"${c.office === o ? " selected" : ""}>${o}</option>`).join("")
+      }</select></label>
       <label>Party <select class="ed-f" data-f="party"><option value="">— none —</option>${
         M.parties.map(p => `<option value="${p.id}"${c.party === p.id ? " selected" : ""}>${esc(p.name)}</option>`).join("")
       }</select></label>
@@ -693,6 +697,7 @@ const Editor = (function () {
       ["id","name","role","seat","note"].forEach(k => c[k] = g(k).value);
       c.party = g("party").value || null; c.relationship = +g("relationship").value;
       const po = g("portrait").value.trim(); if (po) c.portrait = po; else delete c.portrait;
+      const of = g("office").value; if (of) c.office = of; else delete c.office;
       if (!c.seat) delete c.seat;
       sel.id = c.id;
     }

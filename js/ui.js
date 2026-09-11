@@ -22,6 +22,20 @@ const UI = (function () {
   const pc = id => (C.partyById[id] || {}).colour || "var(--chrome-dk)";
   const pn = id => (C.partyById[id] || {}).name || id;
 
+  /* Office badges. An office is a one-word mark on the seat table, not a job
+     title — `role` carries the title. The key belongs to content; the label
+     and the class are presentation's, which is why this map lives here and not
+     in the engine. The Speaker is not in it: the Chair is a property of the
+     seat (`speaker:true`), because it belongs to the House, not the person. */
+  const OFFICE = {
+    pm:         ["PM", "pm"],
+    minister:   ["Minister", "min"],
+    opposition: ["Opposition Leader", "opp"],
+    shadow:     ["Shadow", "shadow"],
+    leader:     ["Leader", "leader"],
+    whip:       ["Whip", "whip"]
+  };
+
   /* Autosave. Shell owns slots; if it is not loaded (the editor, a test
      harness) this is a no-op rather than an error. */
   const saved = () => { if (typeof Shell !== "undefined") Shell.autosave(); };
@@ -1184,8 +1198,12 @@ const UI = (function () {
         const r = Engine.seatsFor(st, k.id);
         const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
         const ch = (C.characters || []).find(c => c.seat === k.name);
-        return `<tr><td><b>${esc(k.name)}</b>` +
-          (k.speaker ? ` <i class="chair">Speaker</i>` : "") +
+        /* The Chair first — it is the seat's office — then the member's. */
+        const off = !r.vacant && ch && OFFICE[ch.office];
+        const badge = k.speaker
+          ? ` <i class="chair">Speaker</i>`
+          : off ? ` <i class="office o-${off[1]}">${off[0]}</i>` : "";
+        return `<tr><td><b>${esc(k.name)}</b>${badge}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
             : esc(ch ? ch.name : (k.member || "\u2014"))}` +

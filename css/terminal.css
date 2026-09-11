@@ -154,6 +154,16 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #cons-table .det{display:block;font-style:normal;font-size:8.5px;color:var(--ink-soft);
   font-family:var(--f-data);}
 #cons-table .chair{color:#c9a227;letter-spacing:.06em;}
+/* Office badges — a mark, not a title: one word, spaced, coloured by how
+   senior the office is. Speaker gold is the Chair's, above; these are the
+   rest. font-style normal because the <i> is only a hook. */
+#cons-table .office{font-style:normal;letter-spacing:.05em;}
+#cons-table .o-pm{color:#2f3a2c;font-weight:700;}
+#cons-table .o-min{color:#4a4a52;}
+#cons-table .o-opp{color:#7a2e22;font-weight:700;}
+#cons-table .o-shadow{color:#8a6d22;}
+#cons-table .o-leader{color:#5a5f55;}
+#cons-table .o-whip{color:#4a7c8c;}
 
 /* ---- the schematic: five band rows of chips ---- */
 .obands{padding:5px 7px 6px;}
