@@ -4,6 +4,51 @@ A text-based narrative political thriller with real electoral mechanics, set in 
 federated republic of orbital habitats. No build step, no framework, no bundler.
 Open `index.html` in a browser to play, `editor.html` to author.
 
+## OPEN HANDOFF — a divergent branch must be reconciled (10 Sep 2026)
+
+A second agent (opencode) worked from a **stale clone** and committed a line of
+work that is **not on this branch**. It is pushed and waiting:
+
+`git fetch origin opencode/party-rename-and-economy`
+
+Built on the old base `49344d6` (before the UI pass and `STATE_VERSION 6`), it
+contains:
+
+- **Five signed axes** (`economic · authority · personhood · sovereignty · trade`)
+  replacing the four categorical ones, with agreement as distance.
+- **§7.10 the productive economy**: `economy.participation/trade/private`, the
+  `economy` effect verb, `economyAbove/Below`, state v5.
+- **Renamed parties**, and the old `gb` split in two.
+- `ROADMAP.md`, `AUTHORING_FORMAT.md`, `drafts/`, and bible **Part XVII**.
+
+The branch is **ahead 1, behind 38**. Its engine half (axes, economy, migration)
+was written against v5 and conflicts with the current v6 engine — **Claude owns
+that rebase.**
+
+**Portable now, low-risk (content only, independent of the axes change):** apply
+the party rename to the *current* `content/parties.js`, keeping its four
+categorical axes. Mapping:
+
+| id | new name | short |
+|---|---|---|
+| cu | Party of Socialists and Democrats | PSD |
+| cl | Liberal Party | LIB |
+| psa | New Progressive Party | NPP |
+| sc | Home Rule | HR |
+| hul | Association of Engineers and Systems | AES |
+| rv | Democratic Centre | DEC |
+| fh | Party of Property Owners | PPO |
+| gb | Alliance of Business and Government | ABG |
+| des | One-G | ONE |
+| geo | Single Tax Party | STP |
+| upl | Common Kind | CMK |
+| ind | Independents *(new, last)* | IND |
+
+Split `gb` into **ABG** (`functional:9`, keep its axes and `aliases:["Guild Bench"]`)
+and **`ind`** (`district:6`, no axes, last in `PARTIES`). Then add `ind:"against"`
+to the divergence stances in `content/bills.js` — without it the six independents
+infer 50/50 and the opening forecast moves off 128. `npm run check` must be green.
+
 ## Finding things without reading everything
 
 `bible.md` is ~1,700 lines and `textbook.md` ~750. Reading either in full to
