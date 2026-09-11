@@ -167,6 +167,28 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        partyBad.length === 0, partyBad.join(", "));
     ok("the roll reconciles both ways", Engine.tierCheck(r, CONTENT).ok);
 
+    /* The functional roll, on the same terms: content's per-constituency held
+       must reproduce each party's authored functional total, and a move must
+       land in the roll rather than on the stored count. */
+    let fnBad = [];
+    CONTENT.parties.forEach(p => {
+      const rolled = Object.keys(r.functional || {}).reduce(
+        (n, fid) => n + ((r.functional[fid].held || {})[p.id] || 0), 0);
+      if (rolled !== p.seats.functional) fnBad.push(`${p.id} ${rolled}/${p.seats.functional}`);
+    });
+    ok("the functional roll reproduces every authored functional total",
+       fnBad.length === 0, fnBad.join(", "));
+    {
+      const s = Engine.newGame(CONTENT);
+      const before = s.parties.cu.seats.functional;
+      Engine.makeInstrument(s, CONTENT, "si_2287_44");
+      ok("a functional seat moves inside the roll, and the derived total follows",
+         s.parties.cu.seats.functional === before + 2 &&
+         s.functional.fc_lifesupport.held.cu === 2 &&
+         s.functional.fc_lifesupport.held.gb === 3,
+         JSON.stringify(s.functional.fc_lifesupport.held));
+    }
+
     /* a vacancy costs the government a vote and is not quietly absorbed */
     const conf0 = Engine.confidence(r);
     Engine.vacateSeat(r, CONTENT, "tier_four", "cu", "test");

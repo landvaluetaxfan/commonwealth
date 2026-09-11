@@ -20,8 +20,11 @@
                  dependent, the suspended. Enormous, powerless,
                  grotesque. Bible 4.6.5 — the super-seat.
 
-   held must sum, across all sectors, to each party's `functional`
-   seat count in parties.js. tools/lint.js checks this.
+   held is the OPENING. At runtime the authority is the state's functional
+   roll (st.functional), seeded from this and moved only by the `functional`
+   effect, and each party's functional count is DERIVED from it. This held
+   must still sum, across all sectors, to the party counts in parties.js;
+   test.js checks both directions.
 
    electors — WHO IS ACTUALLY ON THE ROLL. Individual licence-holders,
    recognised unions casting for their membership, or registered

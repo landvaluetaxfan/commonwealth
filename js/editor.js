@@ -63,6 +63,7 @@ const Editor = (function () {
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
       case "bills": return M.bills.map(b => [b.id, b.title]);
+      case "functional": return (M.functional || []).map(f => [f.id, f.name]);
       case "events": return M.events.map(e => [e.id, e.title]);
       case "characters": return M.characters.map(c => [c.id, c.name]);
       case "archetypes": return [["", "— none —"]].concat(

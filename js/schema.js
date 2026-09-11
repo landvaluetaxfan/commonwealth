@@ -31,6 +31,11 @@ const SCHEMA = {
                    {k:"field", type:"enum", src:"tiers", label:"Tier"},
                    {k:"delta", type:"int", label:"Change"}],
                    shape:"nested" },
+    functional:  { label:"Move functional seats", args:[
+                   {k:"key", type:"enum", src:"functional", label:"Constituency"},
+                   {k:"field", type:"enum", src:"parties", label:"Party"},
+                   {k:"delta", type:"int", label:"Seats"}],
+                   shape:"nested" },
     flag:        { label:"Set a flag", args:[{k:"value", type:"flag", label:"Flag"}], shape:"scalarVal" },
     unflag:      { label:"Clear a flag", args:[{k:"value", type:"flag", label:"Flag"}], shape:"scalarVal" },
     bill:        { label:"Change a bill", args:[

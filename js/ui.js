@@ -1238,21 +1238,27 @@ const UI = (function () {
     if (!F.length || !$("#func-table")) return;
     const FR = { licensure:"licence", corporate:"companies", union_bloc:"union bloc", residual:"residual" };
     const ps = id => (C.partyById[id] || {}).short || id;
+    /* Holdings come from the functional roll, never the authored `held`: the
+       roll is what instruments and elections move, and it is the only thing the
+       division arithmetic reads. The authored value is the fallback. */
+    const heldOf = f => (st.functional && st.functional[f.id] ? st.functional[f.id].held : f.held) || {};
     /* The hover overview: what the seat returns, who is on its roll, who holds
        it, and how it behaves — built from the data rather than restated. */
     const overview = f => {
-      const held = Object.keys(f.held || {}).sort((a, b) => f.held[b] - f.held[a]);
+      const h = heldOf(f);
+      const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
       const roll = (f.electors || []).map(e => `${e.body} ${e.count.toLocaleString()}`).join("; ");
       return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
         `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
-        (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${f.held[pid]}`).join(", ")}. ` : "") +
+        (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
         (f.note || "");
     };
     $("#func-table").innerHTML =
       "<thead><tr><th>Constituency</th><th class='n' data-tip='functional'>Seats</th>" +
       "<th data-tip='held'>Held by</th></tr></thead><tbody>" +
       F.map(f => {
-        const held = Object.keys(f.held || {}).sort((a, b) => f.held[b] - f.held[a]);
+        const h = heldOf(f);
+        const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
         /* i.sub is display:block, so both halves stay inside ONE of them and
            take a span each; two i.sub would put the franchise and the
            electorate on separate lines. */
@@ -1262,7 +1268,7 @@ const UI = (function () {
           `<span data-tip="franchise">${FR[f.franchise] || f.franchise}</span>` +
           ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
-            ? held.map(pid => `${mark(pid)}<span class="hn">${f.held[pid]}</span>`).join(" ")
+            ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
             : "&mdash;"}</td></tr>`;
       }).join("") + "</tbody>";
 

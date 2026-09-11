@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 6;   // 3 prices, 4 cabinet and instruments, 5 the district roll, 6 content reconciliation
+  const STATE_VERSION = 7;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll
 
   /* ---------------------------------------------------------
      1. STATE
@@ -108,6 +108,7 @@ const Engine = (function () {
     });
 
     seedRoll(st, C);
+    seedFunctional(st, C);
     return st;
   }
 
@@ -157,6 +158,14 @@ const Engine = (function () {
          seen to have passed through it. */
       st.version = 6;
     }
+    if (st.version < 7) {                     // the functional roll
+      /* Saves from before the roll carry only a party functional total. There
+         is no way to recover which constituency each seat was, so the roll is
+         reseeded from content on load and the total is whatever the roll says
+         — the same honest reconstruction as the district roll in v5. */
+      st.functionalReseeded = true;
+      st.version = 7;
+    }
     return st;
   }
 
@@ -189,7 +198,8 @@ const Engine = (function () {
   function reconcile(st, C) {
     if (!C) return st;
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
-                    partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [] };
+                    partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
+                    functionalAdded: [], functionalDropped: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -261,6 +271,23 @@ const Engine = (function () {
       syncRoll(st, C);
     }
 
+    /* The functional roll, on the same terms: content owns the opening
+       holdings, the save owns what play has moved, and a constituency content
+       has added is seeded from its authored holder. The party total is then
+       derived by syncFunctional(), so the panel and the divisions agree. */
+    st.functional = st.functional || {};
+    (C.functional || []).forEach(f0 => {
+      if (st.functional[f0.id]) return;
+      st.functional[f0.id] = { held: Object.assign({}, f0.held || {}) };
+      notes.functionalAdded.push(f0.id);
+    });
+    Object.keys(st.functional).forEach(fid => {
+      if (!C.functionalById || !C.functionalById[fid]) {
+        delete st.functional[fid]; notes.functionalDropped.push(fid);
+      }
+    });
+    syncFunctional(st, C);
+
     /* Notes live on the module, not on the state. Anything written onto st
        here would be saved, reloaded and compared, and a save would stop
        round-tripping to an identical state — which tools/uitest.js checks
@@ -305,6 +332,38 @@ const Engine = (function () {
       const h = st.roll[cid].held;
       Object.keys(h).forEach(pid => {
         if (st.parties[pid]) st.parties[pid].seats.district += h[pid];
+      });
+    });
+    return st;
+  }
+
+  /* ---------------------------------------------------------
+     1c. THE FUNCTIONAL ROLL — who holds which functional seat
+
+     The same rule as the district roll: every functional seat lives in
+     one place and every functional total is DERIVED from it. The count
+     on st.parties[id].seats.functional is a projection refreshed by
+     syncFunctional() and never written directly. A functional seat
+     moves by the `functional` effect, which names the constituency, so
+     the panel, the tooltips and the divisions can never disagree about
+     who holds what.
+     --------------------------------------------------------- */
+
+  function seedFunctional(st, C) {
+    st.functional = {};
+    (C.functional || []).forEach(f => {
+      st.functional[f.id] = { held: Object.assign({}, f.held || {}) };
+    });
+    syncFunctional(st, C);
+  }
+
+  /* Refresh the derived functional counts. The only writer. */
+  function syncFunctional(st, C) {
+    Object.keys(st.parties).forEach(id => { st.parties[id].seats.functional = 0; });
+    Object.keys(st.functional || {}).forEach(fid => {
+      const h = st.functional[fid].held;
+      Object.keys(h).forEach(pid => {
+        if (st.parties[pid]) st.parties[pid].seats.functional += h[pid];
       });
     });
     return st;
@@ -1126,16 +1185,38 @@ const Engine = (function () {
     }),
     seats: (st, C, v) => Object.keys(v).forEach(pid => {
       Object.keys(v[pid]).forEach(t => {
-        /* district is derived from the roll; setting it here would be undone
-           by the next syncRoll without saying so. Use cross/vacate_seat. */
+        /* district and functional are derived from their rolls; setting one
+           here would be undone by the next sync without saying so. */
         if (t === "district") {
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: a seats effect tried to set district seats for " + pid +
             ". District seats live in the roll — use cross or vacate_seat." });
           return;
         }
+        if (t === "functional") {
+          st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: a seats effect tried to set functional seats for " + pid +
+            ". Functional seats live in the functional roll — use the functional verb." });
+          return;
+        }
         st.parties[pid].seats[t] += v[pid][t];
       });
+    }),
+    /* A functional seat moves inside a named constituency: { fc_legal:{psa:2,
+       gb:-1} }. The party total is then derived, exactly as district seats are
+       derived from the district roll. */
+    functional: (st, C, v) => Object.keys(v).forEach(fid => {
+      const roll = st.functional && st.functional[fid];
+      if (!roll) {
+        st.log.unshift({ sitting: st.sitting, text:
+          "IGNORED: a functional effect named no such constituency: " + fid + "." });
+        return;
+      }
+      Object.keys(v[fid]).forEach(pid => {
+        roll.held[pid] = (roll.held[pid] || 0) + v[fid][pid];
+        if (roll.held[pid] <= 0) delete roll.held[pid];
+      });
+      syncFunctional(st, C);
     }),
     flag:   (st, C, v) => [].concat(v).forEach(f => st.flags[f] = true),
     unflag: (st, C, v) => [].concat(v).forEach(f => delete st.flags[f]),
@@ -1349,6 +1430,7 @@ const Engine = (function () {
   function load(str, C) {
     const st = migrate(JSON.parse(str));
     if (C && (st.rollReseeded || !st.roll)) { seedRoll(st, C); delete st.rollReseeded; }
+    if (C && (st.functionalReseeded || !st.functional)) { seedFunctional(st, C); delete st.functionalReseeded; }
     return reconcile(st, C);
   }
 
