@@ -5,10 +5,9 @@
 A text-based narrative political thriller with a real electoral simulation, set
 in the Circumterrestrial Commonwealth — a federated republic of thirty-four
 orbital habitats, population 7,006,000. You lead a party in a 280-seat House of
-Delegates. Bills carry on a **dual majority**: they must pass among the elected
-members *and* separately among the forty functional members, who are returned by
-trade licence and corporate franchise rather than by place. Your majority is not
-a majority. That is the trap the first chapter is built around.
+Delegates. Bills carry on a dual majority: they must pass among the elected
+members AS WELL AS separately among the forty functional members, who are returned by
+trade licence and corporate franchise rather than by place.
 
 ---
 
@@ -28,9 +27,6 @@ build` is optional and only produces the single-file release.
 | `index.html` | the game |
 | `editor.html` | the content editor |
 | `npm run build` | writes `dist/ways-and-means.html`, everything inlined |
-
-GitHub Pages needs enabling once at **Settings → Pages → Source: GitHub
-Actions**; the `pages` workflow deploys on every push to `main` after that.
 
 ## State
 
