@@ -43,7 +43,7 @@ brief rather than writing placeholder narrative.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all eight, about two seconds
+npm run check    # all nine, about three seconds
 ```
 
 All six must pass. They are the only playtester this project has.

@@ -64,7 +64,7 @@ tests; opencode takes `content/*.js` and prose.
 
 ```
 npm install      # once, for jsdom
-npm run check    # all eight, about three seconds
+npm run check    # all nine, about three seconds
 ```
 
 | | |
@@ -75,7 +75,8 @@ npm run check    # all eight, about three seconds
 | `tools/roundtrip.js` | serialise → reload → identical play |
 | `tools/renametest.js` | renaming an id preserves behaviour |
 | `tools/edtest.js` | the editor boots and every tab works |
-| `tools/uitest.js` | every screen renders, saves round-trip, focus and audio rules hold |
+| `tools/uitest.js` | every screen renders, saves round-trip |
+| `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
 | `tools/toc.js --check` | the bible's section index is current |
 
 Run them after any change.
@@ -106,5 +107,6 @@ js/schema.js          the content vocabulary, machine-readable
 js/serialise.js       writing content files back out of the editor
 js/refs.js            reference tracking for safe rename
 js/coverage.js        what-to-do-next analysis
+tools/harness.js      one jsdom, shared by uitest and uxtest
 tools/                checks, build, index generator, image pipeline
 ```

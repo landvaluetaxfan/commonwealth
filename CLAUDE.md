@@ -63,7 +63,7 @@ Content is `.js` rather than `.json` on purpose: `fetch()` is blocked on
 
 ```
 npm install      # once, for jsdom
-npm run check    # all eight, about two seconds
+npm run check    # all nine, about three seconds
 ```
 
 | | |
@@ -75,6 +75,7 @@ npm run check    # all eight, about two seconds
 | `tools/renametest.js` | renaming an id preserves behaviour exactly |
 | `tools/edtest.js` | editor boots and every tab works |
 | `tools/uitest.js` | menu into a running game, every screen renders, saves round-trip |
+| `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
 | `tools/toc.js --check` | the bible's section index is current |
 
 **Run them after any content change.** They are the only playtester this project
@@ -105,6 +106,7 @@ js/stream.js          text arriving a character at a time. Never called
 js/wait.js            the three ways the terminal says it is thinking.
 js/tips.js            what the abbreviations mean. Explains the TERMINAL;
                       defers to the Concordance for the WORLD.
+tools/harness.js      one jsdom, shared by uitest and uxtest
 tools/                checks, index generator, image pipeline, bundle
 ```
 
@@ -132,7 +134,7 @@ version of any of them is in the header of the file it names.
 - `CONTENT.encyclopedia` is an object — `meta`, `banners`, `articles` — not a
   list.
 
-**CSS traps, all three found by measuring rather than reading**
+**CSS and layout traps, every one found by measuring rather than reading**
 
 - An id outranks `.screen{display:none}`, so `#s-orb.screen{display:block}` put
   the habitat map on every tab at once. Any rule whose subject is a `#s-…`
