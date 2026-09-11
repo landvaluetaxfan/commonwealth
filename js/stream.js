@@ -33,13 +33,14 @@
      caps are checked; at any speed above about 45 characters a second the
      second one is the one that binds.
 
-     Default is fast. A player who has read the paragraph should not be
-     waiting for it.
+     Default is normal. Fast reads as a flicker rather than as typing,
+     and a player who wants it out of the way has a speed control in the
+     options panel and a key that skips the block outright.
    ============================================================= */
 const Stream = (function () {
   "use strict";
 
-  /* characters per second. Err fast. */
+  /* characters per second. The default is `normal`; see js/shell.js. */
   const SPEED = { slow: 220, normal: 420, fast: 700 };
   const CUE_MIN_CHARS = 3;
   const CUE_MAX_PER_SEC = 15;
@@ -98,7 +99,7 @@ const Stream = (function () {
 
     const reg = registerFor(block);
     const on = opt("stream", true);
-    const cps = SPEED[opt("streamSpeed", "fast")] || SPEED.fast;
+    const cps = SPEED[opt("streamSpeed", "normal")] || SPEED.normal;
     const raf = typeof requestAnimationFrame === "function" ? requestAnimationFrame : null;
 
     /* Streaming off, or a document with no animation frames at all (a

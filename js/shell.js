@@ -51,10 +51,11 @@ const Shell = (function () {
     autosave: true, motion: true, confirmDestructive: true,
     mute: false, roomTone: true,
     gainUi: 0.55, gainRoom: 0.3, gainEvent: 0.7,
-    /* Text arrives a character at a time, fast. A player who reads
-       quickly should never be waiting for the machine to finish saying
-       something they finished reading. */
-    stream: true, streamSpeed: "fast",
+    /* Text arrives a character at a time. Normal by default: fast reads
+       as a flicker rather than as typing, and the point of the effect is
+       that the terminal is saying something to you. Anyone who finds it
+       slow has a speed control one panel away. */
+    stream: true, streamSpeed: "normal",
     /* The terminal explaining itself. On by default because the terminal
        is full of abbreviations that carry rules. */
     tips: true

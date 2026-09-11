@@ -379,7 +379,7 @@ try {
   w.eval("Shell.boot(CONTENT)");
   ok("they survive a reload",
      w.eval('Shell.opt("stream")') === false && w.eval('Shell.opt("streamSpeed")') === "slow");
-  w.eval('Shell.setOpt("stream", true); Shell.setOpt("streamSpeed", "fast");');
+  w.eval('Shell.setOpt("stream", true); Shell.setOpt("streamSpeed", "normal");');
 } catch (e) { ok("streaming preferences", false, e.message); }
 
 /* THE TELETYPE'S REGISTERS. "silent" is a register, spelt out, not an
@@ -401,6 +401,17 @@ try {
   const ssrc = fs.readFileSync(path.join(root, "js/stream.js"), "utf8");
   ok("the cue rate is capped in both directions",
      /CUE_MIN_CHARS\s*=\s*3/.test(ssrc) && /CUE_MAX_PER_SEC\s*=\s*15/.test(ssrc));
+  /* The two files have to agree about the default, and they are not in a
+     position to check each other at run time: Shell owns the stored value
+     and Stream owns the fallback for when there is no Shell at all. */
+  const shsrc = fs.readFileSync(path.join(root, "js/shell.js"), "utf8");
+  const shellDefault = (shsrc.match(/streamSpeed:\s*"(\w+)"/) || [])[1];
+  const streamFallback = (ssrc.match(/opt\("streamSpeed",\s*"(\w+)"\)/) || [])[1];
+  ok("the streaming default agrees in both files",
+     shellDefault === streamFallback && !!shellDefault,
+     "shell " + shellDefault + ", stream " + streamFallback);
+  ok("and it is a speed that exists",
+     w.eval("Stream.speeds").indexOf(shellDefault) >= 0, shellDefault);
   ok("streaming off renders instantly rather than slowly",
      w.eval('(function(){ Shell.setOpt("stream", false); var d = document.createElement("div");' +
             'd.textContent = "a sentence that would take a moment"; document.body.appendChild(d);' +
