@@ -172,7 +172,10 @@ version of any of them is in the header of the file it names.
 - `js/tips.js` explains the TERMINAL; the Concordance and glossary explain the
   WORLD, and a tip with no body falls through to them, so nothing restates canon
   (§2.7). `?` is the keyboard trade: annotated readouts enter the tab order on
-  the visible screen only.
+  the visible screen only. The Concordance screen itself carries no annotations
+  on purpose — it is not government chrome, and it is where tips send you.
+  `tools/uxtest.js` asserts an explanation nobody anchors is a failure, because
+  it reads as coverage and is not.
 - There is NO ASSET LOADING and cannot easily be: on `file://`, `fetch()` and
   `XMLHttpRequest` both fail. Base64 in a `.js` file through `atob` into
   `decodeAudioData` is the route that works.

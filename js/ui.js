@@ -296,7 +296,7 @@ const UI = (function () {
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
     });
     st.confidenceSupply.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag">C&amp;S</span></td>` +
+      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag" data-tip="cs">C&amp;S</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${st.parties[id].loyalty}</td></tr>`;
     });
     h += "</tbody>";
@@ -1023,11 +1023,11 @@ const UI = (function () {
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     $("#chamber-tally").innerHTML =
-      `<span class="ct gov">Government ${seatLine(govN, Engine.popularTotal(st))}</span>` +
-      `<span class="ct opp">Opposition ${seatLine(oppN, Engine.popularTotal(st))}</span>` +
-      `<span class="ct cross">Functional ${crossN}</span>` +
-      `<span class="ct">Majority ${Engine.majority(st)}</span>` +
-      (chairName ? `<span class="ct">Speaker ${chairParty ? mark(chairParty) : ""}` +
+      `<span class="ct gov" data-tip="government">Government ${seatLine(govN, Engine.popularTotal(st))}</span>` +
+      `<span class="ct opp" data-tip="opposition">Opposition ${seatLine(oppN, Engine.popularTotal(st))}</span>` +
+      `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` +
+      `<span class="ct" data-tip="majority">Majority ${Engine.majority(st)}</span>` +
+      (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
                    `${esc(chairName)}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
 
     $("#chamber-legend").innerHTML = C.parties.map(p =>
@@ -1035,7 +1035,9 @@ const UI = (function () {
       `${govIds.includes(p.id) ? ' <i class="ingov">gov</i>' : ""}</span>`).join("");
 
     $("#comp-table").innerHTML =
-      "<thead><tr><th>Party</th><th class='n'>Dist</th><th class='n'>List</th><th class='n'>Func</th><th class='n'>Tot</th></tr></thead><tbody>" +
+      "<thead><tr><th>Party</th><th class='n' data-tip='district'>Dist</th>" +
+      "<th class='n' data-tip='list'>List</th><th class='n' data-tip='functional'>Func</th>" +
+      "<th class='n' data-tip='seats'>Tot</th></tr></thead><tbody>" +
       C.parties.map(p => { const s = st.parties[p.id].seats;
         return `<tr${govIds.includes(p.id) ? ' class="govrow"' : ""}><td>${sw(p.colour)}${p.name}</td>` +
                `<td class="n">${s.district}</td><td class="n">${s.list}</td>` +
@@ -1108,9 +1110,13 @@ const UI = (function () {
     const s = st.stations[id];
     const d = $("#station-detail");
     $("#station-hdr").textContent = s.name;
-    $("#station-sub").textContent =
-      (s.type === "bundled" ? `bundled, ${s.settlements} settlements` : s.type) +
-      ` \u00b7 ${s.form} \u00b7 ${s.band} band`;
+    /* innerHTML rather than textContent so the form and the band can each
+       carry their own explanation; both are encoded in the schematic next
+       door and neither is obvious from the word. */
+    $("#station-sub").innerHTML =
+      esc(s.type === "bundled" ? `bundled, ${s.settlements} settlements` : s.type) +
+      ` \u00b7 <span data-tip="form">${esc(s.form)}</span>` +
+      ` \u00b7 <span data-tip="band">${esc(s.band)} band</span>`;
     const r = stationRatio(s.id);
     /* A stat strip rather than eight rows of label over value. The same
        figures, a quarter of the height, and the ones that carry an argument
@@ -1197,11 +1203,16 @@ const UI = (function () {
     if (!F.length || !$("#func-table")) return;
     const FR = { licensure:"licence", corporate:"companies", union_bloc:"union bloc", residual:"residual" };
     $("#func-table").innerHTML =
-      "<thead><tr><th>Constituency</th><th class='n'>Seats</th><th>Held by</th></tr></thead><tbody>" +
+      "<thead><tr><th>Constituency</th><th class='n' data-tip='functional'>Seats</th>" +
+      "<th data-tip='held'>Held by</th></tr></thead><tbody>" +
       F.map(f => {
         const held = Object.keys(f.held || {}).sort((a, b) => f.held[b] - f.held[a]);
-        return `<tr><td><b>${f.name}</b><i class="sub">${FR[f.franchise] || f.franchise}` +
-          ` &middot; ${f.electorate.toLocaleString()} electors</i></td>` +
+        /* i.sub is display:block, so both halves stay inside ONE of them and
+           take a span each; two i.sub would put the franchise and the
+           electorate on separate lines. */
+        return `<tr><td><b>${f.name}</b><i class="sub">` +
+          `<span data-tip="franchise">${FR[f.franchise] || f.franchise}</span>` +
+          ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             ? held.map(pid => `${mark(pid)}<span class="hn">${f.held[pid]}</span>`).join(" ")
             : "&mdash;"}</td></tr>`;

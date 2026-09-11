@@ -316,7 +316,9 @@ const Papers = (function () {
       `<tr class="${i.id === sel ? "sel" : ""}" data-doc="${i.id}">
         <td>${esc(i.title)}<div class="note">${esc(i.ref)}</div></td>
         <td class="n"><span class="flag ${i.status === "assented" || i.status === "in force" ? "good"
-          : ["struck", "revoked", "defeated"].includes(i.status) ? "bad" : ""}">${i.status}</span></td>
+          : ["struck", "revoked", "defeated"].includes(i.status) ? "bad" : ""}"
+          data-tip="${i.kind === "minute" ? "minute" : i.kind === "instrument" ? "instrument" : "register"}"
+          >${i.status}</span></td>
       </tr>`).join("")
       : `<tr><td class="note">The register is empty. Divisions and instruments appear here.</td></tr>`;
 

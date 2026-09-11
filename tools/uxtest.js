@@ -424,6 +424,35 @@ try {
   ok("every annotation resolves to an explanation", dangling.length === 0,
      dangling.join(", "));
 
+  /* AND EVERY EXPLANATION IS REACHABLE. A key nobody anchors is a tip
+     nobody will ever see; it reads as coverage and is not. `prayer` is
+     the one legitimate exception - its flag only exists while an order is
+     in force - so it is proved separately below rather than excused. */
+  const anchored = new Set(anchors.map(a => a.getAttribute("data-tip")));
+  const orphan = w.eval("Tips.keys()").filter(k => !anchored.has(k) && k !== "prayer");
+  ok("and every explanation is anchored to something", orphan.length === 0,
+     orphan.join(", "));
+
+  w.eval(`
+    var st = UI.state(), k = Object.keys(st.instruments)[0];
+    st.instruments[k].made = true; st.instruments[k].inForce = true;
+    st.instruments[k].prayerCloses = st.sitting + 3;
+    UI.boot(st, CONTENT);
+  `);
+  ok("the prayer window explains itself once there is one",
+     !!w.document.querySelector('[data-tip="prayer"]'));
+
+  /* NO SCREEN SHIPS WITH NOTHING. The Concordance is the deliberate
+     exception: it is in-world, on white paper, in a serif, and it is
+     something civilians made. Terminal chrome does not belong inside it. */
+  const bare = [...w.document.querySelectorAll(".screen")]
+    .filter(sc => sc.id !== "s-cx" && !sc.querySelector("[data-tip]"))
+    .map(sc => sc.id);
+  ok("every screen but the Concordance explains something", bare.length === 0,
+     bare.join(", "));
+  ok("and the Concordance explains nothing, on purpose",
+     w.document.querySelectorAll("#s-cx [data-tip]").length === 0);
+
   /* A tip may hand off to the Concordance rather than restate it. If it
      names an article, the article has to be there. */
   const bad = w.eval(`

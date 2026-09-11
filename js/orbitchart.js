@@ -136,8 +136,8 @@ const OrbitChart = (function () {
     const clos = [0.28, 0.5, 0.72, 0.9].map(c =>
       `<i style="background:${fill(c)}" title="closure ${c}"></i>`).join("");
     return `
-      <div class="okeyrow"><b>Form</b>${g}</div>
-      <div class="okeyrow"><b>Closure</b><span class="oramp">${clos}</span>
+      <div class="okeyrow"><b data-tip="form">Form</b>${g}</div>
+      <div class="okeyrow"><b data-tip="closure">Closure</b><span class="oramp">${clos}</span>
         <span class="okeyn">fill, and left-to-right position within a band</span></div>
       <div class="okeyrow"><b>Marks</b>
         <span class="okey"><i class="obar demo" style="background:var(--p-cu)"></i>leading party</span>

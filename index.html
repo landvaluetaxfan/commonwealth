@@ -57,7 +57,7 @@
         </div>
         <div class="stack">
           <div class="panel"><h2>Indicators</h2><div class="pbody" id="gov-meters-mirror"></div></div>
-          <div class="panel"><h2>Wire</h2><div class="pbody flush" id="gov-wire"></div></div>
+          <div class="panel"><h2><span data-tip="wire">Wire</span></h2><div class="pbody flush" id="gov-wire"></div></div>
         </div>
       </div>
     </section>
@@ -84,7 +84,7 @@
             </div>
           </div>
           <div class="panel">
-            <h2>Presidency</h2>
+            <h2><span data-tip="live">Presidency</span></h2>
             <div class="pbody" id="gov-pres"></div>
           </div>
         </div>
@@ -105,11 +105,11 @@
         <div class="stack">
           <div class="panel"><h2>Standing indicators</h2><div class="pbody" id="gov-meters"></div></div>
           <div class="panel">
-            <h2>Scarcity <em>index, 100 at open</em></h2>
+            <h2><span data-tip="scarcity">Scarcity</span> <em data-tip="scarcity">index, 100 at open</em></h2>
             <div class="pbody" id="gov-prices"></div>
           </div>
           <div class="panel">
-            <h2>Cabinet</h2>
+            <h2><span data-tip="vacant">Cabinet</span></h2>
             <div class="pbody flush"><table id="gov-cabinet"></table></div>
           </div>
         </div>
@@ -119,7 +119,7 @@
     <section class="screen" id="s-cham">
       <div class="grid g-cham">
         <div class="panel">
-          <h2>Parliament &mdash; House of Delegates <em>district / list / functional</em></h2>
+          <h2><span data-tip="benches">Parliament &mdash; House of Delegates</span> <em>district / list / functional</em></h2>
           <div class="pbody flush">
             <svg viewBox="0 0 720 348" width="720" height="348" role="img" aria-label="Seating plan of the House of Delegates">
               <g id="chamber"></g>
@@ -134,7 +134,7 @@
           <div class="pbody flush"><table id="comp-table"></table></div>
         </div>
         <div class="panel">
-          <h2>Functional constituencies <em>40 seats, dual majority</em></h2>
+          <h2><span data-tip="functional">Functional constituencies</span> <em data-tip="dual">40 seats, dual majority</em></h2>
           <div class="pbody flush"><table id="func-table"></table></div>
           <div class="pbody"><div class="note" id="func-note"></div></div>
         </div>
@@ -156,7 +156,7 @@
           <div class="pbody" id="station-detail"></div>
         </div>
         <div class="panel p-map">
-          <h2>Habitat schematic <em>altitude bands &middot; not to lateral scale</em></h2>
+          <h2><span data-tip="schematic">Habitat schematic</span> <em data-tip="band">altitude bands &middot; not to lateral scale</em></h2>
           <div class="pbody flush plate" id="orbit-chart"></div>
           <div class="pbody okeys" id="orbit-key"></div>
         </div>
@@ -167,7 +167,7 @@
       <div class="grid g-pap">
         <div class="stack">
           <div class="panel">
-            <h2>Instruments <em>signed, not voted</em></h2>
+            <h2><span data-tip="instrument">Instruments</span> <em>signed, not voted</em></h2>
             <div class="pbody flush">
               <table id="gov-si"></table>
               <div class="pbody"><div class="note">A bill needs a majority and cannot be undone.
@@ -176,7 +176,7 @@
             </div>
           </div>
           <div class="panel">
-            <h2>Register <em>acts, orders and minutes</em></h2>
+            <h2><span data-tip="register">Register</span> <em>acts, orders and minutes</em></h2>
             <div class="pbody flush" style="max-height:340px;overflow:auto">
               <table id="pp-list"></table>
             </div>
@@ -212,7 +212,7 @@
 
     <section class="screen" id="s-log">
       <div class="panel">
-        <h2>Record of decisions</h2>
+        <h2><span data-tip="log">Record of decisions</span></h2>
         <div class="pbody flush"><table id="log-body"></table></div>
       </div>
     </section>

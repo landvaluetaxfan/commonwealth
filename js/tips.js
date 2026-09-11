@@ -23,6 +23,15 @@
      canon, and nothing here invents any (bible 2.7 - the glossary is a
      frozen list and this file adds nothing to it).
 
+   THE CONCORDANCE IS NOT ANNOTATED, AND THAT IS THE POINT. It is
+   deliberately not government chrome - serif, white paper, generous
+   leading, something civilians made - and putting terminal tooltips
+   inside it would collapse a separation the whole screen is built on.
+   It is also the place tips send you, so annotating it would be the
+   terminal explaining the thing it just referred you to. tools/uxtest.js
+   asserts that every OTHER screen carries annotations and that this one
+   carries none.
+
    NEVER A NATIVE title="". A native tooltip is slow, unstyled,
    invisible to a keyboard, and cannot say two things at once.
 
@@ -96,6 +105,76 @@ const Tips = (function () {
             "your own party, at a rate set by how far the bill sits from that " +
             "party's position. Nothing is charged until you divide, so a plan " +
             "can be revised or cleared." },
+
+    district: { title: "District seats",
+      body: "140 seats, first past the post, one constituency at a time. The " +
+            "roll of who holds each one is the only record there is: totals are " +
+            "counted from it and never stored beside it." },
+    list: { title: "List seats",
+      body: "100 seats allocated from closed party lists by D'Hondt, above a 4% " +
+            "national threshold. A party under the threshold keeps its list " +
+            "seats if it won a district, or if it speaks for one station or one " +
+            "category of legal person. The divisor and the threshold are both " +
+            "laws, so a bill can change them - and changing them changes who is " +
+            "in the room.", go: "parliament" },
+    government: { title: "The government benches",
+      body: "Seats held by the parties in your coalition. Confidence and supply " +
+            "sits opposite and counts toward confidence anyway." },
+    opposition: { title: "The opposition benches",
+      body: "Everyone not in the coalition. They are not one bloc and do not " +
+            "vote as one." },
+    majority: { title: "Majority",
+      body: "141 of 280. Half the chamber plus one, recomputed rather than " +
+            "stored, so it follows the chamber if the chamber ever changes size." },
+    speaker: { title: "The Chair",
+      body: "Elected from among the members and still counted in their party's " +
+            "total. They hold a seat; they simply do not use it the way the " +
+            "others do." },
+    benches: { title: "Facing benches",
+      body: "Drawn as two facing sides rather than a hemicycle, because " +
+            "confidence is binary and the whip next door moves whole benches " +
+            "across a floor. A semicircle would read the chamber as a spectrum." },
+
+    /* ---- the functional tier ---- */
+    franchise: { title: "Franchise",
+      body: "How a functional constituency's electors are enrolled: by trade " +
+            "licence, by company, by union bloc, or residually. The residual " +
+            "constituency is everyone in no recognised sector and returns one " +
+            "seat.", go: "functional_constituency" },
+    electors: { title: "Electorate",
+      body: "Enrolled electors, not population. The functional roll and the " +
+            "district roll count different people, which is the whole quarrel." },
+
+    /* ---- the orbit ---- */
+    schematic: { title: "The habitat schematic",
+      body: "A stratification chart before it is a map: vertical position is " +
+            "altitude band, glyph shape is what kind of habitat it physically " +
+            "is, glyph size is population, fill tint is closure, and the tick " +
+            "beneath is the leading party. Orbits are dynamic and in three " +
+            "dimensions, so literal geography would be unreadable." },
+    form: { title: "Habitat form",
+      body: "What the station physically is - a ring, a cylinder, a bundled " +
+            "cluster of settlements. It decides nothing mechanically and " +
+            "explains a great deal about who lives there." },
+
+    wire: { title: "The wire",
+      body: "Headlines, newest first. A wire item is pushed by an effect, so " +
+            "everything here is a consequence of something you did rather " +
+            "than weather." },
+
+    /* ---- papers and the record ---- */
+    register: { title: "The register",
+      body: "Acts, orders and minutes, in the order they were done. An act " +
+            "here has been through a division and cannot be undone; an order " +
+            "can still be revoked." },
+    minute: { title: "Minute",
+      body: "An instruction from this office, signed and served. It is not " +
+            "law and it binds nobody outside the building, which is " +
+            "occasionally the point." },
+    log: { title: "The record",
+      body: "Every decision this government has taken, newest first. It is " +
+            "written by the engine and never by a renderer, so it says what " +
+            "happened rather than what was shown." },
 
     /* ---- the coalition ---- */
     ledger: { title: "Capital",
