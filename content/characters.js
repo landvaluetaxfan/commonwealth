@@ -122,7 +122,7 @@ const CHARACTERS = [
     party:"fh", seat:"Drybank", relationship:20, office:"leader",
     note:"Volume owners, property absolutists, anti-Georgist to the point of obsession." },
   { id:"hatt", name:"Edward Hatt MP", role:"Leader, Alliance of Business and Government",
-    party:"gb", relationship:45, office:"leader",
+    party:"gb", functional:"fc_attestation", relationship:45, office:"leader",
     note:"Elected by the functional franchises. Does not campaign, and no district can vote him out." },
   { id:"edelstein_powell", name:"Rachel Edelstein-Powell MP", role:"Leader, One-G",
     party:"des", seat:"Brightwell", relationship:32, office:"leader",
@@ -192,7 +192,7 @@ const CHARACTERS = [
 
   /* ---- the panel chair ---- */
   { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako MP", role:"Chair, Life Support panel",
-    party:"gb", relationship:18,
+    party:"gb", functional:"fc_lifesupport", relationship:18,
     note:"Functional tier. Position unchanged since 2279. The whips do not believe money will move them." },
 
   /* ---- non-parliamentary voices ---- */

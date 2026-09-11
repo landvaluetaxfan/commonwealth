@@ -176,7 +176,9 @@ const Concordance = (function () {
       id: "person_" + ch.id, title: ch.name, category: "Persons", generated: true,
       banners: isPM ? ["contested"] : [],
       edited: { by: "multiple", attested: true, note: isPM ? "elevated sourcing requirements apply" : "" },
-      summary: ch.role + (ch.party ? `, ${(C.partyById[ch.party] || {}).name || ch.party}.` : "."),
+      summary: ch.role + (ch.party ? `, ${(C.partyById[ch.party] || {}).name || ch.party}.` : ".") +
+        (ch.functional && C.functionalById && C.functionalById[ch.functional]
+          ? ` Sits for the ${C.functionalById[ch.functional].name} functional constituency.` : ""),
       sections, see: ch.party ? [ch.party] : []
     };
   }

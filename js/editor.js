@@ -382,6 +382,9 @@ const Editor = (function () {
         M.parties.map(p => `<option value="${p.id}"${c.party === p.id ? " selected" : ""}>${esc(p.name)}</option>`).join("")
       }</select></label>
       <label class="ed-w">Seat ${txt_("seat", c.seat || "", "", 240)}</label>
+      <label>Functional <select class="ed-f" data-f="functional"><option value="">— none —</option>${
+        (M.functional || []).map(f => `<option value="${f.id}"${c.functional === f.id ? " selected" : ""}>${esc(f.name)}</option>`).join("")
+      }</select></label>
       <label>Relationship ${num_("relationship", c.relationship)}</label>
       <label class="ed-w">Portrait ${txt_("portrait", c.portrait || "", "name.png", 180)}</label>
     </div>
@@ -699,6 +702,7 @@ const Editor = (function () {
       c.party = g("party").value || null; c.relationship = +g("relationship").value;
       const po = g("portrait").value.trim(); if (po) c.portrait = po; else delete c.portrait;
       const of = g("office").value; if (of) c.office = of; else delete c.office;
+      const fn = g("functional").value; if (fn) c.functional = fn; else delete c.functional;
       if (!c.seat) delete c.seat;
       sel.id = c.id;
     }

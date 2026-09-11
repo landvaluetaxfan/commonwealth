@@ -465,6 +465,12 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("every elector roll sums to its electorate", rollBad.length === 0, rollBad.join(", "));
     ok("every roll has a gatekeeper", noGate.length === 0, noGate.join(", "));
 
+    /* A person who sits for a functional constituency must name a real one. */
+    const badFn = (CONTENT.characters || [])
+      .filter(c => c.functional && !(CONTENT.functionalById || {})[c.functional])
+      .map(c => c.id + " → " + c.functional);
+    ok("every functional seat a person sits for exists", badFn.length === 0, badFn.join(", "));
+
     const gov = FUNCTIONAL.filter(f => f.gatekeeper &&
                   f.gatekeeper.appointed_by === "government");
     ok("the government appoints most of the boards", gov.length >= 5,

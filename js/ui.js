@@ -1242,15 +1242,21 @@ const UI = (function () {
        roll is what instruments and elections move, and it is the only thing the
        division arithmetic reads. The authored value is the fallback. */
     const heldOf = f => (st.functional && st.functional[f.id] ? st.functional[f.id].held : f.held) || {};
+    /* Functional members who are named. Districts carry a `member` string for
+       everyone; the functional tier names only those who are characters, and
+       naming one is what lets a functional member hold a ministry. */
+    const namedOf = f => (C.characters || []).filter(c => c.functional === f.id);
     /* The hover overview: what the seat returns, who is on its roll, who holds
        it, and how it behaves — built from the data rather than restated. */
     const overview = f => {
       const h = heldOf(f);
       const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
+      const named = namedOf(f);
       const roll = (f.electors || []).map(e => `${e.body} ${e.count.toLocaleString()}`).join("; ");
       return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
         `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
         (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
+        (named.length ? `Named: ${named.map(c => `${c.name} (${ps(c.party)})`).join(", ")}. ` : "") +
         (f.note || "");
     };
     $("#func-table").innerHTML =
@@ -1269,7 +1275,8 @@ const UI = (function () {
           ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
-            : "&mdash;"}</td></tr>`;
+            : "&mdash;"}${namedOf(f).length
+              ? `<i class="sub">${namedOf(f).map(c => esc(c.name)).join(", ")}</i>` : ""}</td></tr>`;
       }).join("") + "</tbody>";
 
     const seats = F.reduce((n, f) => n + f.seats, 0);
