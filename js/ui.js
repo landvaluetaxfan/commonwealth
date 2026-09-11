@@ -29,6 +29,7 @@ const UI = (function () {
      seat (`speaker:true`), because it belongs to the House, not the person. */
   const OFFICE = {
     pm:         ["PM", "pm"],
+    deputy:     ["Deputy PM", "dep"],
     minister:   ["Minister", "min"],
     opposition: ["Opposition Leader", "opp"],
     shadow:     ["Shadow", "shadow"],

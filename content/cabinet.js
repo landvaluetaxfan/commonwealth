@@ -18,6 +18,9 @@
    ============================================================= */
 
 const CABINET = [
+  { id:"deputy_pm",               name:"Deputy Prime Minister",
+    holder:"trottier", party:"psa",
+    note:"The junior coalition partner's leader, and the price of the NPP's confidence." },
   { id:"life_support",            name:"Life Support",
     holder:"vellan", party:"cu", senior:true,
     note:"Summonable by the engineering authority. Raised at every confirmation." },

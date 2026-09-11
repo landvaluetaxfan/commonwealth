@@ -106,9 +106,9 @@ const CHARACTERS = [
     note:"Balances the shadow books to the tenth of a point and tells anyone who will listen." },
 
   /* ---- party leaders ---- */
-  { id:"trottier", name:"Mandelina Trottier MP", role:"Leader, New Progressive Party",
-    party:"psa", seat:"Substrate Quarter", relationship:54, office:"leader",
-    note:"Shares the government's economics and despises its personhood line." },
+  { id:"trottier", name:"Mandelina Trottier MP", role:"Deputy Prime Minister; Leader, New Progressive Party",
+    party:"psa", seat:"Substrate Quarter", relationship:54, office:"deputy",
+    note:"The junior coalition partner's leader. Shares the government's economics and despises its personhood line." },
   { id:"laughon", name:"Nick Laughon MP", role:"Leader, Home Rule",
     party:"sc", seat:"Bondsville Centre", relationship:38, office:"leader",
     note:"Speaks for the stations that want to be left alone, and cannot whip his own members." },

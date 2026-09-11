@@ -159,6 +159,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    rest. font-style normal because the <i> is only a hook. */
 #cons-table .office{font-style:normal;letter-spacing:.05em;}
 #cons-table .o-pm{color:#2f3a2c;font-weight:700;}
+#cons-table .o-dep{color:#5a4a1e;font-weight:700;}
 #cons-table .o-min{color:#4a4a52;}
 #cons-table .o-opp{color:#7a2e22;font-weight:700;}
 #cons-table .o-shadow{color:#8a6d22;}
