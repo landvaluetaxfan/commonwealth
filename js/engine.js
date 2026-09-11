@@ -188,7 +188,8 @@ const Engine = (function () {
 
   function reconcile(st, C) {
     if (!C) return st;
-    const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [] };
+    const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
+                    partiesAdded: [], currentsAdded: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -203,6 +204,28 @@ const Engine = (function () {
     });
     Object.keys(st.stations).forEach(id => {
       if (!C.stationById[id]) { delete st.stations[id]; notes.stationsDropped.push(id); }
+    });
+
+    /* Parties and currents the save has never seen. Content owns identity, so a
+       content party the save lacks is seeded whole; syncRoll() below then
+       refreshes its district count from the roll. Without this, a save written
+       before a party existed leaves st.parties[id] undefined, and the chamber,
+       the orbit chart and the Concordance - all of which iterate C.parties and
+       read the save - throw and leave blank panels. */
+    st.parties = st.parties || {};
+    C.parties.forEach(p0 => {
+      if (st.parties[p0.id]) return;
+      st.parties[p0.id] = {
+        id: p0.id, loyalty: p0.loyalty == null ? 100 : p0.loyalty,
+        seats: Object.assign({}, p0.seats)
+      };
+      notes.partiesAdded.push(p0.id);
+    });
+    st.currents = st.currents || {};
+    (C.currents || []).forEach(c0 => {
+      if (st.currents[c0.id]) return;
+      st.currents[c0.id] = { id: c0.id, loyalty: c0.loyalty, members: c0.members };
+      notes.currentsAdded.push(c0.id);
     });
 
     if (st.roll) {

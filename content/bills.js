@@ -32,7 +32,7 @@ const BILLS = [
       geo: { popular:{for:3},  functional:"against" },
       cl:  { popular:{for:12}, functional:"against" }, /* expansionist in principle, cheap fork-labour in practice */
       sc:  { popular:{for:6},  functional:"against" },
-      hul:"against", fh:"against", gb:"against", des:"against"
+      hul:"against", fh:"against", gb:"against", ind:"against", des:"against"
     },
     onPass:[{law:{divergence_threshold_hours:40}},
             {wire:"DIVERGENCE THRESHOLD CUT TO FORTY HOURS; CENSUS BUREAU BEGINS REGISTRATION"}],
@@ -89,7 +89,7 @@ const BILLS = [
   { id:"continuity_registration", ref:"HC 4/129", stage:"drafting", owner:"rv", priority:true,
     title:"Continuity of Person (Registration) Bill",
     summary:"Requires a person to be entered on a continuity register before any instance may be "+
-            "reabsorbed, and gives the instance a right to be heard. Root & Vessel has asked for it "+
+            "reabsorbed, and gives the instance a right to be heard. The Democratic Centre has asked for it "+
             "at every coalition meeting since formation.",
     effectNote:"Adds a procedural step to every reabsorption. Fork-labour costs rise.",
     dualMajority:false,

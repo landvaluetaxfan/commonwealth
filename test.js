@@ -311,6 +311,22 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        JSON.stringify(Engine.tierCheck(back, CONTENT)));
   }
 
+  /* The same hole one layer up: a party added to content left older saves
+     without st.parties[id], and the chamber, the orbit chart and the
+     Concordance all iterate C.parties and read the save — so they threw and
+     drew blank panels. load() must backfill it, and say so. */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const lastParty = CONTENT.parties[CONTENT.parties.length - 1];
+    delete fresh.parties[lastParty.id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a save missing a party regains it", !!back.parties[lastParty.id]);
+    ok("the party is reported as added",
+       ((Engine.lastReconcile() || {}).partiesAdded || []).indexOf(lastParty.id) >= 0);
+    ok("every content party is present after load",
+       CONTENT.parties.every(p => back.parties[p.id]));
+  }
+
   /* Content owns a station's identity; the save owns what play has moved.
      A renamed or resized station must show its current name and return its
      current seats, or the map and the chamber arithmetic disagree — but a

@@ -35,7 +35,7 @@ become citizens overnight, six districts have to be redrawn, and every employer
 who has been spinning staff copies for a week at a time is suddenly employing
 people rather than using them.
 
-The Public Substrate Association made it the price of joining your government.
+The New Progressive Party made it the price of joining your government.
 Your own maintenance members, who have spent thirty years watching copies
 undercut their wages, would rather you had paid a different price.`,
   choices:[
@@ -129,7 +129,7 @@ The ballot is called for the week after next.`,
                {scalar:{party_loyalty:12}},
                {bill:{divergence:{stage:"withdrawn",dead:true}}},
                {wire:"THRESHOLD BILL WITHDRAWN; SUBSTRATE LEFT REVIEWS COALITION"}],
-      result:"You keep the leadership. The Public Substrate Association meets tonight without you." }
+      result:"You keep the leadership. The New Progressive Party meets tonight without you." }
   ]},
 
 { id:"vantage_radiator", prologue:3,
@@ -179,7 +179,7 @@ The Spindle has the timestamp.`,
       effects:[{scalar:{public_standing:-14,party_loyalty:-9}},{loyalty:{hul:12,psa:-16,cu_maintenance:-11}},
                {flag:"defended_authority"},
                {wire:"PM DEFENDS SHEDDING DECISION; SUBSTRATE LEFT SUMMONS COALITION MEETING"}],
-      result:"You have said out loud the thing Hullists say, in your own voice, on the record." }
+      result:"You have said out loud the thing the Association of Engineers and Systems says, in your own voice, on the record." }
   ]},
 
 { id:"cluster_flag", weight:60,
@@ -252,7 +252,7 @@ The bill is called at two. You have the morning.`,
     { label:"Spend it on the functional members who are not Guild Bench",
       effects:[{loyalty:{fh:5,hul:3}},{scalar:{treasury:-6}},
                {flag:"lobbied_functional"}],
-      result:"Two Freeholders will consider it. Two is not nine." },
+      result:"Two members of the Party of Property Owners will consider it. Two is not nine." },
     { label:"Let it fall and be seen to have tried",
       effects:[{scalar:{public_standing:4}},{loyalty:{psa:-10}},
                {flag:"let_it_fall"},
@@ -272,7 +272,7 @@ person, may hold property, may vote in a district — and may not hold a life
 support licence, which means may not vote in the constituency that represents
 the work she does every day.
 
-The Public Substrate Association will read the clause within the hour.`,
+The New Progressive Party will read the clause within the hour.`,
   choices:[
     { label:"Take it. A right you can exercise is worth more than one you cannot.",
       effects:[{law:{divergence_threshold_hours:40}},{bill:{divergence:{stage:"passed",dead:true}}},
@@ -336,7 +336,7 @@ which is eleven of yours.
                {loyalty:{psa:14,cl:-12}},
                {flag:"substrate_bite_seen"},{flag:"staked_on_public_stake"},
                {wire:"GOVERNMENT ADVANCES PUBLIC STAKE BILL AFTER RENT RISE"}],
-      result:"You have made the rest of the session about one bill. The Consortium Liberals begin counting." }
+      result:"You have made the rest of the session about one bill. The Liberal Party begins counting." }
   ]}
 
 ];
