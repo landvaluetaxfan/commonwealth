@@ -101,7 +101,7 @@ const PARTIES = [
          "Exempt from the list threshold under the single-category carve-out, which "+
          "half the chamber would repeal tomorrow." },
 
-  { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-gb)",
+  { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-ind)",
     seats:{district:6,list:0,functional:0},
     kind:"national", loyalty:50,
     axes:{},
