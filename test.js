@@ -486,6 +486,13 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("every functional seat has a named member, party for party",
        memBad.length === 0, memBad.join(", "));
 
+    /* Every seat carries a unique reference, like LS-1 for Life Support. */
+    const refs = [];
+    FUNCTIONAL.forEach(f => (f.members || []).forEach(m => refs.push(m.ref)));
+    const dupRef = refs.filter((r, i) => refs.indexOf(r) !== i);
+    ok("every functional seat has a unique reference",
+       dupRef.length === 0 && refs.every(Boolean), dupRef.join(", "));
+
     const gov = FUNCTIONAL.filter(f => f.gatekeeper &&
                   f.gatekeeper.appointed_by === "government");
     ok("the government appoints most of the boards", gov.length >= 5,

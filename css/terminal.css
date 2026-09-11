@@ -1084,7 +1084,8 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   border-collapse:collapse;font-family:var(--f-data);font-size:9px;line-height:1.5;
 }
 #tipcard table.tipmem td{padding:0;vertical-align:top;}
-#tipcard table.tipmem td:first-child{white-space:nowrap;color:var(--ink-soft);padding-right:6px;}
+#tipcard table.tipmem td:first-child{white-space:nowrap;color:var(--ink-soft);padding-right:5px;}
+#tipcard table.tipmem td:nth-child(2){white-space:nowrap;color:var(--ink-soft);padding-right:6px;}
 #tipcard table.tipmem .swatch{width:7px;height:7px;margin-right:3px;}
 
 /* Explain mode: ? puts every annotated readout into the tab order, and

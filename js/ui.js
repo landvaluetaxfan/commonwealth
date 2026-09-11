@@ -1250,7 +1250,7 @@ const UI = (function () {
       const chars = (C.characters || []).filter(c => c.functional === f.id);
       return (f.members || []).map(m => {
         const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
-        return { n: ch ? ch.name : m.name, p: m.party, o: ch ? (ch.office || null) : null };
+        return { r: m.ref || null, n: ch ? ch.name : m.name, p: m.party, o: ch ? (ch.office || null) : null };
       });
     };
     /* The hover overview: what the seat returns, who is on its roll, who holds

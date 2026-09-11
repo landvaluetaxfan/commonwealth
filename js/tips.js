@@ -308,7 +308,8 @@ const Tips = (function () {
     const rows = list.map(m => {
       const p = C && C.partyById ? C.partyById[m.p] : null;
       const sw = p ? '<i class="swatch" style="background:' + esc(p.colour) + '"></i>' : "";
-      return "<tr><td>" + sw + esc(p ? p.short : (m.p || "")) + "</td><td>" + esc(m.n) + "</td></tr>";
+      return "<tr><td>" + esc(m.r || "") + "</td><td>" + sw +
+             esc(p ? p.short : (m.p || "")) + "</td><td>" + esc(m.n) + "</td></tr>";
     }).join("");
     return '<table class="tipmem"><tbody>' + rows + '</tbody></table>';
   }
