@@ -1054,9 +1054,14 @@ const UI = (function () {
       (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
                    `${esc(chairName)}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
 
-    $("#chamber-legend").innerHTML = C.parties.map(p =>
-      `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}` +
-      `${govIds.includes(p.id) ? ' <i class="ingov">gov</i>' : ""}</span>`).join("");
+    /* The legend names the two kinds of support — a partner in government and
+       a party that only sustains it — while the diagram keeps both on the
+       government side of the floor, which is where confidence and supply sits. */
+    $("#chamber-legend").innerHTML = C.parties.map(p => {
+      const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
+                : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
+      return `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}${tag}</span>`;
+    }).join("");
 
     $("#comp-table").innerHTML =
       "<thead><tr><th>Party</th><th class='n' data-tip='district'>Dist</th>" +
