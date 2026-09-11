@@ -83,34 +83,34 @@ recognise. You are not reforming personhood. You are reforming us."`,
   title:"Nine signatures",
   speaker:"halloran",
   body:`The number is not a secret. Everyone in the tea room can count, and the
-count is nine. Halloran needs nine more names and she has spent three weeks not
-getting them, which means either she cannot or she is waiting.
+count is nine. Czarnecki needs nine more names and he has spent three weeks not
+getting them, which means either he cannot or he is waiting.
 
-She catches you in the division lobby, which is deliberate, because it is the one
+He catches you in the division lobby, which is deliberate, because it is the one
 place the two of you cannot be photographed apart.
 
 "Eleven thousand four hundred of my constituents are fourth on a list that decides
-who wakes up," she says. "And the bill you are whipping me on is about how many
+who wakes up," he says. "And the bill you are whipping me on is about how many
 hours make a stranger. Give me the shed order. Give me anything on the shed order."`,
   choices:[
     { label:"Commit to bringing the Shed Order Bill back this session",
       effects:[{loyalty:{cu_halloran:22,cu_maintenance:9}},{scalar:{party_loyalty:7}},
                {flag:"halloran_confronted"},{flag:"shed_order_promised"},
                {bill:{shedorder:{stage:"second_reading"}}}],
-      result:"She writes nothing down. She does not need to; you said it in a lobby with forty witnesses." },
+      result:"He writes nothing down. He does not need to; you said it in a lobby with forty witnesses." },
     { label:"Offer her a junior ministry and the silence that comes with it",
       effects:[{loyalty:{cu_halloran:14}},{scalar:{party_loyalty:4,public_standing:-3}},
                {flag:"halloran_confronted"},{flag:"halloran_bought"},
-               {wire:"HALLORAN TIPPED FOR OFFICE; ASHFIELD DELEGATION SEEKS ASSURANCES"}],
-      result:"She takes it. Her group does not all follow her, and the ones who don't now have a grievance and no leader." },
-    { label:"Refuse. She does not have the nine and you both know it.",
+               {wire:"CZARNECKI TIPPED FOR OFFICE; ASHFIELD DELEGATION SEEKS ASSURANCES"}],
+      result:"He takes it. His group does not all follow him, and the ones who don't now have a grievance and no leader." },
+    { label:"Refuse. He does not have the nine and you both know it.",
       effects:[{loyalty:{cu_halloran:-11,cu_maintenance:-6}},{scalar:{party_loyalty:-6}},
                {flag:"halloran_confronted"},{queue:[{event:"halloran_finds_nine",after:4}]}],
-      result:"\"No,\" she agrees. \"Not today.\"" }
+      result:"\"No,\" he agrees. \"Not today.\"" }
   ]},
 
 { id:"halloran_finds_nine", queuedOnly:true, once:true,
-  title:"She found them",
+  title:"He found them",
   speaker:"halloran",
   body:`Four of the nine are revenants — members returned on the list after losing
 a district, who owe their seats entirely to the party and were therefore supposed
@@ -192,7 +192,7 @@ The Spindle has the timestamp.`,
 a four-minute window. The Registry flagged the cluster and took no further action,
 which is the whole of the power the statute gives it.
 
-Ceyhan wants to know whether you intend to ask for more power, and he wants to
+Clarke wants to know whether you intend to ask for more power, and he wants to
 know it on the record, because the answer is a story either way.`,
   choices:[
     { label:"Announce an attestation enforcement bill",
@@ -207,7 +207,7 @@ know it on the record, because the answer is a story either way.`,
     { label:"Ask who paid for the substrate",
       effects:[{flag:"cluster_investigated"},{flag:"cluster_traced"},{relationship:{ceyhan:9}},
                {queue:[{event:"cluster_source",after:5}]}],
-      result:"Ceyhan writes it down properly, which means he thinks it will go somewhere." }
+      result:"Clarke writes it down properly, which means he thinks it will go somewhere." }
   ]},
 
 { id:"cluster_source", queuedOnly:true, once:true,
@@ -228,7 +228,7 @@ consensus. It is not clear that either is illegal.`,
       result:"You have opened a fight about corporate voting eight weeks before you need the functional benches." },
     { label:"Hold it. A seat you may need later is worth more than a story now.",
       effects:[{flag:"shells_held"},{relationship:{ceyhan:-8}}],
-      result:"Ceyhan runs it anyway, without you, and with a paragraph about what the government knew." }
+      result:"Clarke runs it anyway, without you, and with a paragraph about what the government knew." }
   ]}
 ,
 
@@ -316,7 +316,7 @@ when it cannot pay: the tier-four register on Homestead has grown by four figure
 and nobody has announced anything, because nothing was announced. The price went
 up and people stopped running.
 
-Sevi Ansar has sent the ninth deck's letter to every member for a low-band seat,
+Jaco van Ryneveld has sent the ninth deck's letter to every member for a low-band seat,
 which is eleven of yours.
 
 "You did not vote for this," it says. "That is the part I would like explained."`,

@@ -42,7 +42,7 @@ The panel chair will not take a meeting. She has not said so in terms; she has s
 
 Two of ours on the labour panels have asked, separately and in almost the same words, whether the Order will be laid again for Consumables. I said it would not. I would prefer you did not make that untrue.
 
-Halloran now has five of the nine. I do not think she has the sixth yet. I think she will have it by the end of the month if a second order is laid.
+Czarnecki now has five of the nine. I do not think he has the sixth yet. I think she will have it by the end of the month if a second order is laid.
 
 It went as well as it could have.` },
 

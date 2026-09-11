@@ -117,6 +117,6 @@ const CURRENTS = [
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null} },
   { id:"cu_deck",        party:"cu", name:"Deck cooperativists",   members:18, loyalty:54,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"station",closure:"closurist"} },
-  { id:"cu_halloran",    party:"cu", name:"Halloran group",        members:11, loyalty:12,
+  { id:"cu_halloran",    party:"cu", name:"Czarnecki group",        members:11, loyalty:12,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:"closurist"} }
 ];

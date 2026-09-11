@@ -1222,9 +1222,9 @@ Other ideologies are refracted through the player's party's view of them. Hullis
 | Maintenance bloc | 31 | 29 |
 | Leadership loyalists | 22 | 88 |
 | Deck cooperativists | 18 | 54 |
-| Halloran group | 11 | 12 |
+| Czarnecki group | 11 | 12 |
 
-**Tarrin Halloran** (Homestead) has the signatures for a leadership ballot if she can find nine more.
+**Dan Czarnecki** (Ashfield) has the signatures for a leadership ballot if he can find nine more.
 
 Composition by tier: 48 district, 25 list, 9 functional. The twenty-five list members hold no constituency and no independent base — they whip reliably and will not survive a leadership change that reorders the list. Nine members are revenants returned after losing a district.
 
@@ -1416,19 +1416,19 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 ## 11.2 Persons
 
 - **Rt. Hon. Adriana Flash MP** — Prime Minister. Commons Union. Member for Anselm Ring.
-- **President Osric Tenaya** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
-- **Tarrin Halloran MP** — Homestead. Commons Union. Leads the eleven-member Halloran group, loyalty 12. Needs nine more signatures for a leadership ballot.
-- **Iren Vellan MP** — Minister for Life Support. Commons Union, member for
+- **President Adam King** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
+- **Dan Czarnecki MP** — Ashfield. Commons Union. Leads the eleven-member Czarnecki group, loyalty 12. Needs nine more signatures for a leadership ballot.
+- **Suravaram Vidyasagar MP** — Minister for Life Support. Commons Union, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
   Bench will take a meeting with.
-- **Desta Okarie MP** — Chief Whip. Commons Union, member for Anselm Ring Outer
+- **Anil Devi MP** — Chief Whip. Commons Union, member for Anselm Ring Outer
   Decks. Reports that things went as well as they could have; reports this about
   everything.
-- **Ivor Ceyhan** — political editor, *The Spindle*.
+- **Benj Clarke** — political editor, *The Spindle*.
 - **Ondine Charnock** — author of *The Circumterrestrial Economy*, 4th edition,
   Perigee Review Press. The standard primer, and mildly out of date since the
   threshold debate opened. See `textbook.md`.
-- **Sevi Ansar** — Deck 9. A civilian voice, used for warmth.
+- **Jaco van Ryneveld** — Deck 9. A civilian voice, used for warmth.
 
 ## 11.3 Stations and constituencies
 

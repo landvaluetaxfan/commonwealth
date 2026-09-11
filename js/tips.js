@@ -62,7 +62,7 @@ const Tips = (function () {
             "debt; granting one to your own advances nothing but your programme. " +
             "They do not refill until the session does." },
     signatures: { title: "Signatures",
-      body: "Names Halloran has collected toward the nine she needs to force a " +
+      body: "Names Czarnecki has collected toward the nine he needs to force a " +
             "leadership ballot. Your own conduct feeds this counter - packing a " +
             "licensing board is worth two names, packing a second is worth three." },
     confidence: { title: "Confidence",

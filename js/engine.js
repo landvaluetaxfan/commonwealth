@@ -52,7 +52,7 @@ const Engine = (function () {
          partner is one you do not get. */
       slots: { total: C.setup.slotsPerSession || 6, used: 0 },
 
-      /* Halloran needs nine more names for a leadership ballot. Things the
+      /* Czarnecki needs nine more names for a leadership ballot. Things the
          player does add to the counter; §3.5's second loss condition reads it. */
       signatures: 0,
 
@@ -722,7 +722,7 @@ const Engine = (function () {
     /* Carrying is not the end. The bill goes to the President, who signs or
        refers it for constitutional review. Referral is not a veto — it delays
        and returns a verdict — but it is the reserve power with the sharpest
-       teeth, and Tenaya has privately indicated he would use it on a threshold
+       teeth, and King has privately indicated he would use it on a threshold
        bill carried on a contested dual majority. */
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;

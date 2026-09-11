@@ -39,8 +39,8 @@
      Coldwater One and Coldwater Three, with no Two. Unexplained.
      Homestead A, Two, III, -04, Five, VI - six seats numbered in six
        systems because nobody ever agreed one.
-     Tier Four, a rationing tier rather than a place name. Halloran sits
-       for it, which is the tier her whole grievance is about.
+     Tier Four, a rationing tier rather than a place name. Czarnecki sits
+       for it, which is the tier his whole grievance is about.
    Space Elevator and The Beanstalk are one structure named officially
    and colloquially, adjacent on purpose. The Warrens carries an
    `official` name nobody uses, from the suppression.
@@ -166,7 +166,7 @@ const CONSTITUENCIES = [
 
   { id:"ropewalk", name:"Ropewalk", station:"anselm", band:"ring",
     magnitude:1, electorate:34996,
-    member:"Desta Okarie",
+    member:"Anil Devi",
     held:{cu:1},
     parent:"anselm_ring_outer_decks",
     material_interest:["tether_traffic", "volume_rationing"] },
@@ -720,7 +720,7 @@ const CONSTITUENCIES = [
 
   { id:"slipway", name:"Slipway", station:"perigee", band:"middle",
     magnitude:1, electorate:29316,
-    member:"Iren Vellan",
+    member:"Suravaram Vidyasagar",
     held:{cu:1},
     parent:"perigee_yards",
     material_interest:["tether_traffic", "yard_contracts"] },
@@ -860,7 +860,7 @@ const CONSTITUENCIES = [
 
   { id:"tier_four", name:"Tier Four", station:"ashfield", band:"low",
     magnitude:1, electorate:30208,
-    member:"Tarrin Halloran",
+    member:"Dan Czarnecki",
     held:{cu:1},
     parent:"ashfield_slagside",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },

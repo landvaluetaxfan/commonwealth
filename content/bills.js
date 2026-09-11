@@ -12,7 +12,7 @@
 
 const BILLS = [
   { id:"divergence", ref:"HC 4/117", stage:"committee", owner:"psa", priority:true,
-    referrable:true, signalled:true,   /* Tenaya has privately indicated he would refer this */
+    referrable:true, signalled:true,   /* King has privately indicated he would refer this */
     title:"Divergence Threshold (Amendment) Bill",
     summary:"Reduces the statutory divergence threshold from 168 subjective hours to 40. "+
             "An instance separated for longer than the threshold becomes a person in law: "+
