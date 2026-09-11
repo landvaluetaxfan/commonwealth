@@ -120,17 +120,17 @@ try {
    asserted: what is on the page, and what the source is allowed to emit. */
 try {
   const rows = [...w.document.querySelectorAll("tr.sel")];
-  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc]"));
+  const stray = rows.filter(tr => !tr.matches("[data-bill],[data-station],[data-doc],[data-cons]"));
   ok(".sel is only on a row a click selects", rows.length >= 2 && stray.length === 0,
      rows.length + " selected, " + stray.length + " on rows that do nothing");
 
-  /* three quoted literals, in three files, and no more: #gov-bills,
-     #orbit-table, #pp-list. A fourth is a regression. */
+  /* four quoted literals, in the four tables that select a row: #gov-bills,
+     #orbit-table, #pp-list, #cons-table. A fifth is a regression. */
   const jssrc = ["js/ui.js", "js/papers.js", "js/editor.js", "js/shell.js",
                  "js/encyclopedia.js", "js/orbitchart.js"]
     .map(f => fs.readFileSync(path.join(root, f), "utf8")).join("\n");
   const lits = jssrc.match(/["']sel["']/g) || [];
-  ok("nothing else emits a sel class", lits.length === 3, lits.length + " literals");
+  ok("nothing else emits a sel class", lits.length === 4, lits.length + " literals");
 
   /* the three replacements differ in form as well as hue - a gutter, a hatch,
      a ghost - so they cannot be read as paler selections */

@@ -138,7 +138,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .p-stat{grid-column:1;grid-row:1 / span 2;}
 .p-cons{grid-column:2;grid-row:1;}
 .p-doss{grid-column:3;grid-row:1;}
-.p-map {grid-column:2 / span 2;grid-row:2;}
+/* The schematic is HTML that reflows, so it gives up the right column to the
+   constituency dossier rather than running the full width and wasting it. */
+.p-map {grid-column:2;grid-row:2;}
+.p-cond{grid-column:3;grid-row:2;}
 .g-orb>.panel{display:flex;flex-direction:column;min-height:0;}
 .g-orb>.panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
 .p-stat>.pbody{overflow:hidden;}

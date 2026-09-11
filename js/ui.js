@@ -100,6 +100,19 @@ const UI = (function () {
       fallback: () => (C.stations[0] || {}).id,
       activate: id => pickStation(id)
     });
+    /* The seat list is a region too: it selects, and the dossier beside the
+       schematic shows the one highlighted. A key left over from another
+       station falls back to the first seat of this one. */
+    Focus.region("cons-table", {
+      rows: "tr[data-cons]",
+      key: tr => tr.dataset.cons,
+      fallback: () => {
+        const sid = Focus.selected("orbit-table");
+        const mine = (C.constituencies || []).filter(k => k.station === sid);
+        return (mine[0] || {}).id;
+      },
+      activate: id => pickConstituency(id)
+    });
     Focus.wire();
     /* Both capture their own skip listeners; both are no-ops without a
        document. Neither is ever called from a draw function. */
@@ -455,14 +468,14 @@ const UI = (function () {
        is neither appointable nor dismissable by the player. */
     const pmCh = C.characterById[C.setup.pm];
     const pmRow = pmCh ? `<tr class="pmrow"><td>Prime Minister</td>` +
-      `<td>${pmCh.name.replace(/^Rt\. Hon\. /, "")}</td>` +
+      `<td>${bare(pmCh.name)}</td>` +
       `<td class="n">${mark(pmCh.party)}</td></tr>` : "";
     $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
       return `<tr class="${s.holder ? "" : "vacant"}">
         <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
-        <td>${s.holder ? (ch ? ch.name.replace(/^Rt\. Hon\. /, "") : s.holder.replace(/_/g," "))
+        <td>${s.holder ? (ch ? bare(ch.name) : s.holder.replace(/_/g," "))
                        : "<span class='flag bad' data-tip='vacant'>VACANT</span>"}</td>
         <td class="n">${s.party ? mark(s.party) : ""}</td></tr>`;
     }).join("");
@@ -767,6 +780,13 @@ const UI = (function () {
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  /* A name is stored with its formal title. A table does not repeat the title —
+     every row is a member — but the Concordance keeps it, because that is the
+     one place a member sits beside the President, the press and the civilian. */
+  function bare(n) {
+    return String(n == null ? "" : n).replace(/^Rt\. Hon\. /, "").replace(/ MP$/, "");
+  }
+
   function bindGlossary(scope) {
     scope.querySelectorAll(".gl").forEach(n => {
       const show = () => {
@@ -1052,7 +1072,7 @@ const UI = (function () {
       `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` +
       `<span class="ct" data-tip="majority">Majority ${Engine.majority(st)}</span>` +
       (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
-                   `${esc(chairName)}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
+                   `${esc(bare(chairName))}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
 
     /* The legend names the two kinds of support — a partner in government and
        a party that only sustains it — while the diagram keeps both on the
@@ -1111,7 +1131,16 @@ const UI = (function () {
       tr.addEventListener("click", () => Focus.activate("orbit-table", tr.dataset.station)));
 
     drawStation(selId);
-    drawSeats(selId);
+    drawConstituency(drawSeats(selId));
+  }
+
+  /* The seat list's activate. A player action: it may make a sound and write
+     the status line. */
+  function pickConstituency(id) {
+    drawConstituency(drawSeats(Focus.selected("orbit-table")));
+    const k = C.constituencyById[id];
+    if (k) setStatus(k.name + " \u00b7 " + k.band + " band \u00b7 " +
+                     k.electorate.toLocaleString() + " electors", "transient");
   }
 
   /* The orbit region's activate. A player action, not a redraw: it may
@@ -1205,6 +1234,11 @@ const UI = (function () {
       return;
     }
     const ap = Engine.apportionment(C);
+    /* The highlighted seat, validated against this station: a key left over
+       from another station falls back to the first seat here. */
+    const stored = Focus.selected("cons-table");
+    const selCons = mine.some(k => k.id === stored) ? stored : mine[0].id;
+    Focus.seed("cons-table", selCons);
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
       "<th class='n' data-tip='ratio'>Ratio</th><th class='n' data-tip='held'>Held</th>" +
@@ -1221,17 +1255,59 @@ const UI = (function () {
         /* A station returning one constituency returns the whole station, so
            the seat is at-large. The tag says so without the name doing it. */
         const whole = k.at_large ? ` <i class="atlarge">At-large</i>` : "";
-        return `<tr><td><b>${esc(k.name)}</b>${badge}${whole}` +
+        return `<tr data-cons="${k.id}"${k.id === selCons ? ' class="sel"' : ""}` +
+          ` style="cursor:pointer"><td><b>${esc(k.name)}</b>${badge}${whole}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
-            : esc(ch ? ch.name : (k.member
-                ? (/MP$/.test(k.member) ? k.member : k.member + " MP")
-                : "\u2014"))}` +
+            : esc(ch ? bare(ch.name) : (k.member ? bare(k.member) : "\u2014"))}` +
             `${!r.vacant && ch && ch.role ? ` <span class="det">${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
           `<td class="n">${ap[k.id].toFixed(2)}</td>` +
           `<td class="n">${held.map(pid => mark(pid)).join(" ")}</td></tr>`;
       }).join("") + "</tbody>";
+    $("#cons-table").querySelectorAll("tr[data-cons]").forEach(tr =>
+      tr.addEventListener("click", () => Focus.activate("cons-table", tr.dataset.cons)));
+    return selCons;
+  }
+
+  /* The constituency dossier: the seat highlighted in the station's list. The
+     list is the many; this is the one, so a station returning thirty-seven
+     seats does not have to fit every figure into a row. */
+  function drawConstituency(cid) {
+    const d = $("#cond-detail");
+    const k = C.constituencyById[cid];
+    if (!k) {
+      $("#cond-hdr").textContent = "";
+      $("#cond-sub").textContent = "";
+      d.innerHTML = `<div class="note">No district seat to show.</div>`;
+      return;
+    }
+    const s = st.stations[k.station];
+    const r = Engine.seatsFor(st, cid);
+    const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
+    const ch = (C.characters || []).find(c => c.seat === k.name);
+    const ap = Engine.apportionment(C);
+    $("#cond-hdr").textContent = k.name;
+    $("#cond-sub").innerHTML =
+      esc(s ? s.name : k.station) + ` \u00b7 ${esc(k.band)} band` +
+      (k.at_large ? ` \u00b7 <i class="atlarge">at-large</i>` : "") +
+      (k.speaker ? ` \u00b7 <i class="chair">Speaker</i>` : "");
+    d.innerHTML =
+      `<div class="ostats">
+        <span><b>${k.electorate.toLocaleString()}</b><i>electors</i></span>
+        <span><b>${ap[k.id].toFixed(2)}</b><i>apportionment ratio</i></span>
+        <span><b>${k.magnitude}</b><i>${k.magnitude === 1 ? "seat" : "seats"}</i></span>
+      </div>
+      <div class="rulehead">Member</div>
+      <div class="note">${r.vacant ? `<span class="hn vac">vacant</span>`
+        : esc(bare(ch ? ch.name : (k.member || "\u2014"))) +
+          (ch && ch.role ? ` \u00b7 ${esc(ch.role)}` : "")}</div>
+      <div class="rulehead">Held by</div>
+      <div class="note">${held.length
+        ? held.map(pid => `${mark(pid)}${esc(pn(pid))} ${r.held[pid]}`).join(", ")
+        : "&mdash;"}</div>
+      <div class="rulehead">Material interest</div>
+      <div class="note">${(k.material_interest || []).map(x => esc(x)).join(" \u00b7 ")}</div>`;
   }
 
   /* The functional tier in full. Every seat here is held by a named party,
@@ -1253,7 +1329,8 @@ const UI = (function () {
       const chars = (C.characters || []).filter(c => c.functional === f.id);
       return (f.members || []).map(m => {
         const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
-        return { r: m.ref || null, n: ch ? ch.name : m.name, p: m.party, o: ch ? (ch.office || null) : null };
+        return { r: m.ref || null, n: bare(ch ? ch.name : m.name), p: m.party,
+                 o: ch ? (ch.office || null) : null };
       });
     };
     /* The hover overview: what the seat returns, who is on its roll, who holds
