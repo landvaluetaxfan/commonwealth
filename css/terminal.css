@@ -166,6 +166,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #cons-table .o-shadow{color:#8a6d22;}
 #cons-table .o-leader{color:#5a5f55;}
 #cons-table .o-whip{color:#4a7c8c;}
+/* A station that returns one seat returns the whole station. */
+#cons-table .atlarge{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
 
 /* ---- the schematic: five band rows of chips ---- */
 .obands{padding:5px 7px 6px;}

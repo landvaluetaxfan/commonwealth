@@ -158,6 +158,16 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     });
     ok("every constituency is fully returned", magBad.length === 0, magBad.join(", "));
 
+    /* At-large means exactly one thing: the station returns a single
+       constituency, so the seat is the whole station. */
+    const perStation = {};
+    CONTENT.constituencies.forEach(k => perStation[k.station] = (perStation[k.station] || 0) + 1);
+    const alBad = CONTENT.constituencies
+      .filter(k => !!k.at_large !== (perStation[k.station] === 1))
+      .map(k => k.id);
+    ok("at-large marks exactly the single-constituency stations",
+       alBad.length === 0, alBad.join(", "));
+
     let partyBad = [];
     CONTENT.parties.forEach(p => {
       const rolled = Engine.partyDistrict(r, p.id);

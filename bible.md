@@ -1509,7 +1509,7 @@ asserted in prose. It was flat at ~1.04 across all 140 seats until v4.
 - **John Henry** — 1 seats, 34,000, yard, closure 0.33, 1,230 suspended, attested 66%.
 
 **External:**
-- **The Lunar Territory** — 1 seats, 60,000, surface, closure 0.83, 560 suspended, attested 90%.
+- **Lunar Territory** — 1 seats, 60,000, surface, closure 0.83, 560 suspended, attested 90%.
 - **Leadside** — 1 seats, 25,000, yard, closure 0.88, 240 suspended, attested 93%.
 - **The Bloomery** — 1 seats, 24,000, surface, closure 0.79, 430 suspended, attested 86%.
 - **Outermost** — 1 seats, 13,000, sphere, closure 0.86, 230 suspended, attested 92%.

@@ -278,7 +278,7 @@ const STATIONS = [
     dependency:"Debris salvage contracts and the Kessler appropriation.",
     grievance:"That the work is dangerous, necessary, and treated as scavenging." },
 
-  { id:"selene", name:"The Lunar Territory", band:"external", type:"external", form:"surface",
+  { id:"selene", name:"Lunar Territory", band:"external", type:"external", form:"surface",
     seats:1, population:60000,
     closure:0.83, suspended:560, attested:0.9,
     composition:{biological:0.69,emulation:0.23,uplift:0.04,synthetic:0.04},

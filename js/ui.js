@@ -1218,7 +1218,10 @@ const UI = (function () {
         const badge = k.speaker
           ? ` <i class="chair">Speaker</i>`
           : off ? ` <i class="office o-${off[1]}">${off[0]}</i>` : "";
-        return `<tr><td><b>${esc(k.name)}</b>${badge}` +
+        /* A station returning one constituency returns the whole station, so
+           the seat is at-large. The tag says so without the name doing it. */
+        const whole = k.at_large ? ` <i class="atlarge">At-large</i>` : "";
+        return `<tr><td><b>${esc(k.name)}</b>${badge}${whole}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
             : esc(ch ? ch.name : (k.member

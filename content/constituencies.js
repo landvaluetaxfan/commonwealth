@@ -757,6 +757,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:41462,
     member:"Delphine Blaise",
     held:{sc:1},
+    at_large:true,
     parent:"wickstead",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
@@ -764,6 +765,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:33170,
     member:"Oona Sardar",
     held:{rv:1},
+    at_large:true,
     parent:"oberth_approach",
     material_interest:["embodiment_access", "bone_density_standards"] },
 
@@ -946,6 +948,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:46203,
     member:"Osman Brannigan",
     held:{cu:1},
+    at_large:true,
     parent:"cinder",
     material_interest:["consumables_subsidy", "shed_order_priority"] },
 
@@ -953,6 +956,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:38501,
     member:"Nkechi Lindholm",
     held:{rv:1},
+    at_large:true,
     parent:"tallow",
     material_interest:["consumables_subsidy", "volume_rationing"] },
 
@@ -960,6 +964,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:34355,
     member:"Marek Vasquez",
     held:{ind:1},
+    at_large:true,
     parent:"quarry_reach",
     material_interest:["yard_contracts", "transit_windows"] },
 
@@ -995,6 +1000,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:20139,
     member:"Beatrix Merrick",
     held:{ind:1},
+    at_large:true,
     parent:"dredge",
     material_interest:["transit_windows", "yard_contracts"] },
 
@@ -1002,6 +1008,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:35539,
     member:"Elowen Halstead",
     held:{des:1},
+    at_large:true,
     parent:"selene_stations",
     material_interest:["transit_windows"] },
 
@@ -1009,6 +1016,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:14216,
     member:"Piotr Trelawny",
     held:{sc:1},
+    at_large:true,
     parent:"the_bloomery",
     material_interest:["transit_windows", "yard_contracts"] },
 
@@ -1016,6 +1024,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:14808,
     member:"Rosalind Hollister",
     held:{sc:1},
+    at_large:true,
     parent:"l4_yards",
     material_interest:["transit_windows", "substrate_supply"] },
 
@@ -1023,6 +1032,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:7700,
     member:"Gustav Brightwater",
     held:{sc:1},
+    at_large:true,
     parent:"achenar_point",
     material_interest:["transit_windows", "substrate_supply"] },
 
@@ -1030,6 +1040,7 @@ const CONSTITUENCIES = [
     magnitude:1, electorate:6516,
     member:"Solveig Halstead",
     held:{rv:1},
+    at_large:true,
     parent:"l5_refuge",
     material_interest:["transit_windows"] },
 ];
