@@ -471,6 +471,21 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
       .map(c => c.id + " → " + c.functional);
     ok("every functional seat a person sits for exists", badFn.length === 0, badFn.join(", "));
 
+    /* Every functional seat has a named member, party for party, against the
+       authored held. Districts name everyone; this is the functional roster. */
+    const memBad = [];
+    FUNCTIONAL.forEach(f => {
+      const ms = f.members || [];
+      if (ms.length !== f.seats) { memBad.push(`${f.id} ${ms.length}/${f.seats}`); return; }
+      const by = {};
+      ms.forEach(m => by[m.party] = (by[m.party] || 0) + 1);
+      Object.keys(f.held).forEach(pid => {
+        if ((by[pid] || 0) !== f.held[pid]) memBad.push(`${f.id} ${pid} ${by[pid] || 0}/${f.held[pid]}`);
+      });
+    });
+    ok("every functional seat has a named member, party for party",
+       memBad.length === 0, memBad.join(", "));
+
     const gov = FUNCTIONAL.filter(f => f.gatekeeper &&
                   f.gatekeeper.appointed_by === "government");
     ok("the government appoints most of the boards", gov.length >= 5,

@@ -1242,21 +1242,26 @@ const UI = (function () {
        roll is what instruments and elections move, and it is the only thing the
        division arithmetic reads. The authored value is the fallback. */
     const heldOf = f => (st.functional && st.functional[f.id] ? st.functional[f.id].held : f.held) || {};
-    /* Functional members who are named. Districts carry a `member` string for
-       everyone; the functional tier names only those who are characters, and
-       naming one is what lets a functional member hold a ministry. */
-    const namedOf = f => (C.characters || []).filter(c => c.functional === f.id);
+    /* The members of a functional constituency. Districts name everyone with a
+       `member` string; here it is `members`, and a character who sits for the
+       constituency replaces the member of the same name, so the styled name and
+       the office come through. */
+    const membersOf = f => {
+      const chars = (C.characters || []).filter(c => c.functional === f.id);
+      return (f.members || []).map(m => {
+        const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
+        return { n: ch ? ch.name : m.name, p: m.party, o: ch ? (ch.office || null) : null };
+      });
+    };
     /* The hover overview: what the seat returns, who is on its roll, who holds
        it, and how it behaves — built from the data rather than restated. */
     const overview = f => {
       const h = heldOf(f);
       const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
-      const named = namedOf(f);
       const roll = (f.electors || []).map(e => `${e.body} ${e.count.toLocaleString()}`).join("; ");
       return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
         `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
         (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
-        (named.length ? `Named: ${named.map(c => `${c.name} (${ps(c.party)})`).join(", ")}. ` : "") +
         (f.note || "");
     };
     $("#func-table").innerHTML =
@@ -1268,15 +1273,17 @@ const UI = (function () {
         /* i.sub is display:block, so both halves stay inside ONE of them and
            take a span each; two i.sub would put the franchise and the
            electorate on separate lines. */
+        const mem = membersOf(f);
         return `<tr><td data-tip="functional" data-tip-title="${esc(f.name)}"` +
-          ` data-tip-body="${esc(overview(f))}" data-tip-go="functional_constituency">` +
+          ` data-tip-body="${esc(overview(f))}"` +
+          (mem.length ? ` data-tip-members="${esc(JSON.stringify(mem))}"` : "") +
+          ` data-tip-go="functional_constituency">` +
           `<b>${f.name}</b><i class="sub">` +
           `<span data-tip="franchise">${FR[f.franchise] || f.franchise}</span>` +
           ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
             ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
-            : "&mdash;"}${namedOf(f).length
-              ? `<i class="sub">${namedOf(f).map(c => esc(c.name)).join(", ")}</i>` : ""}</td></tr>`;
+            : "&mdash;"}</td></tr>`;
       }).join("") + "</tbody>";
 
     const seats = F.reduce((n, f) => n + f.seats, 0);

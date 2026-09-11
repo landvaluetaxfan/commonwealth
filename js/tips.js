@@ -294,14 +294,34 @@ const Tips = (function () {
     return card;
   }
 
+  function parseMembers(s) {
+    if (!s) return null;
+    try { const a = JSON.parse(s); return Array.isArray(a) && a.length ? a : null; }
+    catch (e) { return null; }
+  }
+
+  /* A tabled list of the people a data-driven card names: the party mark and
+     short name in one column, the member in the other. */
+  function membersTable(list) {
+    if (!list || !list.length) return "";
+    const C = typeof CONTENT !== "undefined" ? CONTENT : null;
+    const rows = list.map(m => {
+      const p = C && C.partyById ? C.partyById[m.p] : null;
+      const sw = p ? '<i class="swatch" style="background:' + esc(p.colour) + '"></i>' : "";
+      return "<tr><td>" + sw + esc(p ? p.short : (m.p || "")) + "</td><td>" + esc(m.n) + "</td></tr>";
+    }).join("");
+    return '<table class="tipmem"><tbody>' + rows + '</tbody></table>';
+  }
+
   function show(el) {
     /* An element may carry its own one-off body, for content that is data
        rather than a fixed token — a functional constituency's roll, seats and
-       leanings, say. The keyed map stays the fallback. */
+       members, say. The keyed map stays the fallback. */
     const inline = el.getAttribute("data-tip-body");
     const t = inline
       ? { title: el.getAttribute("data-tip-title") || "", body: inline,
-          go: el.getAttribute("data-tip-go") || null }
+          go: el.getAttribute("data-tip-go") || null,
+          members: parseMembers(el.getAttribute("data-tip-members")) }
       : find(el.getAttribute("data-tip"));
     if (!t) return;
     const c = build();
@@ -311,7 +331,8 @@ const Tips = (function () {
       (t.go && typeof CONTENT !== "undefined" && CONTENT.encyclopediaById &&
        CONTENT.encyclopediaById[t.go]
         ? '<i>Concordance · ' + esc(CONTENT.encyclopediaById[t.go].title) + '</i>'
-        : '');
+        : '') +
+      membersTable(t.members);
     c.hidden = false;
     anchor = el;
     el.setAttribute("aria-describedby", "tipcard");

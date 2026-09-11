@@ -1077,6 +1077,15 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   display:block;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
   font-style:normal;font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
 }
+/* The member list under a data-driven card, last on the card: party mark and
+   short name in one column, the member in the other. */
+#tipcard table.tipmem{
+  width:100%;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
+  border-collapse:collapse;font-family:var(--f-data);font-size:9px;line-height:1.5;
+}
+#tipcard table.tipmem td{padding:0;vertical-align:top;}
+#tipcard table.tipmem td:first-child{white-space:nowrap;color:var(--ink-soft);padding-right:6px;}
+#tipcard table.tipmem .swatch{width:7px;height:7px;margin-right:3px;}
 
 /* Explain mode: ? puts every annotated readout into the tab order, and
    says so, because a tab stop you cannot see is a tab stop you fall into.
