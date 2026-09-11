@@ -110,117 +110,75 @@ tools/                checks, index generator, image pipeline, bundle
 
 ## Things that have already gone wrong
 
-Kept here because they will otherwise happen again.
+One line each, kept because they will otherwise happen again. The long
+version of any of them is in the header of the file it names.
 
-- A form function was referenced in the editor but never defined, and nothing
-  caught it. `tools/edtest.js` exists because of that.
-- `payWhips` clears the whip plan, and a caller computed the division *after*
-  paying, so whipping cost capital and did nothing. Always use `Engine.divide()`.
-- `apportionment_ratio` was stored alongside seats and population and the three
-  silently diverged. It is now derived and never stored.
-- The district tier summed to 56 while parties held 140 district seats. `test.js`
-  now reconciles both directions.
-- `STATE_VERSION` was left at 2 while a migration branch tested `< 3`, so saves
-  never migrated. Bump the constant when you add a migration.
-- Migration guards were written descending, so a v1 save matched `< 4`, was
-  stamped 4, and skipped every earlier block. They are ascending now, one
-  block per bump, and `test.js` walks a save forward from every version.
-- Adding a station left older saves with a hole in `st.stations`; the orbital
-  chart read `.band` off `undefined`, threw, and rendered a blank tab with no
-  error a player could see. `Engine.reconcile()` now runs on every load and
-  brings a save's station roster and district roll into line with content.
-  Content owns identity (name, band, form, seats), the save owns simulation
-  (closure, suspended, attested).
-- A blank screen is invisible to every static check. `tools/uitest.js` asserts
-  each screen actually put content on the page.
-- `#s-orb.screen{display:block}` was written to make the orbit screen a
-  full-height column. An id outranks `.screen{display:none}`, so the habitat
-  map appeared on every tab at once and every static check still passed,
-  because each screen was rendering its own content correctly. Any rule whose
-  *subject* is a `#s-…` screen must include `.on`. `tools/uitest.js` reads the
-  stylesheet as text and fails on one that does not.
-- An inline `<svg>` with a viewBox and no `width` fills its container, so
-  shrinking the coordinate space only magnifies the drawing. `drawChamber()`
-  sets width and height in px; the CSS scales it down and never up.
-- Setting `scrollbar-color` or `scrollbar-width` on an element makes Chromium
-  ignore every `::-webkit-scrollbar` rule for it, silently, and hand back the
-  default rounded overlay bar. The standard properties are fenced behind
-  `@supports not selector(::-webkit-scrollbar)` so only Gecko sees them.
-- `overflow-x:auto` forces `overflow-y` to `auto` as well. With real
-  (non-overlay) scrollbars that reserved a 16px vertical bar down the side of
-  the tab strip. Anything that scrolls in one axis says so in both.
-- Player preferences go in `Shell.opts`, in localStorage; world state goes in
-  the save. Mute in a save file silences somebody else's machine on import.
-  `tools/uitest.js` asserts the audio preferences are in one and not the other.
-- A CSS class named for an appearance gets borrowed for whatever wants that
-  appearance. `.sel` was a pale tint, so it came to mean four things at once:
-  the row you picked, a disloyal current, an instrument in force, and a vacant
-  post. Restyling selection would have made three of those loud and wrong.
-  `.sel` now means selection and only selection; `.warn`, `.inforce`,
-  `.vacant` and the editor's `.here` say what they mean, and each differs from
-  the others in form as well as hue. `tools/uitest.js` fails if a row carries
-  `.sel` without being clickable, or if a fourth `"sel"` literal appears.
+**Content and state**
 
-- Every renderer replaces its container wholesale, so focus lands on
-  document.body after every state change unless something puts it back.
-  `js/focus.js` does, by DATA KEY and never by index — the row at position
-  four after a render may be a different bill. It also owns the selection,
-  because selection used to live in four places in three mechanisms and
-  nothing kept them in step; that is how the order paper came to hardcode
-  its highlight to one bill and mark the wrong row for a whole game.
-- `.focus()` scrolls its target into view. Restoring focus to a row below
-  the fold therefore undoes a scroll position restored a line earlier —
-  measured at 0 becoming 676 on the station roster. Restore focus with
-  `{preventScroll: true}`, restore scroll after it, and scroll into view
-  only when the player asked to move.
-- Two listeners for one action is not twice as safe. `[data-go]` in the
-  Concordance was bound both by a delegated capture listener in `js/ui.js`
-  and per-node in `js/encyclopedia.js`, so every link click rendered the
-  article twice — invisibly, because both renders produced the same page.
-  A keyboard path must reach the existing handler (`el.click()`), never
-  add a second one. `tools/uitest.js` counts handler calls.
+- `payWhips` clears the plan, so a caller that divided afterwards charged for
+  nothing. Always use `Engine.divide()`.
+- `apportionment_ratio` was stored beside seats and population and the three
+  diverged. Derived, never stored.
+- The district tier summed to 56 while parties held 140. `test.js` reconciles
+  both directions.
+- Bump `STATE_VERSION` when the state shape changes, and write the migration
+  guard ASCENDING, one block per bump — a descending guard let a v1 save match
+  `< 4`, get stamped 4, and skip every earlier block.
+- Content owns identity (name, band, form, seats); the save owns simulation
+  (closure, suspended, attested). `Engine.reconcile()` runs on every load
+  because a new station used to leave older saves with a hole in `st.stations`.
+- Player preferences go in `Shell.opts`; world state goes in the save. Mute in
+  a save file silences somebody else's machine on import.
+- `CONTENT.encyclopedia` is an object — `meta`, `banners`, `articles` — not a
+  list.
 
-- A division does not resolve inside its own animation. `Engine.divide()`
-  runs on the click and settles everything — whips paid, stage moved, logged,
-  sent to the President — and the dialog then reads out numbers that are
-  already final. That is what makes skipping safe and what makes "muted and
-  unstreamed reaches the same state" a testable claim rather than a hope.
-  `tools/uitest.js` runs the same division three ways and compares the saved
-  state byte for byte.
-- Streaming text is a USER ACTION, not a render. `drawSitting()` always puts
-  the finished text on the page, complete and silent; the action handlers ask
-  `js/stream.js` to reveal it. If the streamer ran from a draw function the
-  same paragraph would retype itself, with sound, on every tab switch — which
-  is the audio rule below, arrived at from the other direction. `Sound.type`
-  is spied in `tools/uitest.js` alongside `Sound.play` for exactly this.
-- Blanking text to type it out collapses the block to nothing, and everything
-  below it jumps up and then walks back down as it fills. `js/stream.js`
-  measures the height before emptying and holds it.
-- There is NO ASSET LOADING in this game and there cannot be a simple one:
-  on `file://`, `fetch()` and `XMLHttpRequest` both fail — measured — which
-  is the same reason content is `.js` and not `.json`. Base64 in a `.js`
-  file, through `atob` into `decodeAudioData`, is the route that works.
+**CSS traps, all three found by measuring rather than reading**
 
-- A tooltip only a mouse can reach is a reward for owning a mouse, and a
-  column heading permanently in the tab order is fifty stops between the
-  player and the button they wanted. `?` is the trade: it puts the annotated
-  readouts on the visible screen into the tab order and takes them out
-  again. Only the visible screen — marking a hidden tab's headings puts
-  unreachable nodes in the tab order.
-- `js/tips.js` explains the TERMINAL — what a column is, what a number does.
-  The Concordance and the glossary explain the WORLD. A tip with no body of
-  its own falls through to the glossary, then to the Concordance article of
-  the same id, so nothing restates canon and nothing invents any (§2.7).
-  `tools/uitest.js` fails on a `data-tip` key that resolves to nothing, which
-  is otherwise indistinguishable from a token with no explanation yet.
-- `CONTENT.encyclopedia` is an OBJECT — `meta`, `banners`, `articles` — not a
-  list. `content/index.js` indexes `.articles`.
+- An id outranks `.screen{display:none}`, so `#s-orb.screen{display:block}` put
+  the habitat map on every tab at once. Any rule whose subject is a `#s-…`
+  screen must include `.on`.
+- Setting `scrollbar-color` or `scrollbar-width` makes Chromium silently ignore
+  every `::-webkit-scrollbar` rule for that element. The standard properties are
+  fenced behind `@supports not selector(::-webkit-scrollbar)`.
+- `overflow-x:auto` forces `overflow-y:auto` too. Anything that scrolls in one
+  axis says so in both.
+- An inline `<svg>` with a viewBox and no width fills its container, so
+  shrinking the coordinate space only magnifies the drawing.
+- A class named for an appearance gets borrowed for anything wanting that
+  appearance: `.sel` came to mean four things at once. It now means selection
+  only; `.warn`, `.inforce`, `.vacant` and the editor's `.here` say what they
+  mean, and differ in form as well as hue.
 
-- Sound is triggered by engine effects and user actions ONLY. Nothing reachable
-  from `drawAll()` may make a noise — a redraw happens on a tab switch, on a
-  load and on a mirrored panel repainting, so a cue fired from a draw function
-  fires four times for no reason. `tools/uitest.js` proves it by spying on
-  `Sound.play` across a full redraw.
+**Interface**
+
+- Renderers replace containers wholesale, so focus falls to `document.body` on
+  every state change. `js/focus.js` restores it by DATA KEY, never by index, and
+  owns the only selection store — selection used to live in four places and the
+  order paper hardcoded its highlight as a result.
+- `.focus()` scrolls its target into view and will undo a scroll restore
+  standing next to it. Restore with `{preventScroll:true}`, scroll after, and
+  `scrollIntoView` only on a move the player asked for.
+- Two listeners for one action is not twice as safe: `[data-go]` was bound in
+  both `js/ui.js` and `js/encyclopedia.js` and every click rendered twice,
+  invisibly. A keyboard path reaches the existing handler (`el.click()`).
+- Sound comes from engine effects and user actions ONLY — never from `drawAll()`
+  or anything reachable from it. Streaming text obeys this too: the renderer
+  puts the finished text up silently and the ACTION HANDLERS reveal it.
+- A division resolves on the click, before its dialog opens. That is what makes
+  skipping safe and "muted reaches the same state" testable.
+- Blanking text to type it out collapses the block; measure and hold the height.
+- `js/tips.js` explains the TERMINAL; the Concordance and glossary explain the
+  WORLD, and a tip with no body falls through to them, so nothing restates canon
+  (§2.7). `?` is the keyboard trade: annotated readouts enter the tab order on
+  the visible screen only.
+- There is NO ASSET LOADING and cannot easily be: on `file://`, `fetch()` and
+  `XMLHttpRequest` both fail. Base64 in a `.js` file through `atob` into
+  `decodeAudioData` is the route that works.
+
+Every one of these is asserted somewhere in `npm run check`. Two of the checks
+exist because of a specific miss: `tools/edtest.js` because a form function was
+referenced in the editor and never defined, and `tools/uitest.js` because a
+blank screen is invisible to every static check.
 
 ## Authoring
 
