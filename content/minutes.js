@@ -18,7 +18,7 @@ const MINUTES = [
     to:"Minister for Life Support",
     copy:["Chief Whip","Law Officer","Cabinet Secretary"],
     struck:["Minister for Substrate and Thermal"],
-    notCopied:["Coalition liaison (New Progressive Party)"],
+    notCopied:["Coalition liaison (Public Substrate Association)"],
     subject:"Shed order priority — Homestead",
     body:`I have seen the engineering authority's published order for the current quarter. Homestead is placed in the fourth tier for the eleventh consecutive year, and eleven thousand four hundred suspended residents are held in that tier.
 

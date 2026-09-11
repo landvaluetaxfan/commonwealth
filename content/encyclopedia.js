@@ -209,7 +209,7 @@ const ENCYCLOPEDIA = {
         "for a long time." },
       { h:"Collective responsibility", body:
         "A Minister who cannot support a decision is expected to resign before opposing it. The "+
-        "convention is honoured by absence more often than by resignation: three Democratic Centre "+
+        "convention is honoured by absence more often than by resignation: three Root & Vessel "+
         "Ministers absented themselves from the threshold division rather than divide against the "+
         "leadership in public, which is understood by everyone to be a different thing from "+
         "supporting it." },
@@ -314,7 +314,7 @@ const ENCYCLOPEDIA = {
       { h:"Abolition", body:
         "Abolition requires a Charter amendment. A Charter amendment requires a dual majority. " +
         "A dual majority requires the functional tier to vote for its own abolition. The " +
-        "Party of Socialists and Democrats has promised abolition at four consecutive elections." }
+        "Commons Union has promised abolition at four consecutive elections." }
     ],
     see:["dual_majority","licensure","gb","perigee_charter"] },
 

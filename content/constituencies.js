@@ -784,7 +784,7 @@ const CONSTITUENCIES = [
   { id:"homestead_a", name:"Homestead A", station:"ashfield", band:"low",
     magnitude:1, electorate:32992,
     member:"Rosalind Grimsby",
-    held:{ind:1},
+    held:{gb:1},
     parent:"ashfield_a_c",
     material_interest:["consumables_subsidy", "shed_order_priority", "volume_rationing"] },
 
@@ -924,7 +924,7 @@ const CONSTITUENCIES = [
   { id:"clearmont_and_sowerby", name:"Clearmont & Sowerby", station:"slagworks", band:"low",
     magnitude:1, electorate:37478,
     member:"Dmitri Kirilenko",
-    held:{ind:1},
+    held:{gb:1},
     parent:"slagworks",
     material_interest:["consumables_subsidy", "yard_contracts"] },
 
@@ -959,7 +959,7 @@ const CONSTITUENCIES = [
   { id:"stanbridge", name:"Stanbridge", station:"quarry", band:"low",
     magnitude:1, electorate:34355,
     member:"Marek Vasquez",
-    held:{ind:1},
+    held:{gb:1},
     parent:"quarry_reach",
     material_interest:["yard_contracts", "transit_windows"] },
 
@@ -980,21 +980,21 @@ const CONSTITUENCIES = [
   { id:"colonnade", name:"Colonnade", station:"sinter", band:"low",
     magnitude:1, electorate:13128,
     member:"Brennan Kettering",
-    held:{ind:1},
+    held:{gb:1},
     parent:"sinter",
     material_interest:["yard_contracts", "consumables_subsidy"] },
 
   { id:"wrenfield_aubrey", name:"Wrenfield—Aubrey", station:"sinter", band:"low",
     magnitude:1, electorate:12934,
     member:"Nadia Castellan",
-    held:{ind:1},
+    held:{gb:1},
     parent:"sinter",
     material_interest:["yard_contracts", "consumables_subsidy"] },
 
   { id:"john_henry", name:"John Henry", station:"dredge", band:"low",
     magnitude:1, electorate:20139,
     member:"Beatrix Merrick",
-    held:{ind:1},
+    held:{gb:1},
     parent:"dredge",
     material_interest:["transit_windows", "yard_contracts"] },
 
