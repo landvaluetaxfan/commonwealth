@@ -22,7 +22,6 @@
    Chartists — none currently seated. */
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
-    logo:"cu.png",
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
