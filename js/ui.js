@@ -1206,7 +1206,9 @@ const UI = (function () {
         return `<tr><td><b>${esc(k.name)}</b>${badge}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
-            : esc(ch ? ch.name : (k.member || "\u2014"))}` +
+            : esc(ch ? ch.name : (k.member
+                ? (/MP$/.test(k.member) ? k.member : k.member + " MP")
+                : "\u2014"))}` +
             `${!r.vacant && ch && ch.role ? ` <span class="det">${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
           `<td class="n">${ap[k.id].toFixed(2)}</td>` +
