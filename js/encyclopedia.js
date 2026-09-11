@@ -15,9 +15,10 @@ const Concordance = (function () {
 
   let C, st, history = [];
 
-  /* ---------- link syntax: [[id]] or [[id|shown text]] ---------- */
+  /* ---------- inline syntax: **emphasis** and [[id]] or [[id|shown text]] ---------- */
   function links(text) {
-    return String(text).replace(/\[\[([a-z0-9_]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
+    return String(text).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+                       .replace(/\[\[([a-z0-9_]+)(?:\|([^\]]+))?\]\]/gi, (m, id, label) => {
       const a = byId[id];
       return a
         ? `<a class="cx-link" tabindex="0" data-go="${id}">${label || a.title}</a>`
