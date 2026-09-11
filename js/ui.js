@@ -450,7 +450,14 @@ const UI = (function () {
     }));
 
     /* ---- cabinet ---- */
-    $("#gov-cabinet").innerHTML = (C.cabinet || []).map(p => {
+    /* The Prime Minister chairs it, so she heads the list — but she is not a
+       post: a post has an author for instruments and can fall vacant, and she
+       is neither appointable nor dismissable by the player. */
+    const pmCh = C.characterById[C.setup.pm];
+    const pmRow = pmCh ? `<tr class="pmrow"><td>Prime Minister</td>` +
+      `<td>${pmCh.name.replace(/^Rt\. Hon\. /, "")}</td>` +
+      `<td class="n">${mark(pmCh.party)}</td></tr>` : "";
+    $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
       return `<tr class="${s.holder ? "" : "vacant"}">
