@@ -25,11 +25,15 @@ The branch is **ahead 1, behind 38**. Its engine half (axes, economy, migration)
 was written against v5 and conflicts with the current v6 engine — **Claude owns
 that rebase.**
 
-**Portable now, low-risk (content only, independent of the axes change):** apply
-the party rename to the *current* `content/parties.js`, keeping its four
-categorical axes. Mapping:
+**The party rename is DONE on `main`** (content commit after this one): the table
+below is a record, not a task. `gb` is split into ABG (`functional:9`) and
+`ind` (`district:6`, no axes, last), the six district seats moved to `ind` in
+`content/constituencies.js`, and `ind:"against"` was added to the divergence
+stances to hold the opening at 128. When rebasing the branch, **keep only the
+engine work** (five axes, §7.10 economy, migration, roadmap/docs) and **drop the
+rename and the split** — they are already here.
 
-| id | new name | short |
+| id | name | short |
 |---|---|---|
 | cu | Party of Socialists and Democrats | PSD |
 | cl | Liberal Party | LIB |
@@ -42,12 +46,7 @@ categorical axes. Mapping:
 | des | One-G | ONE |
 | geo | Single Tax Party | STP |
 | upl | Common Kind | CMK |
-| ind | Independents *(new, last)* | IND |
-
-Split `gb` into **ABG** (`functional:9`, keep its axes and `aliases:["Guild Bench"]`)
-and **`ind`** (`district:6`, no axes, last in `PARTIES`). Then add `ind:"against"`
-to the divergence stances in `content/bills.js` — without it the six independents
-infer 50/50 and the opening forecast moves off 128. `npm run check` must be green.
+| ind | Independents | IND |
 
 ## Finding things without reading everything
 
