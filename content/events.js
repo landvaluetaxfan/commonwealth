@@ -192,7 +192,7 @@ The Spindle has the timestamp.`,
 a four-minute window. The Registry flagged the cluster and took no further action,
 which is the whole of the power the statute gives it.
 
-Clarke wants to know whether you intend to ask for more power, and he wants to
+Ceyhan wants to know whether you intend to ask for more power, and he wants to
 know it on the record, because the answer is a story either way.`,
   choices:[
     { label:"Announce an attestation enforcement bill",
@@ -207,7 +207,7 @@ know it on the record, because the answer is a story either way.`,
     { label:"Ask who paid for the substrate",
       effects:[{flag:"cluster_investigated"},{flag:"cluster_traced"},{relationship:{ceyhan:9}},
                {queue:[{event:"cluster_source",after:5}]}],
-      result:"Clarke writes it down properly, which means he thinks it will go somewhere." }
+      result:"Ceyhan writes it down properly, which means he thinks it will go somewhere." }
   ]},
 
 { id:"cluster_source", queuedOnly:true, once:true,
@@ -228,7 +228,7 @@ consensus. It is not clear that either is illegal.`,
       result:"You have opened a fight about corporate voting eight weeks before you need the functional benches." },
     { label:"Hold it. A seat you may need later is worth more than a story now.",
       effects:[{flag:"shells_held"},{relationship:{ceyhan:-8}}],
-      result:"Clarke runs it anyway, without you, and with a paragraph about what the government knew." }
+      result:"Ceyhan runs it anyway, without you, and with a paragraph about what the government knew." }
   ]}
 ,
 
@@ -316,7 +316,7 @@ when it cannot pay: the tier-four register on Homestead has grown by four figure
 and nobody has announced anything, because nothing was announced. The price went
 up and people stopped running.
 
-Jaco van Ryneveld has sent the ninth deck's letter to every member for a low-band seat,
+Sevi Ansar has sent the ninth deck's letter to every member for a low-band seat,
 which is eleven of yours.
 
 "You did not vote for this," it says. "That is the part I would like explained."`,

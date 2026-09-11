@@ -15,6 +15,11 @@
    Rename people freely — they are referenced by id, and tools/renametest.js
    checks that a rename preserves behaviour.
 
+   The author's cast is all members of the House of Delegates, of one tier or
+   another, except the President and the two non-parliamentary voices (the
+   press and the deck civilian). A name on the author's list is never below an
+   MP.
+
    NAMING SCHEME — locked.
      Parliament          the legislature (bicameral)
      House of Delegates  the elected chamber
@@ -129,25 +134,40 @@ const CHARACTERS = [
     party:"upl", relationship:50, office:"leader",
     note:"Two seats, permanently kingmaker-adjacent. Price is always the same thing." },
 
-  /* ---- unseated and non-parliamentary ---- */
-  { id:"tenaya", portrait:"tenaya.png",   name:"President Adam King", role:"President",
+  /* ---- the chair of the House ---- */
+  { id:"king", name:"Adam King MP", role:"",
+    party:"ind", seat:"Colonnade", relationship:40,
+    note:"Backbench. Independent since the presidency, and does not regret it." },
+
+  /* ---- other seated members ---- */
+  { id:"clarke", name:"Benj Clarke MP", role:"",
+    party:"cl", seat:"Meridian Loop", relationship:35,
+    note:"Backbench. Market liberal, which here means elevator and loop money." },
+  { id:"tomasson", name:"Haukur Tómasson MP", role:"",
+    party:"rv", seat:"Brant North", relationship:47,
+    note:"Backbench. Continuity of soul, and votes it every time." },
+
+  /* ---- the presidency ---- */
+  { id:"tenaya", portrait:"tenaya.png",   name:"President Jaco van Ryneveld", role:"President",
     party:null, relationship:22,
-    note:"Independent. Elected 2284, 51.4%. Reserve powers: dissolution, formation, referral, appointments." },
+    note:"Independent. Elected 2284, 51.4%. Biologically augmented: cat ears. "+
+         "Reserve powers: dissolution, formation, referral, appointments." },
+
+  /* ---- the faction leader ---- */
   { id:"halloran", portrait:"halloran.png", name:"Dan Czarnecki MP", role:"Leader, Czarnecki group",
     party:"cu", seat:"Tier Four", relationship:12,
     note:"Has the signatures for a leadership ballot if he finds nine more." },
-  { id:"ceyhan", portrait:"ceyhan.png",   name:"Benj Clarke", role:"Political editor, The Spindle",
+
+  /* ---- the panel chair ---- */
+  { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako MP", role:"Chair, Life Support panel",
+    party:"gb", relationship:18,
+    note:"Functional tier. Position unchanged since 2279. The whips do not believe money will move them." },
+
+  /* ---- non-parliamentary voices ---- */
+  { id:"ceyhan", portrait:"ceyhan.png",   name:"Ivor Ceyhan", role:"Political editor, The Spindle",
     party:null, relationship:44,
     note:"Will print what he is given and what he is not." },
-  { id:"gb_chair", portrait:"gb_chair.png", name:"Kazuya Tanako", role:"Chair, Life Support panel",
-    party:"gb", relationship:18,
-    note:"Position unchanged since 2279. The whips do not believe money will move them." },
-  { id:"ansar", portrait:"ansar.png",    name:"Jaco van Ryneveld", role:"Deck 9",
+  { id:"ansar", portrait:"ansar.png",    name:"Sevi Ansar", role:"Deck 9",
     party:null, relationship:55,
-    note:"Biologically augmented: cat ears. A civilian voice, used for warmth." },
-
-  /* ---- backbenchers, seated ---- */
-  { id:"tomasson", name:"Haukur Tómasson MP", role:"",
-    party:"rv", seat:"Brant North", relationship:47,
-    note:"Backbench. Continuity of soul, and votes it every time." }
+    note:"A civilian voice. Used for warmth. Not a lobbyist." }
 ];

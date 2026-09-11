@@ -158,44 +158,44 @@ section's own — LOCKED means settled canon, OPEN means genuinely undecided.
 **Part XI — NAMED CANON** · L1391
 - §11.1 · L1395 — The polity
 - §11.2 · L1416 — Persons
-- §11.3 · L1433 — Stations and constituencies
-- §11.4 · L1501 — The functional roster  *LOCKED*
-- §11.5 · L1523 — The live bill
-- §11.6 · L1532 — Other business on the order paper
+- §11.3 · L1439 — Stations and constituencies
+- §11.4 · L1507 — The functional roster  *LOCKED*
+- §11.5 · L1529 — The live bill
+- §11.6 · L1538 — Other business on the order paper
 
-**Part XII — UI AND PRESENTATION** · L1545
-- §12.1 · L1547 — The core principle  *LOCKED*
-- §12.2 · L1551 — Split visual language  *LOCKED*
-- §12.3 · L1558 — Chrome direction  *LOCKED*
-- §12.4 · L1564 — Screens  *LOCKED*
-- §12.5 · L1568 — Election night  *LOCKED*
-- §12.6 · L1577 — The orbital map  *LOCKED*
-- §12.7 · L1605 — The parliament diagram  *LOCKED*
-- §12.8 · L1631 — Documents  *LOCKED*
-- §12.9 · L1637 — The feed  *LOCKED*
-- §12.10 · L1641 — Build cost  *LOCKED*
-- §12.11 · L1645 — Images  *LOCKED*
-- §12.12 · L1673 — Existing artifact
+**Part XII — UI AND PRESENTATION** · L1551
+- §12.1 · L1553 — The core principle  *LOCKED*
+- §12.2 · L1557 — Split visual language  *LOCKED*
+- §12.3 · L1564 — Chrome direction  *LOCKED*
+- §12.4 · L1570 — Screens  *LOCKED*
+- §12.5 · L1574 — Election night  *LOCKED*
+- §12.6 · L1583 — The orbital map  *LOCKED*
+- §12.7 · L1611 — The parliament diagram  *LOCKED*
+- §12.8 · L1637 — Documents  *LOCKED*
+- §12.9 · L1643 — The feed  *LOCKED*
+- §12.10 · L1647 — Build cost  *LOCKED*
+- §12.11 · L1651 — Images  *LOCKED*
+- §12.12 · L1679 — Existing artifact
 
-**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1685
-- §13.1 · L1687 — Scandal taxonomy  *LOCKED*
-- §13.2 · L1700 — The spine  *LEANING*
+**Part XIII — SCANDAL AND THE THRILLER SPINE** · L1691
+- §13.1 · L1693 — Scandal taxonomy  *LOCKED*
+- §13.2 · L1706 — The spine  *LEANING*
 
-**Part XIV — PRIOR ART** · L1706
-- §14.1 · L1708 — The gap  *LOCKED*
-- §14.2 · L1712 — Works
-- §14.3 · L1720 — Mars trilogy lessons  *LOCKED*
+**Part XIV — PRIOR ART** · L1712
+- §14.1 · L1714 — The gap  *LOCKED*
+- §14.2 · L1718 — Works
+- §14.3 · L1726 — Mars trilogy lessons  *LOCKED*
 
-**Part XV — PRODUCTION** · L1733
-- §15.1 · L1735 — Team  *LOCKED*
-- §15.2 · L1741 — Documentation  *LOCKED*
-- §15.3 · L1757 — Where this gets hard  *LOCKED*
-- §15.5 · L1768 — The build  *LOCKED*
-- §15.4 · L1802 — What would justify bringing in a person  *LOCKED*
+**Part XV — PRODUCTION** · L1739
+- §15.1 · L1741 — Team  *LOCKED*
+- §15.2 · L1747 — Documentation  *LOCKED*
+- §15.3 · L1763 — Where this gets hard  *LOCKED*
+- §15.5 · L1774 — The build  *LOCKED*
+- §15.4 · L1808 — What would justify bringing in a person  *LOCKED*
 
-**Part XVI — OPEN DECISIONS** · L1821
+**Part XVI — OPEN DECISIONS** · L1827
 
-**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1852
+**APPENDIX A — THE ANTHRO SETTING (PRESERVED)** · L1858
 
 <!-- /TOC -->
 
@@ -1416,7 +1416,7 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 ## 11.2 Persons
 
 - **Rt. Hon. Adriana Flash MP** — Prime Minister. Commons Union. Member for Anselm Ring.
-- **President Adam King** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
+- **President Jaco van Ryneveld** — independent. Elected 2284, direct, 51.4%. Relations with the government: cold. Has privately indicated a threshold bill carried on a contested dual majority would be referred for constitutional review.
 - **Dan Czarnecki MP** — Ashfield. Commons Union. Leads the eleven-member Czarnecki group, loyalty 12. Needs nine more signatures for a leadership ballot.
 - **Suravaram Vidyasagar MP** — Minister for Life Support. Commons Union, member for
   Fore River Yards. Career maintenance union. The only member of Cabinet the Guild
@@ -1424,11 +1424,17 @@ Everything in this part is **LOCKED** and frozen. No content pass may invent add
 - **Anil Devi MP** — Chief Whip. Commons Union, member for Anselm Ring Outer
   Decks. Reports that things went as well as they could have; reports this about
   everything.
-- **Benj Clarke** — political editor, *The Spindle*.
+- **Kazuya Tanako MP** — Chair, Life Support panel. Functional tier, Alliance of
+  Business and Government. Position unchanged since 2279.
+- **Adam King MP** — independent, member for Colonnade. Backbench since the
+  presidency.
+- **Benj Clarke MP** — Liberal Party, member for Meridian Loop. Backbench.
+- **Haukur Tómasson MP** — Democratic Centre, member for Brant North. Backbench.
+- **Ivor Ceyhan** — political editor, *The Spindle*.
 - **Ondine Charnock** — author of *The Circumterrestrial Economy*, 4th edition,
   Perigee Review Press. The standard primer, and mildly out of date since the
   threshold debate opened. See `textbook.md`.
-- **Jaco van Ryneveld** — Deck 9. A civilian voice, used for warmth.
+- **Sevi Ansar** — Deck 9. A civilian voice, used for warmth.
 
 ## 11.3 Stations and constituencies
 
