@@ -191,7 +191,31 @@ const Sound = (function () {
   /* ---------- room tone ----------
      Air handling, a long way off, through a bulkhead. Filtered noise for the
      plant and a low sine for the structure. It is meant to be noticed only
-     when it stops, so the default gain is low and it sits under everything. */
+     when it stops, so it sits under everything.
+
+     THE GAINS BELOW LOOK TOO HIGH AND ARE NOT. DO NOT "TIDY" THEM DOWN.
+
+     A gain of 0.055 is a sensible peak for a CUE, which is a full-band
+     oscillator: a 0.055 square through the 0.55 ui bus lands at -30 dBFS.
+     The same number on the plant means something completely different,
+     because the plant is white noise with a 220Hz lowpass in front of it
+     and that filter throws away almost all of the signal:
+
+       uniform noise            RMS 0.5774   (measured 0.5771 - the model holds)
+       x lowpass 220 over 22k   x 0.1053     = 0.0608
+       x 0.055 x room bus 0.3               = 0.00100  = -60 dBFS
+
+     -60 dBFS is silence. The tone was running correctly and inaudibly for
+     every player, thirty decibels under its own click, which is roughly a
+     factor of eight in loudness. At 0.30 it lands at -45 dBFS: fifteen
+     under the click, present in a quiet room, still gone the moment
+     anything else happens.
+
+     The 52Hz sine is a separate problem and only half fixable. Most laptop
+     and monitor speakers reproduce nothing at 52Hz at all, so on that
+     hardware the plant has to carry the whole effect; on headphones the
+     sine is what makes it a large pressurised object rather than a hiss.
+     0.05 is as far as it can go before it muddies the cues. */
   function room(on) {
     if (!live()) { return; }
     if (!on) {
@@ -211,10 +235,10 @@ const Sound = (function () {
       lp.type = "lowpass";  lp.frequency.value = 220;
       hp.type = "highpass"; hp.frequency.value = 40;
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.055, t + 2.5);   /* fade in, never a cut */
+      g.gain.exponentialRampToValueAtTime(0.30, t + 2.5);    /* fade in, never a cut */
       o.type = "sine"; o.frequency.value = 52;
       og.gain.setValueAtTime(0.0001, t);
-      og.gain.exponentialRampToValueAtTime(0.02, t + 2.5);
+      og.gain.exponentialRampToValueAtTime(0.05, t + 2.5);
       s.connect(lp); lp.connect(hp); hp.connect(g); g.connect(bus.room);
       o.connect(og); og.connect(bus.room);
       s.start(t); o.start(t);
