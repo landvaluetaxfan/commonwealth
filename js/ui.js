@@ -306,8 +306,10 @@ const UI = (function () {
 
     let h = "<thead><tr><th>Party</th><th class='n' data-tip='seats'>Seats</th>" +
       "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
+    /* Every coalition partner is governing, not just the Prime Minister's
+       party — the player's own row is still the one with no loyalty figure. */
     st.coalition.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} ${id === st.playerParty ? "<span class='flag' data-tip='gov'>GOV</span>" : ""}</td>` +
+      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
     });
     st.confidenceSupply.forEach(id => {
