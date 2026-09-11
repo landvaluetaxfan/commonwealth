@@ -327,6 +327,21 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        CONTENT.parties.every(p => back.parties[p.id]));
   }
 
+  /* The cabinet lives in the save, so a recast in content leaves an old holder
+     id behind and the panel prints the raw id. load() must repair it, and a
+     ministry content has added must appear. */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const post = CONTENT.cabinet[1];
+    fresh.cabinet[post.id] = { id: post.id, holder: "nobody_at_all", party: post.party };
+    delete fresh.cabinet[CONTENT.cabinet[2].id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a stale cabinet holder is repaired", back.cabinet[post.id].holder === post.holder);
+    ok("the repair is reported",
+       ((Engine.lastReconcile() || {}).cabinetRepaired || []).indexOf(post.id) >= 0);
+    ok("a save missing a ministry regains it", !!back.cabinet[CONTENT.cabinet[2].id]);
+  }
+
   /* Content owns a station's identity; the save owns what play has moved.
      A renamed or resized station must show its current name and return its
      current seats, or the map and the chamber arithmetic disagree — but a

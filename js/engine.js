@@ -189,7 +189,7 @@ const Engine = (function () {
   function reconcile(st, C) {
     if (!C) return st;
     const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
-                    partiesAdded: [], currentsAdded: [] };
+                    partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -226,6 +226,27 @@ const Engine = (function () {
       if (st.currents[c0.id]) return;
       st.currents[c0.id] = { id: c0.id, loyalty: c0.loyalty, members: c0.members };
       notes.currentsAdded.push(c0.id);
+    });
+
+    /* Cabinet. Content owns the post; the save owns who holds it, because
+       appointments, refusals and resignations are play. But a holder id content
+       no longer names is a recast, not a decision — repair it to content's
+       holder, or the panel prints a raw id like "onyema". Posts content has
+       added are seeded whole, so a save written before a ministry existed still
+       opens and the panel does not read undefined. */
+    st.cabinet = st.cabinet || {};
+    (C.cabinet || []).forEach(p0 => {
+      const was = st.cabinet[p0.id];
+      if (!was) {
+        st.cabinet[p0.id] = { id: p0.id, holder: p0.holder || null, party: p0.party || null };
+        notes.cabinetAdded.push(p0.id);
+        return;
+      }
+      if (was.holder && !C.characterById[was.holder]) {
+        was.holder = p0.holder || null;
+        was.party = p0.party || null;
+        notes.cabinetRepaired.push(p0.id);
+      }
     });
 
     if (st.roll) {
