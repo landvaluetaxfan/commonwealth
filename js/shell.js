@@ -178,7 +178,19 @@ const Shell = (function () {
     return out;
   }
 
+  /* TEMPORARY: three board layouts behind ?board=. Delete the losers and
+     this switch once one is chosen. Every variant derives from the same
+     opening state; only the arrangement differs. */
+  function variant() {
+    try { return (location.search.match(/board=(\w+)/) || [])[1] || "a"; }
+    catch (e) { return "a"; }
+  }
+
   function boardHTML() {
+    const v = variant();
+    if (v === "b") return boardDocument();
+    if (v === "c") return boardSparse();
+    if (v === "d") return boardSpine();
     const st = openingState();
     if (!st) return "";
     const maj = Engine.majority(st), conf = Engine.confidence(st);
@@ -251,6 +263,174 @@ const Shell = (function () {
       <div class="board-tick" id="board-ticker"><div class="tk">${
         posts.concat(posts).map(p => `<span>${esc(p)}</span>`).join("")
       }</div></div>
+    </div>`;
+  }
+
+  /* ---------- B: ONE DOCUMENT ----------
+
+     The board is not four panels, it is one paper: the standing position,
+     typed up and left on the desk. Reuses the Papers screen's .paper, so
+     it is the same object the game already prints instruments on. Clutter
+     goes because there is one thing to read; the height fills because a
+     document is tall. */
+  function boardDocument() {
+    const st = openingState();
+    if (!st) return "";
+    const maj = Engine.majority(st), conf = Engine.confidence(st);
+    const bill = billBeforeHouse(st);
+    const live = (C.bills || []).filter(b => { const bs = st.bills[b.id];
+      return bs && !bs.dead && bs.stage !== "withdrawn"; });
+    const sessions = log();
+
+    return `<div class="board board-doc" id="board">
+      <div class="board-head">
+        ${Artifacts.render("crest")}
+        <div class="board-title">
+          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
+          <span>Standing position at the opening of Session ${st.session}
+            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
+        </div>
+        ${Artifacts.render("department_mark")}
+      </div>
+      <div class="board-sheet"><div class="paper">
+        <h5>Standing position &mdash; Session ${st.session}, ${esc(st.date)}</h5>
+        <p>The House stands at ${Engine.chamberTotal(st)} seats:
+          ${st.law.tier_ratio_district} returned by district,
+          ${st.law.tier_ratio_list} allocated from party lists and
+          ${Engine.functionalTotal(st)} returned by functional constituency.
+          A majority is ${maj}. The government commands ${conf},
+          a margin of ${conf - maj >= 0 ? "+" : ""}${conf - maj}.</p>
+
+        <div class="rulehead">Before the House</div>
+        <ol>${live.map(b => `<li><b>${esc(b.title)}</b> &mdash;
+          ${esc(String(st.bills[b.id].stage).replace(/_/g, " "))},
+          ${b.dualMajority ? "dual majority" : "simple majority"}.
+          Forecast ${Engine.division(st, C, b.id).popular.aye} on the popular
+          benches against ${Engine.division(st, C, b.id).popular.need} needed.</li>`).join("")}</ol>
+
+        <div class="rulehead">Standing indicators</div>
+        <p>${[["Party loyalty","party_loyalty"],["Public standing","public_standing"],
+              ["Consumables","consumables"],["Thermal margin","thermal_margin"],
+              ["Treasury","treasury"]]
+          .map(([l,k]) => `${l} ${st.scalars[k]}`).join(" &middot; ")}.</p>
+
+        ${typeof NOTICE !== "undefined" && NOTICE ? `
+        <div class="rulehead">${esc(NOTICE.ref || "Notice")}</div>
+        <p>${esc(NOTICE.text || "")}</p>` : ""}
+
+        <div class="rulehead">Session log</div>
+        ${sessions.length
+          ? `<ol>${sessions.slice(0, 8).map(x => `<li>${esc(x.name)} &mdash; sitting
+              ${x.sitting}, ${esc(x.date || "")}. ${esc(x.end)}.</li>`).join("")}</ol>`
+          : `<p>No completed session on this terminal.</p>`}
+      </div></div>
+    </div>`;
+  }
+
+  /* ---------- C: THE DEPARTURE BOARD ----------
+
+     Almost nothing, set large. A status board in a corridor rather than a
+     desk: four figures and the bill, at a size you read from across the
+     room. Fills the screen by using it rather than by adding to it. */
+  function boardSparse() {
+    const st = openingState();
+    if (!st) return "";
+    const maj = Engine.majority(st), conf = Engine.confidence(st);
+    const bill = billBeforeHouse(st);
+    const big = (v, l) => `<div class="bigfig"><b>${v}</b><span>${l}</span></div>`;
+
+    return `<div class="board board-sparse" id="board">
+      <div class="board-head">
+        ${Artifacts.render("crest")}
+        <div class="board-title">
+          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
+          <span>Standing position at the opening of Session ${st.session}
+            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
+        </div>
+        ${Artifacts.render("department_mark")}
+      </div>
+      <div class="sparse-body">
+        <div class="bigrow">
+          ${big(conf, "confidence of " + Engine.chamberTotal(st))}
+          ${big(maj, "majority")}
+          ${big((conf - maj >= 0 ? "+" : "") + (conf - maj), "margin")}
+          ${big(st.slots.total - st.slots.used, "order paper slots")}
+        </div>
+        ${bill ? `<div class="bigbill">
+          <span>Before the House</span>
+          <b>${esc(bill.title)}</b>
+          <i>${esc(bill.ref || "")} &middot;
+             ${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} &middot;
+             ${bill.dualMajority ? "dual majority" : "simple majority"}</i>
+        </div>` : ""}
+      </div>
+      <div class="board-tick" id="board-ticker"><div class="tk">${
+        ticker(st).concat(ticker(st)).map(p => `<span>${esc(p)}</span>`).join("")
+      }</div></div>
+    </div>`;
+  }
+
+  /* ---------- D: THE ORDER PAPER AS THE SPINE ----------
+
+     The business before the House is the tall thing, so it becomes the
+     left column and runs the full height. Everything else stacks narrow on
+     the right. No ticker: the order paper is no longer a scrap to scroll,
+     it is the content. */
+  function boardSpine() {
+    const st = openingState();
+    if (!st) return "";
+    const maj = Engine.majority(st), conf = Engine.confidence(st);
+    const live = (C.bills || []).filter(b => { const bs = st.bills[b.id];
+      return bs && !bs.dead; });
+    const sessions = log();
+    const meters = [["Party loyalty","party_loyalty"],["Public standing","public_standing"],
+      ["Consumables","consumables"],["Thermal margin","thermal_margin"],["Treasury","treasury"]]
+      .map(([lab, k]) => { const v = st.scalars[k];
+        return `<div class="meterrow"><label>${lab}</label>` +
+          `<div class="meter ${v <= 20 ? "warn" : v >= 65 ? "good" : ""}">` +
+          `<i style="width:${v}%"></i></div><output>${v}</output></div>`; }).join("");
+
+    return `<div class="board board-spine" id="board">
+      <div class="board-head">
+        ${Artifacts.render("crest")}
+        <div class="board-title">
+          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
+          <span>Standing position at the opening of Session ${st.session}
+            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
+        </div>
+        ${Artifacts.render("department_mark")}
+      </div>
+      <div class="spine">
+        <div class="panel"><h2>Order paper <em>business before the House</em></h2>
+          <div class="pbody flush"><table class="ordertab">
+            <thead><tr><th>Bill</th><th>Stage</th><th class="n">Popular</th>
+              <th class="n">Functional</th><th>Test</th></tr></thead>
+            <tbody>${live.map(b => { const d = Engine.division(st, C, b.id);
+              return `<tr><td><b>${esc(b.title)}</b><i class="sub">${esc(b.ref || "")}</i></td>
+                <td>${esc(String(st.bills[b.id].stage).replace(/_/g, " "))}</td>
+                <td class="n">${d.popular.aye}<i>/${d.popular.need}</i></td>
+                <td class="n">${b.dualMajority ? d.functional.aye + "<i>/" + d.functional.need + "</i>" : "&mdash;"}</td>
+                <td><span class="flag ${b.dualMajority ? "bad" : ""}">${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
+            }).join("")}</tbody></table></div></div>
+
+        <div class="spine-side">
+          <div class="panel"><h2>The chamber</h2><div class="pbody">
+            <div class="kv"><dt>Seats</dt><dd>${Engine.chamberTotal(st)}</dd>
+              <dt>Majority</dt><dd>${maj}</dd>
+              <dt>Confidence</dt><dd>${conf}</dd>
+              <dt>Margin</dt><dd>${conf - maj >= 0 ? "+" : ""}${conf - maj}</dd></div></div></div>
+          <div class="panel"><h2>Standing indicators</h2><div class="pbody">${meters}</div></div>
+          <div class="panel"><h2>System notice</h2><div class="pbody">
+            ${Artifacts.render("notice_plate", "wide")}
+            ${typeof NOTICE !== "undefined" && NOTICE
+              ? `<div class="note">${esc(NOTICE.text || "")}</div>` : ""}</div></div>
+          <div class="panel"><h2>Session log</h2><div class="pbody">
+            ${sessions.length
+              ? sessions.slice(0, 5).map(x => `<div class="note"><b>${esc(x.name)}</b>
+                  &middot; sitting ${x.sitting} &mdash; ${esc(x.end)}</div>`).join("")
+              : `<div class="note">No completed session on this terminal.</div>`}</div></div>
+        </div>
+      </div>
     </div>`;
   }
 

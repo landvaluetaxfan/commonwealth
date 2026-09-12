@@ -1259,7 +1259,7 @@ body.no-motion .board-tick .tk{animation:none;}
    than being the thing you arrive at. */
 #menu.on{display:flex;flex-direction:column;overflow:hidden;}
 .menu-plate{
-  position:absolute;left:20px;bottom:24px;z-index:2;
+  position:absolute;right:20px;bottom:24px;z-index:2;
   width:330px;max-width:calc(100% - 40px);padding:12px 14px 14px;
   background:var(--chrome);
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
@@ -1300,3 +1300,42 @@ body.no-motion .menu-plate.idle{opacity:1;pointer-events:auto;}
 .art-notice_plate{left:0;top:0;width:100%;aspect-ratio:12/5;opacity:.5;z-index:0;}
 .board-grid .panel .pbody{position:relative;}
 .board-grid .panel .pbody > .note{position:relative;z-index:1;}
+
+/* ---------- board variants, temporary while one is chosen ---------- */
+
+/* B: one document. The sheet is the Papers screen's own paper, so the
+   menu prints the standing position on the same stock as an instrument. */
+.board-doc .board-sheet{flex:1 1 auto;min-height:0;overflow:auto;
+  background:var(--chrome-dk);padding:5px;}
+.board-doc .paper{max-width:760px;margin:0 auto;min-height:0;}
+.board-doc .paper .rulehead{color:#6b6142;border-color:#b7ae95;margin-top:16px;}
+
+/* C: the departure board. Four figures and a bill, at a size you read
+   across a room. Nothing else earns the space. */
+.board-sparse .sparse-body{flex:1 1 auto;min-height:0;display:flex;
+  flex-direction:column;justify-content:center;gap:44px;padding:0 40px;}
+.bigrow{display:flex;gap:56px;flex-wrap:wrap;}
+.bigfig b{display:block;font-family:var(--f-disp);font-size:66px;line-height:.9;
+  color:var(--ink);}
+.bigfig span{display:block;font-family:var(--f-data);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px;}
+.bigbill span{display:block;font-family:var(--f-data);font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);}
+.bigbill b{display:block;font-family:var(--f-disp);font-size:30px;line-height:1.1;
+  margin:4px 0 3px;}
+.bigbill i{font-style:normal;font-family:var(--f-data);font-size:11px;color:var(--ink-soft);}
+
+/* D: the order paper as the spine. The tall thing on the screen is the
+   business before the House, so it gets the height and the width. */
+.board-spine .spine{flex:1 1 auto;min-height:0;display:grid;gap:5px;
+  grid-template-columns:minmax(0,1fr) 300px;}
+.board-spine .spine > .panel{min-height:0;}
+.board-spine .spine > .panel > .pbody{overflow:auto;}
+.spine-side{display:flex;flex-direction:column;gap:5px;min-height:0;overflow:auto;}
+/* The controls live bottom-right, so only the SIDE column stops above
+   them. The order paper runs the full height: an empty table inside a
+   panel reads as room for more business, where bare grey reads as a
+   designer who ran out of things to put there. */
+.board-spine .spine-side{padding-bottom:330px;}
+.ordertab td{padding:3px 5px;}
+.ordertab td i{font-style:normal;color:var(--ink-soft);font-size:9px;}
