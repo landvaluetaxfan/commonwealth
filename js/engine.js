@@ -261,8 +261,14 @@ const Engine = (function () {
 
     if (st.roll) {
       (C.constituencies || []).forEach(k => {
-        if (st.roll[k.id]) return;
+        if (st.roll[k.id]) {
+          /* keep the flag in step with content, in case it was added later */
+          if (k.nonVoting) st.roll[k.id].nonVoting = true;
+          else delete st.roll[k.id].nonVoting;
+          return;
+        }
         st.roll[k.id] = { held: Object.assign({}, k.held), vacant: 0 };
+        if (k.nonVoting) st.roll[k.id].nonVoting = true;
         notes.seatsAdded.push(k.id);
       });
       Object.keys(st.roll).forEach(cid => {
@@ -321,14 +327,19 @@ const Engine = (function () {
     st.roll = {};
     (C.constituencies || []).forEach(k => {
       st.roll[k.id] = { held: Object.assign({}, k.held || {}), vacant: 0 };
+      if (k.nonVoting) st.roll[k.id].nonVoting = true;
     });
     syncRoll(st, C);
   }
 
-  /* Refresh the derived district counts. The only writer. */
+  /* Refresh the derived district counts. The only writer. A non-voting seat
+     (the capital territory) lives in the roll so it has a holder and shows
+     in the panels, but it is never counted: it is not part of the tier, the
+     chamber or a division. */
   function syncRoll(st, C) {
     Object.keys(st.parties).forEach(id => { st.parties[id].seats.district = 0; });
     Object.keys(st.roll).forEach(cid => {
+      if (st.roll[cid].nonVoting) return;
       const h = st.roll[cid].held;
       Object.keys(h).forEach(pid => {
         if (st.parties[pid]) st.parties[pid].seats.district += h[pid];
@@ -371,10 +382,11 @@ const Engine = (function () {
 
   function partyDistrict(st, id) {
     return Object.keys(st.roll || {}).reduce(
-      (n, cid) => n + (st.roll[cid].held[id] || 0), 0);
+      (n, cid) => st.roll[cid].nonVoting ? n : n + (st.roll[cid].held[id] || 0), 0);
   }
   function vacantSeats(st) {
-    return Object.keys(st.roll || {}).reduce((n, cid) => n + st.roll[cid].vacant, 0);
+    return Object.keys(st.roll || {}).reduce(
+      (n, cid) => st.roll[cid].nonVoting ? n : n + st.roll[cid].vacant, 0);
   }
   function seatsFor(st, cid) { return st.roll[cid] || { held: {}, vacant: 0 }; }
 
@@ -525,6 +537,7 @@ const Engine = (function () {
     const districtResults = {};
     Object.keys(st.roll).forEach(cid => {
       const k = C.constituencyById[cid];
+      if (!k || k.nonVoting) return;   /* the capital territory is not contested */
       const won = divisorAllocate(swungShares(st, C, k), k.magnitude,
                                   st.law.district_divisor);
       districtResults[cid] = won;
@@ -1063,7 +1076,9 @@ const Engine = (function () {
      --------------------------------------------------------- */
 
   function apportionment(C) {
-    const cons = C.constituencies || [];
+    /* The voting districts only. A non-voting seat has no apportionment: it
+       is not returned by an electorate in the sense the ratio measures. */
+    const cons = (C.constituencies || []).filter(c => !c.nonVoting);
     if (!cons.length) return {};
     const seats = cons.reduce((n, c) => n + c.magnitude, 0);
     const el = cons.reduce((n, c) => n + c.electorate, 0);
@@ -1076,7 +1091,8 @@ const Engine = (function () {
   /* The district tier must equal the sum of constituency magnitudes.
      Nothing checked this before and the two had drifted by 84 seats. */
   function tierCheck(st, C) {
-    const cons = (C.constituencies || []).reduce((n, c) => n + c.magnitude, 0);
+    const cons = (C.constituencies || []).filter(c => !c.nonVoting)
+                   .reduce((n, c) => n + c.magnitude, 0);
     const party = Object.values(st.parties).reduce((n, p) => n + (p.seats.district || 0), 0)
                 + vacantSeats(st);   /* an empty seat is still a seat in the tier */
     return { constituencies: cons, party: party, ok: cons === party };

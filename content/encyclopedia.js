@@ -121,7 +121,7 @@ const ENCYCLOPEDIA = {
         "together by metabolic dependency does not, because the thing being shared is not "+
         "something anyone chose. Asked what they are, most people name a station." },
       { h:"Composition", body:
-        "Twenty-nine stations across four altitude bands, plus five external "+
+        "Thirty stations across four altitude bands, plus five external "+
         "constituencies. Anselm Ring alone holds more people than the seven smallest combined, a "+
         "disparity the apportionment formula corrects only partly and deliberately." },
       { h:"What holds it together", body:

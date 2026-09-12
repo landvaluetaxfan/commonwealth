@@ -71,21 +71,26 @@ console.log("  save/load round-trip:", rt.sitting === z.sitting && rt.log.length
 console.log("\nTIER RECONCILIATION:");
 (function(){
   const K = CONTENT.constituencies || [];
-  const consSeats = K.reduce((n,c)=>n+c.magnitude,0);
+  /* A non-voting seat (the capital territory) returns a member but is not
+     part of the district tier: it is excluded from every count here. */
+  const voting = K.filter(k => !k.nonVoting);
+  const consSeats = voting.reduce((n,c)=>n+c.magnitude,0);
   const partyDist = CONTENT.parties.reduce((n,p)=>n+p.seats.district,0);
   const stnSeats  = CONTENT.stations.reduce((n,s)=>n+s.seats,0);
   let bad = 0;
   const ok = (l,a,b)=>{ const g=a===b; if(!g)bad++;
     console.log((g?"  ok  ":"  FAIL")+" "+l+" = "+a+(g?"":" (want "+b+")")); };
-  /* 140 single-member seats. Every district returns one member by first
-     past the post; the multi-member constituencies they were subdivided
-     from survive as each seat's `parent`. */
-  ok("constituencies", K.length, 140);
+  /* 140 single-member voting seats, plus the capital's non-voting delegate.
+     Every district returns one member by first past the post; the
+     multi-member constituencies they were subdivided from survive as each
+     seat's `parent`. */
+  ok("constituencies", K.length, 141);
+  ok("voting constituencies", voting.length, 140);
   ok("every district is single-member",
      K.filter(k => k.magnitude !== 1).length, 0);
-  ok("constituency seats", consSeats, 140);
+  ok("voting constituency seats", consSeats, 140);
   ok("party district seats", partyDist, 140);
-  ok("station seats", stnSeats, 140);
+  ok("station seats", stnSeats, 141);
   CONTENT.stations.forEach(s=>{
     const m = K.filter(k=>k.station===s.id).reduce((n,k)=>n+k.magnitude,0);
     if (m !== s.seats) { bad++; console.log("  FAIL "+s.id+": "+s.seats+" seats vs "+m+" from constituencies"); }
@@ -238,7 +243,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        the 140 must sum back to it exactly. They were uniform at ~28,040 once,
        which made every apportionment ratio ~1.04 and quietly deleted the
        malapportionment that bible 4.7 and 4.10 are about. */
-    const districtRoll = CONTENT.constituencies.reduce((n, k) => n + k.electorate, 0);
+    const districtRoll = CONTENT.constituencies.filter(k => !k.nonVoting)
+                           .reduce((n, k) => n + k.electorate, 0);
     ok("district electorates sum to the adult roll", districtRoll === 4149803,
        districtRoll + " vs 4149803");
 

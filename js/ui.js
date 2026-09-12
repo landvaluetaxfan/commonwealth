@@ -1348,16 +1348,17 @@ const UI = (function () {
         /* A station returning one constituency returns the whole station, so
            the seat is at-large. The tag says so without the name doing it. */
         const whole = k.at_large ? ` <i class="atlarge">At-large</i>` : "";
+        const nv = k.nonVoting ? ` <i class="nonvote">Non-voting</i>` : "";
         const open = k.id === openId;
         const row = `<tr data-cons="${k.id}"${k.id === selCons ? ' class="sel"' : ""}` +
           ` style="cursor:pointer"><td><i class="caret${open ? " open" : ""}"></i>` +
-          `<b>${esc(k.name)}</b>${badge}${whole}` +
+          `<b>${esc(k.name)}</b>${badge}${whole}${nv}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
             : esc(ch ? bare(ch.name) : (k.member ? bare(k.member) : "\u2014"))}` +
             `${!r.vacant && ch && ch.role ? ` <span class="det">\u00b7 ${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
-          `<td class="n">${ap[k.id].toFixed(2)}</td>` +
+          `<td class="n">${ap[k.id] != null ? ap[k.id].toFixed(2) : "&mdash;"}</td>` +
           `<td class="held">${held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
         return row + (open
           ? `<tr class="consdet"><td colspan="4">${constituencyDetail(k)}</td></tr>` : "");
@@ -1375,9 +1376,11 @@ const UI = (function () {
     const ap = Engine.apportionment(C);
     return `<div class="ostats">
         <span><b>${k.electorate.toLocaleString()}</b><i>electors</i></span>
-        <span><b>${ap[k.id].toFixed(2)}</b><i>apportionment ratio</i></span>
-        <span><b>${k.magnitude}</b><i>${k.magnitude === 1 ? "seat" : "seats"}</i></span>
+        <span><b>${ap[k.id] != null ? ap[k.id].toFixed(2) : "&mdash;"}</b><i>apportionment ratio</i></span>
+        <span><b>${k.nonVoting ? "0" : k.magnitude}</b><i>voting ${k.magnitude === 1 ? "seat" : "seats"}</i></span>
       </div>` +
+      (k.nonVoting ? `<div class="rulehead">Status</div>` +
+        `<div class="note">A territory delegate: may speak, may not vote. The seat is outside the district tier, the chamber arithmetic and every division.</div>` : "") +
       (k.description ? `<div class="rulehead">Description</div>` +
         `<div class="note">${esc(k.description)}</div>` : "") +
       (k.tendency ? `<div class="rulehead">Voting and tendencies</div>` +

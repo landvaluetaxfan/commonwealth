@@ -1117,4 +1117,19 @@ const CONSTITUENCIES = [
     at_large:true,
     parent:"l5_refuge",
     material_interest:["transit_windows"] },
+
+  /* THE CAPITAL TERRITORY. Non-voting: it returns a delegate who may speak
+     and may not vote, so the seat is excluded from the district tier, from
+     the chamber arithmetic and from every division. `nonVoting` is the flag
+     the engine reads; see js/engine.js. */
+  { id:"capital_territory", name:"Capital Territory", station:"winter_garden", band:"ring",
+    magnitude:1, electorate:49200,
+    member:"Rowan Charteris",
+    held:{ind:1},
+    at_large:true,
+    nonVoting:true,
+    parent:"winter_garden",
+    material_interest:["charter_interpretation", "attestation_enforcement"],
+    description:"The capital's own district: the congress hill, the ministries along the river, the sealed legations, and the keepers of the garden between them. Its economy is government, and its residents are the people who run it.",
+    tendency:"Non-voting by construction — the territory returns a delegate who may speak and may not vote. Its politics are the politics of the capital: whichever way the union leans, the Garden is where it is argued out, and the delegate is chosen to be nobody's." },
 ];
