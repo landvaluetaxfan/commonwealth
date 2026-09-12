@@ -240,10 +240,12 @@ td.n,th.n{text-align:right;font-family:var(--f-data);font-size:10px;}
 /* ---------- selection, and the three things it used to mean ----------
 
    .sel MEANS ONE THING: this row is the one you picked, and clicking a row
-   in this table is what picked it. Three tables qualify - #gov-bills,
-   #orbit-table and #pp-list - and the rule is global because .sel appears
-   nowhere else. It is a solid inverted block: unmistakable at a glance, and
-   impossible to confuse with the 1px dotted rectangle that means focus.
+   in this table is what picked it. Four tables qualify - #gov-bills,
+   #orbit-table, #pp-list and #cons-table - and the rule is global because .sel
+   appears nowhere else. It is a solid inverted block: unmistakable at a
+   glance, and impossible to confuse with the 1px dotted rectangle that means
+   focus. The seat list overrides it below with a gold tint and a gutter,
+   because its rows carry member text and office badges that the bar swallows.
 
    NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection you
    are not sure you made. The click lands, the block is there.
@@ -262,6 +264,14 @@ tr.sel td .flag{color:var(--bar-txt);border-color:var(--chrome-dk);}
 tr.sel td .flag.good{color:#9fc48f;border-color:#9fc48f;}
 tr.sel td .flag.bad{color:#e0907f;border-color:#e0907f;}
 tr.sel td .hn,tr.sel td .det{color:var(--chrome);}
+
+/* THE SEAT LIST SELECTS TOO, and it takes a different form: a gold tint and a
+   gutter rather than the inverted block. Its rows carry a member block and
+   office badges chosen against the paper field, which the bar swallows — the
+   one list that must keep them legible gets its own mark. Different form as
+   well as hue, so the two selections never read as the same one. */
+#cons-table tr.sel td{background:#f2e4b3;color:var(--ink);border-color:#d8c07a;}
+#cons-table tr.sel td:first-child{box-shadow:inset 3px 0 0 #c9a227;}
 
 /* A GUTTER: something is wrong with this row. #gov-currents, loyalty under 20. */
 tr.warn td{background:#efe0da;}
