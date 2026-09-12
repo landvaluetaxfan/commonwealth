@@ -21,8 +21,9 @@ const UI = (function () {
   const mark = id => sw(pc(id));
   const logoMark = (id, cls) => {
     const p = C.partyById[id];
-    if (!p || !p.logo) return sw(pc(id));
-    return `<img class="dith plogo${cls ? " " + cls : ""}" src="img/logos/${p.logo}" alt=""` +
+    const file = p && (p.wordmark || p.logo);
+    if (!file) return sw(pc(id));
+    return `<img class="dith plogo${cls ? " " + cls : ""}" src="img/logos/${file}" alt=""` +
       ` onerror="this.replaceWith(Object.assign(document.createElement('i'),` +
       `{className:'swatch',style:'background:${p.colour}'}))">`;
   };

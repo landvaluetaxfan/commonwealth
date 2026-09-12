@@ -683,8 +683,8 @@ img.dith{
   display:inline-block;vertical-align:-1px;margin-right:4px;
   border:1px solid rgba(0,0,0,.45);
 }
-/* The constituency dossier has room for the mark at reading size. */
-.plogo.lg{height:26px;max-width:52px;vertical-align:middle;margin-right:6px;}
+/* The constituency dossier has room for the wordmark at reading size. */
+.plogo.lg{height:24px;max-width:80px;vertical-align:middle;margin-right:6px;}
 
 /* ---------- orbital chart ---------- */
 #orbit-chart svg{display:block;width:100%;height:auto;}
