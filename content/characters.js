@@ -141,7 +141,7 @@ const CHARACTERS = [
   { id:"wheeler", name:"Marion Wheeler MP", role:"Leader, Single Tax Party",
     party:"geo", relationship:57, office:"leader",
     note:"Volume tax, land value tax, nothing else. Correct. List tier only." },
-  { id:"lindegaard", name:"Aalbord Lindegaard MP", role:"Leader, Common Kind",
+  { id:"lindegaard", name:"Aalborg Lindegaard MP", role:"Leader, Common Kind",
     party:"upl", relationship:50, office:"leader",
     note:"Two seats, permanently kingmaker-adjacent. Price is always the same thing." },
 
