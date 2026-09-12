@@ -113,6 +113,7 @@ const Shell = (function () {
     return `<div class="menu-stage">
       <div class="menu-plate">
         <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
+        <div class="menu-tagline">A Space Story About Politics and Governance.</div>
         <div class="menu-body">${inner}</div>
         ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
           survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}

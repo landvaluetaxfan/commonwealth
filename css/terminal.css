@@ -850,6 +850,8 @@ body.menu-on{background:#0b1826;}
 .menu-title .w{display:block;font-size:66px;letter-spacing:.06em;}
 .menu-title .a{font-size:38px;letter-spacing:0;padding-right:6px;}
 .menu-title .m{font-size:66px;letter-spacing:.04em;}
+.menu-tagline{font-family:var(--f-ui);font-size:15px;letter-spacing:.05em;
+  color:#dfe2d6;margin-top:18px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
 .menu-body{margin-top:46px;}
 .menu-sub{font-family:var(--f-ui);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
   color:#c9ccc2;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
@@ -908,6 +910,7 @@ body.no-motion *{animation:none !important;}
 @media (max-width:700px){
   .menu-plate{padding:44px 20px 40px 24px;}
   .menu-title .w,.menu-title .m{font-size:44px;}
+  .menu-tagline{font-size:13px;}
   .mbtn{width:100%;max-width:306px;}
   .slot{flex-wrap:wrap;}
 }
