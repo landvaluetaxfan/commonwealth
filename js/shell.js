@@ -114,9 +114,12 @@ const Shell = (function () {
       <div class="menu-plate">
         <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
         <div class="menu-tagline">A Space Story About Politics and Governance.</div>
-        <div class="menu-body">${inner}</div>
-        ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
-          survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
+      </div>
+      <div class="menu-caption">
+        <b>International Earth-Orbital Elevator (IEOE)</b>
+        Your gateway to the Circumterrestrial Commonwealth. The Elevator connects Earth directly
+        to the Commonwealth's orbital hub at Anchorage, moving some 16 million tonnes of cargo and
+        4.2 million passengers a year, and handling approximately $420 billion in orbital trade.
       </div>
     </div>
     <div class="menu-footer">
@@ -132,6 +135,9 @@ const Shell = (function () {
         coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
         running.</p>
       </div>
+      <div class="menu-body">${inner}</div>
+      ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
+        survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
       <img class="mf-gov" src="img/menu/gov.png"
         alt="Government of the Circumterrestrial Commonwealth">
     </div>`;
@@ -206,14 +212,18 @@ const Shell = (function () {
   function root() {
     const last = latest();
     const any = !!last;
-    return `<div class="menu-btns">
-      ${last ? `<button class="mbtn cont" data-cont="${last.n}">Continue
-          <i>${esc(last.name)} &middot; sitting ${last.sitting} &middot; chapter ${last.chapter}${
-            last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
-      <button class="mbtn" data-go="new">New Government</button>
-      <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
-      <button class="mbtn" data-go="options">Options</button>
-      <button class="mbtn" data-go="credits">Credits</button>
+    return `<div class="menu-btns two">
+      <div class="mbcol">
+        ${last ? `<button class="mbtn cont" data-cont="${last.n}">Continue
+            <i>${esc(last.name)} &middot; sitting ${last.sitting} &middot; chapter ${last.chapter}${
+              last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
+        <button class="mbtn" data-go="new">New Government</button>
+        <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
+      </div>
+      <div class="mbcol">
+        <button class="mbtn" data-go="options">Options</button>
+        <button class="mbtn" data-go="credits">Credits</button>
+      </div>
     </div>`;
   }
 

@@ -817,99 +817,104 @@ img.dith{display:block;}
 .opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
 
 /* --- the main menu ---
-   A full-bleed photographic plate with a left scrim, so the title and the
-   buttons read over any image, and a printed footer band beneath it. The
-   ground is the dark the plate is graded to, so a missing image is a dark
-   menu rather than a broken one. The image is set by js/shell.js, which
-   knows the single-file asset table. */
+   A photographic plate on top and a printed band beneath it. The title and an
+   in-world caption sit over the plate; the band carries the blurb, the
+   buttons and the government's mark on paper stock, so nothing depends on
+   what the photograph is doing behind it. The image is set by js/shell.js,
+   which knows the single-file asset table. */
 #menu{display:none;position:fixed;inset:0;z-index:100;overflow:hidden;
   flex-direction:column;background:#0b1826;}
 #menu.on{display:flex;}
 body.menu-on{background:#0b1826;}
-.menu-stage{position:relative;flex:1 1 auto;min-height:0;overflow:auto;
-  /* anchored to the foot, so the cloud-sea at the plate's bottom stays in
-     frame however short the band leaves the stage */
+
+/* the plate: the photograph, anchored to its foot so the cloud-sea stays */
+.menu-stage{position:relative;flex:1 1 auto;min-height:34vh;overflow:hidden;
   background-color:#0b1826;
   background-position:center bottom;
   background-size:cover;
   background-repeat:no-repeat;
-  /* a blue-hour stand-in until the photograph loads */
   background-image:linear-gradient(180deg,
     #08121d 0%, #10283c 42%, #1c3a54 68%, #0b1826 100%);}
-/* the scrim: darkest at the left, clearing to the right */
+/* a scrim only where the title sits, so white type reads over bright sky */
 .menu-stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:
-    linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
-.menu-stage::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
-  position:relative;z-index:2;display:block;background:rgba(28,31,25,.72);color:var(--bar-txt);
-  font-family:var(--f-ui);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
-  padding:4px 10px;border-bottom:1px solid rgba(233,234,226,.14);}
-.menu-plate{position:relative;z-index:2;max-width:620px;padding:70px 44px 96px 56px;}
+    radial-gradient(120% 90% at 0% 0%, rgba(10,12,10,.62) 0%, rgba(10,12,10,.28) 40%, rgba(10,12,10,0) 70%);}
+.menu-plate{position:relative;z-index:2;max-width:620px;padding:38px 44px 0 56px;}
 .menu-title{font-family:var(--f-disp);color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 2px 24px rgba(0,0,0,.72);}
-.menu-title .w{display:block;font-size:66px;letter-spacing:.06em;}
-.menu-title .a{font-size:38px;letter-spacing:0;padding-right:6px;}
-.menu-title .m{font-size:66px;letter-spacing:.04em;}
-.menu-tagline{font-family:var(--f-ui);font-size:15px;letter-spacing:.05em;
-  color:#dfe2d6;margin-top:18px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
-.menu-body{margin-top:46px;}
+.menu-title .w{display:block;font-size:56px;letter-spacing:.06em;}
+.menu-title .a{font-size:33px;letter-spacing:0;padding-right:6px;}
+.menu-title .m{font-size:56px;letter-spacing:.04em;}
+.menu-tagline{font-family:var(--f-ui);font-size:14px;letter-spacing:.05em;
+  color:#dfe2d6;margin-top:14px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+/* the plate caption, over the darker cloud on the right */
+.menu-caption{position:absolute;z-index:2;right:48px;top:47%;width:330px;
+  font-family:var(--f-ui);font-size:11.5px;line-height:1.5;color:#eef0e8;
+  text-shadow:0 1px 6px rgba(0,0,0,.8);}
+.menu-caption b{display:block;font-size:12px;margin-bottom:4px;}
+
+/* the printed band, on the same stock as an instrument */
+.menu-footer{position:relative;flex:0 1 auto;overflow:auto;max-height:62vh;
+  background:#f1f0ea;color:#1d1d1b;
+  font-family:"Times New Roman",Times,Georgia,serif;padding:26px 56px 34px;}
+.menu-footer .mf-text{max-width:1080px;}
+.menu-footer h1{margin:0 0 10px;font-size:21px;font-weight:400;}
+.menu-footer p{margin:0;font-size:13px;line-height:1.45;}
+.menu-body{margin-top:22px;}
+/* the government's own mark, bottom-right of the printed band */
+.menu-footer .mf-gov{position:absolute;right:56px;bottom:30px;width:300px;height:auto;opacity:.92;}
+
+/* the band's ink */
 .menu-sub{font-family:var(--f-ui);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
-  color:#c9ccc2;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
+  color:#55584f;margin-bottom:10px;}
+
+/* buttons: solid and bevelled like the terminal's chrome, on paper */
 .menu-btns{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
 .menu-btns.row{flex-direction:row;margin-top:16px;}
-/* glass buttons, bevelled like the terminal's chrome: light on the top and
-   left, dark on the bottom and right, so the plate shows through but they
-   still read as raised metal. All one width; Continue is no longer wider. */
+.menu-btns.two{flex-direction:row;gap:14px;align-items:flex-start;}
+.mbcol{display:flex;flex-direction:column;gap:10px;}
 .mbtn{font-family:var(--f-ui);font-size:19px;color:#f2f2ec;text-align:left;
-  background:rgba(20,23,18,.52);padding:9px 16px;width:306px;
-  border-top:1px solid rgba(242,242,236,.55);
-  border-left:1px solid rgba(242,242,236,.4);
-  border-bottom:1px solid rgba(8,10,8,.72);
-  border-right:1px solid rgba(8,10,8,.72);
-  cursor:pointer;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
-.mbtn:hover{background:rgba(60,64,56,.66);
-  border-top-color:rgba(255,255,255,.72);border-left-color:rgba(255,255,255,.55);}
-.mbtn:active{background:rgba(90,95,84,.7);
-  border-top-color:rgba(8,10,8,.72);border-left-color:rgba(8,10,8,.72);
-  border-bottom-color:rgba(242,242,236,.5);border-right-color:rgba(242,242,236,.5);}
+  background:#2b2e28;padding:9px 16px;width:306px;
+  border-top:1px solid #5c6055;
+  border-left:1px solid #4a4e45;
+  border-bottom:1px solid #101208;
+  border-right:1px solid #101208;
+  cursor:pointer;}
+.mbtn:hover{background:#3a3e35;}
+.mbtn:active{background:#20231d;
+  border-top-color:#101208;border-left-color:#101208;
+  border-bottom-color:#5c6055;border-right-color:#5c6055;}
 .mbtn.off,.mbtn:disabled{opacity:.4;cursor:default;}
-.mbtn.off:hover,.mbtn:disabled:hover{background:rgba(20,23,18,.52);border-color:rgba(242,242,236,.34);}
+.mbtn.off:hover,.mbtn:disabled:hover{background:#2b2e28;}
 .mbtn.sm{font-size:12.5px;width:auto;padding:4px 11px;}
 .mbtn.wide{width:100%;margin-top:5px;}
-.mbtn.danger{color:#e9a08f;border-color:rgba(224,144,127,.6);}
+.mbtn.danger{color:#f0b3a2;border-color:#7a3f30;}
+.mbtn.cont i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
 
+/* slot list, on paper */
 .slots{display:flex;flex-direction:column;gap:7px;max-width:620px;}
-.slot{display:flex;align-items:center;gap:12px;background:rgba(20,23,18,.5);
-  border:1px solid rgba(233,234,226,.2);padding:9px 12px;
-  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
-.slot.empty{background:rgba(20,23,18,.28);border-style:dashed;}
-.sl-n{font-family:var(--f-data);font-size:17px;color:#aeb2a6;width:18px;flex:0 0 auto;}
+.slot{display:flex;align-items:center;gap:12px;background:#e6e5dd;
+  border:1px solid #c7c6bc;padding:9px 12px;}
+.slot.empty{background:#ecebe4;border-style:dashed;}
+.sl-n{font-family:var(--f-data);font-size:17px;color:#6f7268;width:18px;flex:0 0 auto;}
 .sl-b{flex:1 1 auto;min-width:0;}
-.sl-name{font-family:var(--f-ui);font-size:15px;color:#f2f2ec;}
-.slot.empty .sl-name{color:#b9bcb2;}
-.sl-meta{font-family:var(--f-ui);font-size:11.5px;color:#b9bcb2;letter-spacing:.02em;}
+.sl-name{font-family:var(--f-ui);font-size:15px;color:#1d1d1b;}
+.slot.empty .sl-name{color:#6f7268;}
+.sl-meta{font-family:var(--f-ui);font-size:11.5px;color:#6f7268;letter-spacing:.02em;}
 .sl-a{display:flex;gap:6px;flex:0 0 auto;}
-.menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;color:#e6e7de;
-  text-shadow:0 1px 8px rgba(0,0,0,.5);}
+.menu-text{max-width:640px;font-family:var(--f-doc);font-size:14px;line-height:1.55;color:#1d1d1b;}
 .menu-text p{margin:0 0 10px;}
-.menu-text .dim{color:#b9bcb2;font-size:13.5px;}
-.menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
-  color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
-
-/* the printed band under the plate, on the same stock as an instrument */
-.menu-footer{flex:0 0 auto;display:flex;align-items:flex-end;gap:40px;
-  justify-content:space-between;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:24px 56px 20px;}
-.menu-footer .mf-text{max-width:1080px;}
-.menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
-.menu-footer p{margin:0;font-size:13px;line-height:1.45;}
-/* the government's own mark, bottom-right of the printed band */
-.menu-footer .mf-gov{flex:0 0 auto;width:300px;height:auto;opacity:.92;}
+.menu-text .dim{color:#55584f;font-size:13.5px;}
+.menu-warn{margin-top:20px;max-width:600px;font-family:var(--f-ui);font-size:12px;
+  color:#8a3a28;border-left:2px solid #8a3a28;padding-left:9px;line-height:1.45;}
 @media (max-width:700px){
-  .menu-footer{flex-direction:column;align-items:flex-start;gap:18px;padding:16px 20px 20px;}
+  .menu-footer{padding:18px 20px 24px;}
   .menu-footer h1{font-size:18px;}
   .menu-footer p{font-size:12px;}
-  .menu-footer .mf-gov{width:220px;}
+  .menu-footer .mf-gov{position:static;display:block;width:220px;margin-top:16px;}
+  .menu-btns.two{flex-direction:column;}
+  .menu-caption{display:none;}
 }
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
@@ -917,9 +922,9 @@ body.no-motion .sig-draw #sigpath,body.no-motion .sig-draw .sigpath{transition:n
 body.no-motion *{animation:none !important;}
 
 @media (max-width:700px){
-  .menu-plate{padding:44px 20px 40px 24px;}
-  .menu-title .w,.menu-title .m{font-size:44px;}
-  .menu-tagline{font-size:13px;}
+  .menu-plate{padding:24px 20px 0 24px;}
+  .menu-title .w,.menu-title .m{font-size:40px;}
+  .menu-tagline{font-size:12px;}
   .mbtn{width:100%;max-width:306px;}
   .slot{flex-wrap:wrap;}
 }
@@ -1264,11 +1269,8 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .art img{display:block;width:100%;height:100%;object-fit:contain;
   image-rendering:pixelated;}
 
-.mbtn.cont i{display:block;font-style:normal;font-family:var(--f-data);
-  font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
-/* the inline options panel sits over the photograph in the main menu, so it
-   carries its own dark ground and light ink. The popover in the bar keeps the
-   chrome, where these overrides do not apply. */
+/* the inline options panel is a dark instrument panel on the printed band;
+   the popover in the bar keeps the chrome, where these overrides do not apply. */
 .optpanel-inline{max-height:46vh;overflow:auto;padding:14px 16px;
   background:rgba(11,15,20,.85);
   border:1px solid rgba(233,234,226,.16);
