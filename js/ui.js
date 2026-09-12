@@ -1443,6 +1443,7 @@ const UI = (function () {
       return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
         `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
         (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
+        (f.description ? f.description + " " : "") +
         (f.note || "");
     };
     $("#func-table").innerHTML =
