@@ -821,8 +821,9 @@ const Editor = (function () {
     IMG.canvas.toBlob(b => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(b); a.download = name; a.click();
-      alert("Saved " + name + " to your downloads.\n\nMove it into " +
-            IMG_KINDS[IMG.kind].dir + "/ and reference it by filename.");
+      Dialog.alert("Saved " + name + " to your downloads.\n\nMove it into " +
+            IMG_KINDS[IMG.kind].dir + "/ and reference it by filename.",
+            { title: "Image saved" });
     });
   }
 
@@ -831,12 +832,21 @@ const Editor = (function () {
      ========================================================= */
 
   function rollName(entity) {
-    if (typeof Names === "undefined") { alert("content/names.js is not loaded."); return; }
+    if (typeof Names === "undefined") {
+      Dialog.alert("content/names.js is not loaded.", { title: "Names missing" });
+      return;
+    }
     snapshot("roll name");
     if (sel.tab === "characters") {
-      const earth = confirm("Earth-born?\n\nOK for an unblended family name — which everyone notices.\nCancel for an orbital-born blend.");
-      entity.name = Names.person({ earthborn: earth }) + " MP";
-    } else if (sel.tab === "stations") {
+      Dialog.confirm("Earth-born?\n\nOK for an unblended family name — which everyone notices.\nCancel for an orbital-born blend.",
+        { title: "Roll a name", yes: "Earth-born", no: "Orbital-born" },
+        earth => {
+          entity.name = Names.person({ earthborn: earth }) + " MP";
+          touch(); draw();
+        });
+      return;
+    }
+    if (sel.tab === "stations") {
       entity.name = Names.station();
     } else if (sel.tab === "bills") {
       entity.title = Names.bill();
@@ -866,23 +876,25 @@ const Editor = (function () {
       ? `\n\nNOT changed — these merely share the name:\n` +
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
-    const to = prompt(
+    Dialog.prompt(
       `Rename "${from}" to what?\n\n` +
       `${hits.length} reference${hits.length === 1 ? "" : "s"} will be updated:\n${preview}${softNote}`,
-      from);
-    if (!to || to === from) return;
-    const clean = to.trim();
-    if (!/^[a-z0-9_]+$/.test(clean) && kind !== "glossary") {
-      alert("Ids should be lowercase letters, numbers and underscores.");
-      return;
-    }
-    const taken = arrOf(kind).some(o => o !== entity && idOf(kind, o) === clean);
-    if (taken) { alert(`"${clean}" is already taken.`); return; }
-    snapshot("rename");
-    const n = Refs.rename(M, kind, from, clean, entity);
-    sel.id = clean;
-    touch(); draw();
-    setTimeout(() => alert(`Renamed. ${n} reference${n === 1 ? "" : "s"} updated.`), 20);
+      { title: `Rename "${from}"`, value: from, yes: "Rename" },
+      to => {
+        if (!to || to === from) return;
+        const clean = to.trim();
+        if (!/^[a-z0-9_]+$/.test(clean) && kind !== "glossary") {
+          Dialog.alert("Ids should be lowercase letters, numbers and underscores.", { title: "Invalid id" });
+          return;
+        }
+        const taken = arrOf(kind).some(o => o !== entity && idOf(kind, o) === clean);
+        if (taken) { Dialog.alert(`"${clean}" is already taken.`, { title: "Id taken" }); return; }
+        snapshot("rename");
+        const n = Refs.rename(M, kind, from, clean, entity);
+        sel.id = clean;
+        touch(); draw();
+        Dialog.alert(`Renamed. ${n} reference${n === 1 ? "" : "s"} updated.`, { title: "Renamed" });
+      });
   }
 
   /* =========================================================
@@ -1345,11 +1357,16 @@ const Editor = (function () {
     const d = loadDraft();
     if (d && d.model) {
       const when = new Date(d.at).toLocaleString();
-      if (confirm("A draft from " + when + " was found.\n\nRestore it?\n\n" +
-                  "Cancel loads the content files on disk instead.")) {
-        M = d.model;
-        stampDraft("restored draft from " + when);
-      } else { clearDraft(); }
+      Dialog.confirm("A draft from " + when + " was found.\n\nRestore it?\n\n" +
+                     "Cancel loads the content files on disk instead.",
+        { title: "Draft found", yes: "Restore", no: "Discard" },
+        restore => {
+          if (restore) {
+            M = d.model;
+            stampDraft("restored draft from " + when);
+          } else { clearDraft(); }
+          draw();
+        });
     }
     window.addEventListener("beforeunload", e => {
       if (!dirty) return;
@@ -1393,13 +1410,16 @@ const Editor = (function () {
       if (act === "eff-add") (cur.choices[+b.dataset.ci].effects ||= []).push({ scalar: { public_standing: 0 } });
       if (act === "eff-del") cur.choices[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
       if (act === "cond-add") {
-        const k = prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"));
-        if (k && SCHEMA.conditions[k]) {
-          cur.when ||= {};
-          const d = SCHEMA.conditions[k];
-          cur.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
-                      : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
-        }
+        Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),
+          { title: "Add condition" }, k => {
+            if (k && SCHEMA.conditions[k]) {
+              cur.when ||= {};
+              const d = SCHEMA.conditions[k];
+              cur.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
+                          : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
+            }
+            draw();
+          });
       }
       if (act === "cond-del") delete cur.when[b.dataset.c];
       if (act === "sec-add") (cur.sections ||= []).push({ h: "", body: "" });
@@ -1411,7 +1431,7 @@ const Editor = (function () {
       if (act === "roll-name") rollName(cur);
       if (act === "arch-roll" || act === "arch-reroll") {
         const a = document.querySelector('#ed-form [data-f="archetype"]').value;
-        if (!a) { alert("Pick an archetype first."); }
+        if (!a) { Dialog.alert("Pick an archetype first.", { title: "No archetype" }); }
         else {
           if (act === "arch-reroll") { cur.dependency = ""; cur.grievance = ""; }
           rollStation(a, cur);
@@ -1434,19 +1454,23 @@ const Editor = (function () {
       arrOf(sel.tab).push(o); sel.id = idOf(sel.tab, o); draw();
     });
     document.getElementById("ed-del").addEventListener("click", () => {
-      if (!confirm("Delete this entry?")) return;
-      snapshot("delete");
-      if (sel.tab === "concordance")
-        M.encyclopedia.articles = M.encyclopedia.articles.filter(o => o.id !== sel.id);
-      else M[KIND[sel.tab].arr] = M[KIND[sel.tab].arr].filter(o => idOf(sel.tab, o) !== sel.id);
-      sel.id = null; draw();
+      Dialog.confirm("Delete this entry?",
+        { title: "Delete entry", yes: "Delete", danger: true }, ok => {
+          if (!ok) return;
+          snapshot("delete");
+          if (sel.tab === "concordance")
+            M.encyclopedia.articles = M.encyclopedia.articles.filter(o => o.id !== sel.id);
+          else M[KIND[sel.tab].arr] = M[KIND[sel.tab].arr].filter(o => idOf(sel.tab, o) !== sel.id);
+          sel.id = null; draw();
+        });
     });
     document.getElementById("ed-undo").addEventListener("click", undo);
     document.getElementById("ed-filter").addEventListener("input", draw);
     document.getElementById("ed-export").addEventListener("click", exportAll);
     document.getElementById("ed-discard").addEventListener("click", () => {
-      if (!confirm("Discard the draft and reload from the content files on disk?")) return;
-      clearDraft(); location.reload();
+      Dialog.confirm("Discard the draft and reload from the content files on disk?",
+        { title: "Discard draft", yes: "Discard", danger: true },
+        ok => { if (ok) { clearDraft(); location.reload(); } });
     });
     document.getElementById("ed-exportone").addEventListener("click", exportOne);
     document.getElementById("ed-previewbtn").addEventListener("click", preview);

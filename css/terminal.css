@@ -1041,6 +1041,30 @@ body.busy, body.busy *{cursor:progress;}
 .wait-verdict.ok{color:var(--ok);}
 .wait-verdict.bad{color:var(--alert);}
 
+/* ---------- the terminal asking a question ----------
+
+   js/dialog.js. The browser's alert/confirm/prompt are chrome the
+   fiction cannot reach; these are the same three things in the
+   terminal's own panel and button furniture. One step darker than the
+   thinking dialog, and above it, because a question interrupts work
+   rather than being part of it. */
+.dlg-back{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(27,29,25,.55);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.dlg-dlg{width:min(430px,100%);max-height:88vh;overflow:auto;}
+.dlg-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
+.dlg-msg{font-size:12.5px;line-height:1.5;margin:2px 0 11px;}
+.dlg-in{
+  width:100%;box-sizing:border-box;font-family:var(--f-ui);font-size:13px;color:var(--ink);
+  background:var(--field);padding:4px 6px;margin-bottom:11px;
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}
+.dlg-btns{display:flex;gap:6px;justify-content:flex-end;}
+.dlg-btns .mbtn{width:auto;max-width:none;}
+
 /* BOTH MAJORITIES ON SCREEN THROUGHOUT (bible 4.6.7). The functional
    column is never collapsed away, even on a simple-majority bill, so the
    second test is a thing the player knows exists before it kills a bill. */

@@ -441,7 +441,7 @@ const UI = (function () {
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = Engine.makeInstrument(st, C, b.dataset.make);
-      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); alert(r.reason); }
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(320);
         setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
@@ -451,15 +451,20 @@ const UI = (function () {
     }));
     $("#gov-si").querySelectorAll("[data-pray]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.prayerForecast(st, C, b.dataset.pray);
-      if (!confirm(`Pray against this order?\n\nForecast ${f.aye} of ${f.total}, needs ${f.need}.\n` +
+      Dialog.confirm(
+        `Forecast ${f.aye} of ${f.total}, needs ${f.need}.\n\n` +
         (f.carries ? "The prayer would carry and the order would be annulled." :
-                     "The prayer would be defeated and the order would stand."))) return;
-      Engine.prayAgainst(st, C, b.dataset.pray);
-      cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
-      setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
-                (f.carries ? " carried \u2014 the order is annulled"
-                           : " defeated \u2014 the order stands"), "transient");
-      drawAll(); afterAction();
+                     "The prayer would be defeated and the order would stand."),
+        { title: "Pray against this order?", yes: "Pray", danger: true },
+        ok => {
+          if (!ok) return;
+          Engine.prayAgainst(st, C, b.dataset.pray);
+          cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
+          setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
+                    (f.carries ? " carried \u2014 the order is annulled"
+                               : " defeated \u2014 the order stands"), "transient");
+          drawAll(); afterAction();
+        });
     }));
 
     /* ---- cabinet ---- */

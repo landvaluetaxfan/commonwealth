@@ -45,7 +45,7 @@ w.URL.createObjectURL = () => "blob:x"; w.HTMLAnchorElement.prototype.click = fu
 const FILES = ["content/setup.js","content/parties.js","content/stations.js","content/constituencies.js","content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js","content/labour.js",
   "content/characters.js","content/bills.js","content/glossary.js","content/archetypes.js","content/names.js",
   "content/events.js","content/encyclopedia.js","content/index.js",
-  "js/engine.js","js/schema.js","js/refs.js","js/coverage.js","js/serialise.js","js/editor.js"];
+  "js/engine.js","js/schema.js","js/refs.js","js/coverage.js","js/serialise.js","js/dialog.js","js/editor.js"];
 
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -54,6 +54,14 @@ FILES.forEach(f => {
   s.textContent = fs.readFileSync(p, "utf8");
   w.document.body.appendChild(s);
 });
+
+/* The editor asks through Dialog's callbacks now (js/dialog.js). Answer
+   them the moment they open, the way the old window stubs did. */
+w.eval(`
+  Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(true); };
+  Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)(null); };
+  Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
+`);
 
 let fail = 0;
 const ok = (label, cond, extra) => {
