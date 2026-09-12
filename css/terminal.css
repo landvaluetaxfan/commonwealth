@@ -1117,11 +1117,14 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   width:100%;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
   border-collapse:collapse;font-family:var(--f-data);font-size:9px;line-height:1.5;
 }
-#tipcard table.tipmem td{padding:0;vertical-align:top;}
-#tipcard table.tipmem td:first-child{white-space:nowrap;color:var(--ink-soft);padding-right:5px;}
-#tipcard table.tipmem td:nth-child(2){white-space:nowrap;color:var(--ink-soft);padding-right:6px;}
-#tipcard table.tipmem .swatch{width:7px;height:7px;margin-right:3px;}
-#tipcard table.tipmem .office{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
+#tipcard table.tipmem td{padding:1px 5px;vertical-align:top;}
+/* The ref and party columns are shrink-to-fit and centred: they hold a
+   token, not a sentence, so the width belongs to the member column, which
+   carries the name and the whole office. */
+#tipcard table.tipmem td:first-child{width:1%;white-space:nowrap;text-align:center;color:var(--ink-soft);}
+#tipcard table.tipmem td:nth-child(2){width:1%;white-space:nowrap;text-align:center;color:var(--ink-soft);}
+#tipcard table.tipmem .swatch{width:6px;height:6px;margin:0 3px 0 0;vertical-align:-1px;}
+#tipcard table.tipmem .office{font-style:normal;letter-spacing:.04em;color:var(--ink-soft);}
 
 /* Explain mode: ? puts every annotated readout into the tab order, and
    says so, because a tab stop you cannot see is a tab stop you fall into.

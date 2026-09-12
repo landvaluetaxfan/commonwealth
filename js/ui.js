@@ -1344,8 +1344,18 @@ const UI = (function () {
       return (f.members || []).map(m => {
         const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
         return { r: m.ref || null, n: bare(ch ? ch.name : m.name), p: m.party,
-                 o: ch && ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null };
+                 o: officeText(ch) };
       });
+    };
+    /* The full office, not the badge. The member table has room for it now
+       that the ref and party columns are tight, so a minister is spelled out
+       and a backbencher shows nothing. */
+    const officeText = ch => {
+      if (!ch) return null;
+      if (ch.id === st.pm) return "Prime Minister";
+      const post = (C.cabinet || []).find(p => p.holder === ch.id);
+      if (post) return post.title || post.name;
+      return ch.role || (ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null);
     };
     /* The hover overview: what the seat returns, who is on its roll, who holds
        it, and how it behaves — built from the data rather than restated. */
