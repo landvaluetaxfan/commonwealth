@@ -7,6 +7,10 @@ const UI = (function () {
   "use strict";
 
   let st, C, currentEvent = null, lastResult = null, cxCurrent = "perigee_charter";
+  /* The seat whose detail row is open in the orbit list, and the station it
+     was opened under. A station change resets the open row to the selected
+     seat; the player can close it by clicking it again. */
+  let consOpen = null, consOpenAt = null;
 
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -59,7 +63,7 @@ const UI = (function () {
     try { bevel = !!(window.CSS && CSS.supports && CSS.supports("selector(::-webkit-scrollbar)")); }
     catch (e) { bevel = false; }
     if (bevel) return;
-    document.querySelectorAll(".p-cons>.pbody, .p-doss>.pbody, .p-cond>.pbody").forEach(box => {
+    document.querySelectorAll(".p-cons>.pbody, .p-doss>.pbody").forEach(box => {
       if (box._sb) return;
       box._sb = true;
       const wrap = document.createElement("div");
@@ -1216,13 +1220,14 @@ const UI = (function () {
       tr.addEventListener("click", () => Focus.activate("orbit-table", tr.dataset.station)));
 
     drawStation(selId);
-    drawConstituency(drawSeats(selId));
+    drawSeats(selId);
   }
 
   /* The seat list's activate. A player action: it may make a sound and write
-     the status line. */
+     the status line. Clicking the open seat again closes its detail row. */
   function pickConstituency(id) {
-    drawConstituency(drawSeats(Focus.selected("orbit-table")));
+    consOpen = (consOpen === id) ? null : id;
+    drawSeats(Focus.selected("orbit-table"));
     const k = C.constituencyById[id];
     if (k) setStatus(k.name + " \u00b7 " + k.band + " band \u00b7 " +
                      k.electorate.toLocaleString() + " electors", "transient");
@@ -1232,7 +1237,7 @@ const UI = (function () {
      make a sound and it may write the status line. drawOrbit(), which it
      calls, may do neither. */
   function pickStation(id) {
-    drawStation(id); drawSeats(id); drawOrbit();
+    drawOrbit();
     const s = st.stations[id];
     if (s) setStatus(s.name + " \u00b7 " + s.band + " band \u00b7 " + s.seats +
                      (s.seats === 1 ? " seat" : " seats"), "transient");
@@ -1324,6 +1329,9 @@ const UI = (function () {
     const stored = Focus.selected("cons-table");
     const selCons = mine.some(k => k.id === stored) ? stored : mine[0].id;
     Focus.seed("cons-table", selCons);
+    /* A new station opens on its selected seat; the player may then close it. */
+    if (consOpenAt !== sid) { consOpenAt = sid; consOpen = selCons; }
+    const openId = mine.some(k => k.id === consOpen) ? consOpen : null;
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
       "<th class='n' data-tip='ratio'>Ratio</th><th class='held' data-tip='held'>Held</th>" +
@@ -1340,8 +1348,10 @@ const UI = (function () {
         /* A station returning one constituency returns the whole station, so
            the seat is at-large. The tag says so without the name doing it. */
         const whole = k.at_large ? ` <i class="atlarge">At-large</i>` : "";
-        return `<tr data-cons="${k.id}"${k.id === selCons ? ' class="sel"' : ""}` +
-          ` style="cursor:pointer"><td><b>${esc(k.name)}</b>${badge}${whole}` +
+        const open = k.id === openId;
+        const row = `<tr data-cons="${k.id}"${k.id === selCons ? ' class="sel"' : ""}` +
+          ` style="cursor:pointer"><td><i class="caret${open ? " open" : ""}"></i>` +
+          `<b>${esc(k.name)}</b>${badge}${whole}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
             : esc(ch ? bare(ch.name) : (k.member ? bare(k.member) : "\u2014"))}` +
@@ -1349,36 +1359,21 @@ const UI = (function () {
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
           `<td class="n">${ap[k.id].toFixed(2)}</td>` +
           `<td class="held">${held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
+        return row + (open
+          ? `<tr class="consdet"><td colspan="4">${constituencyDetail(k)}</td></tr>` : "");
       }).join("") + "</tbody>";
     $("#cons-table").querySelectorAll("tr[data-cons]").forEach(tr =>
       tr.addEventListener("click", () => Focus.activate("cons-table", tr.dataset.cons)));
-    return selCons;
   }
 
-  /* The constituency dossier: the seat highlighted in the station's list. The
-     list is the many; this is the one, so a station returning thirty-seven
-     seats does not have to fit every figure into a row. */
-  function drawConstituency(cid) {
-    const d = $("#cond-detail");
-    const k = C.constituencyById[cid];
-    if (!k) {
-      $("#cond-hdr").textContent = "";
-      $("#cond-sub").textContent = "";
-      d.innerHTML = `<div class="note">No district seat to show.</div>`;
-      return;
-    }
-    const s = st.stations[k.station];
-    const r = Engine.seatsFor(st, cid);
+  /* The detail that used to sit in its own panel, now expanded under the row
+     it belongs to. It reads the same state the row does. */
+  function constituencyDetail(k) {
+    const r = Engine.seatsFor(st, k.id);
     const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
     const ch = (C.characters || []).find(c => c.seat === k.name);
     const ap = Engine.apportionment(C);
-    $("#cond-hdr").textContent = k.name;
-    $("#cond-sub").innerHTML =
-      esc(s ? s.name : k.station) + ` \u00b7 ${esc(k.band)} band` +
-      (k.at_large ? ` \u00b7 <i class="atlarge">at-large</i>` : "") +
-      (k.speaker ? ` \u00b7 <i class="chair">Speaker</i>` : "");
-    d.innerHTML =
-      `<div class="ostats">
+    return `<div class="ostats">
         <span><b>${k.electorate.toLocaleString()}</b><i>electors</i></span>
         <span><b>${ap[k.id].toFixed(2)}</b><i>apportionment ratio</i></span>
         <span><b>${k.magnitude}</b><i>${k.magnitude === 1 ? "seat" : "seats"}</i></span>
