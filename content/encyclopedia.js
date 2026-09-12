@@ -121,7 +121,7 @@ const ENCYCLOPEDIA = {
         "together by metabolic dependency does not, because the thing being shared is not "+
         "something anyone chose. Asked what they are, most people name a station." },
       { h:"Composition", body:
-        "Thirteen recognised stations across four altitude bands, plus three external "+
+        "Twenty-nine stations across four altitude bands, plus five external "+
         "constituencies. Anselm Ring alone holds more people than the seven smallest combined, a "+
         "disparity the apportionment formula corrects only partly and deliberately." },
       { h:"What holds it together", body:
@@ -168,7 +168,7 @@ const ENCYCLOPEDIA = {
     banners:[],
     edited:{ by:"multiple", attested:true, note:"" },
     summary:"The **Prime Minister** is head of government of the Commonwealth. The office is not "+
-      "established by election but by the ability to command a majority in the "+
+      "established by election but by the ability to command a majority in "+
       "[[parliament|the House of Delegates]], which is a different and more fragile thing.",
     sections:[
       { h:"Tenure", body:
@@ -196,9 +196,11 @@ const ENCYCLOPEDIA = {
       { h:"The Ministries", body:
         "Life Support. Substrate and Thermal. Consumables and Agriculture. Volume and Housing. "+
         "Transit and Orbital Mechanics. Attestation and the Registry. Persons and Continuity. "+
-        "External Relations, which handles the anchor concessions and is therefore the most "+
-        "domestically consequential of the lot. The Treasury sits apart and reports directly to "+
-        "the Prime Minister.\n\n"+
+        "Labour and Participation. Trade and the Anchors. Closure and Development. Law and the "+
+        "Charter. Business of the House. Contingencies and Civil Authority. External Relations, "+
+        "which handles the anchor concessions and is therefore the most domestically "+
+        "consequential of the lot. The Treasury sits apart and reports directly to the "+
+        "Prime Minister.\n\n"+
         "Life Support is the senior post and the one that ends careers. It is the only Ministry "+
         "whose Minister may be summoned by the engineering authority rather than the other way "+
         "around, a provision of the Allocation Act that has never been amended and is raised at "+
@@ -209,7 +211,7 @@ const ENCYCLOPEDIA = {
         "for a long time." },
       { h:"Collective responsibility", body:
         "A Minister who cannot support a decision is expected to resign before opposing it. The "+
-        "convention is honoured by absence more often than by resignation: three Democratic Centre "+
+        "convention is honoured by absence more often than by resignation: two Democratic Centre "+
         "Ministers absented themselves from the threshold division rather than divide against the "+
         "leadership in public, which is understood by everyone to be a different thing from "+
         "supporting it." },
@@ -304,8 +306,8 @@ const ENCYCLOPEDIA = {
         "who votes in a functional constituency by regulation, without legislation and without " +
         "a division. This has been described, by those who do it, as administrative housekeeping." },
       { h:"Size", body:
-        "Functional electorates range from four hundred and eleven voters to somewhat over nine " +
-        "thousand, against district electorates averaging above one hundred and twenty thousand. " +
+        "Functional electorates range from sixty-two voters to two hundred and fourteen "+
+        "thousand, against district electorates averaging under thirty thousand. "+
         "A functional seat is won by persuading a few dozen people over dinner." },
       { h:"The residual constituency", body:
         "Persons belonging to no recognised sector — the unemployed, the dependent, the " +

@@ -49,7 +49,7 @@ const STATIONS = [
   { id:"anselm", name:"Anselm Ring", band:"ring", type:"single", form:"cylinder",
     seats:37, population:1940000,
     closure:0.79, suspended:2100, attested:0.94,
-    composition:{biological:0.61,emulation:0.31,uplift:0.04,synthetic:0.04},
+    composition:{biological:0.5244,emulation:0.3773,uplift:0.038,synthetic:0.0603},
     material_interest:["tether_traffic", "volume_rationing"],
     dependency:"Nothing it cannot buy.",
     grievance:"That everyone else resents it." },
