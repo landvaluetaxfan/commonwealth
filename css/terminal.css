@@ -119,7 +119,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    instead, with the plan on the remainder. */
 .g-cham{grid-template-columns:minmax(0,660px) minmax(250px,310px) minmax(0,500px);}
 .g-orb{
-  grid-template-columns:216px minmax(0,1fr) minmax(0,1.15fr);
+  grid-template-columns:216px minmax(0,1.3fr) minmax(0,1fr);
   grid-template-rows:minmax(0,1fr) auto;
   height:100%;align-items:stretch;
 }
@@ -168,19 +168,19 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #orbit-table td .sub{display:inline;margin-left:5px;font-size:8.5px;}
 
 /* ---- a station's seats, listed in full ---- */
-#cons-table td{padding:2px 7px;vertical-align:top;font-size:11.5px;}
+#cons-table td{padding:2px 7px;vertical-align:top;font-size:12px;}
 #cons-table td.n{width:1%;white-space:nowrap;}
 /* The member and their office sit on ONE line — name, a middot, the title —
    so a titled MP's row is the same height as a backbencher's, and the line
    has room to run a little larger than the old stacked pair. */
-#cons-table .mp{display:block;font-style:normal;font-size:10.5px;color:var(--ink);opacity:.92;}
-#cons-table .det{display:inline;font-style:normal;font-size:9.5px;color:var(--ink-soft);
+#cons-table .mp{display:block;font-style:normal;font-size:11px;color:var(--ink);opacity:.92;}
+#cons-table .det{display:inline;font-style:normal;font-size:10px;color:var(--ink-soft);
   font-family:var(--f-data);}
 /* Held: the mark and the party's short name, centred as one group. width:1%
    keeps the column as narrow as its content — without it the auto layout
    hands it a share of the table and it reads as a wide empty box. */
 #cons-table th.held,#cons-table td.held{width:1%;text-align:center;white-space:nowrap;}
-#cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:9px;
+#cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:9.5px;
   letter-spacing:.04em;color:var(--ink-soft);}
 #cons-table .chair{color:#c9a227;letter-spacing:.06em;}
 /* Office badges — a mark, not a title: one word, spaced, coloured by how
@@ -196,6 +196,9 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #cons-table .o-whip{color:#4a7c8c;}
 /* A station that returns one seat returns the whole station. */
 #cons-table .atlarge{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
+/* The capital territory's delegate: a seat that may speak and not vote. */
+#cons-table .nonvote{font-style:normal;letter-spacing:.05em;color:#7a6428;
+  border:1px solid #c9a227;padding:0 3px;}
 /* The caret and the expanded detail row. The dossier that used to sit in a
    panel of its own is now one row per seat, opened from the row it belongs
    to. No transition: the rotation is a state, and a state that eases in is
