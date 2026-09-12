@@ -25,11 +25,13 @@
   --p-gb:#4a5f75;
   --p-ind:#7d7d74;
 
-  /* The terminal's faces. The UI face was a NARROW sans (Liberation/Arial
-     Narrow) and the document face was Times; both read badly at these sizes.
-     They are now normal-width and screen-tuned, with the old faces kept as
-     fallbacks so nothing shifts off a machine that has them. */
-  --f-ui:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
+  /* TWO FACES, TWO VOICES. The NARROW face is the terminal's own: chrome,
+     labels, table data, the readouts it reports. The NORMAL face is the human
+     voice: prose, descriptions, dialogue, help. The machine speaks narrow;
+     people and documents do not. The document serif is Georgia, the one serif
+     tuned for screens. */
+  --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
+  --f-read:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
   --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
   --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
   --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif","Times New Roman",serif;
@@ -346,7 +348,7 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .btn[disabled]{color:var(--chrome-dkr);cursor:default;}
 .btnrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 
-.note{font-size:12px;color:var(--ink-soft);line-height:1.4;}
+.note{font-family:var(--f-read);font-size:12px;color:var(--ink-soft);line-height:1.4;}
 .rulehead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:1px;margin:6px 0 4px;}
 .rulehead:first-child{margin-top:0;}
 .flag{font-family:var(--f-data);font-size:10px;padding:0 3px;border:1px solid var(--rule);}
@@ -433,7 +435,7 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .post .hd b{font-size:12px;}
 .post .hd .handle{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);}
 .post .hd time{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);margin-left:auto;}
-.post p{margin:0;font-size:12.5px;line-height:1.35;}
+.post p{margin:0;font-family:var(--f-read);font-size:12.5px;line-height:1.35;}
 .att{font-family:var(--f-data);font-size:9px;padding:0 3px;border:1px solid;letter-spacing:.04em;}
 .att.y{color:var(--ok);border-color:var(--ok);}
 .att.n{color:var(--alert);border-color:var(--alert);background:#f3e2de;}
@@ -807,7 +809,7 @@ img.dith{
 .opt input{margin:2px 0 0 0;flex:0 0 auto;}
 .opt span{display:block;}
 .opt b{display:block;font-weight:600;font-size:12px;}
-.opt i{display:block;font-style:normal;font-size:11px;color:var(--ink-soft);line-height:1.35;}
+.opt i{display:block;font-style:normal;font-family:var(--f-read);font-size:11px;color:var(--ink-soft);line-height:1.35;}
 .opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
 
 /* --- the main menu --- */
@@ -1108,7 +1110,7 @@ body.busy, body.busy *{cursor:progress;}
 }
 .dlg-dlg{width:min(430px,100%);max-height:88vh;overflow:auto;}
 .dlg-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
-.dlg-msg{font-size:13px;line-height:1.5;margin:2px 0 11px;}
+.dlg-msg{font-family:var(--f-read);font-size:13px;line-height:1.5;margin:2px 0 11px;}
 .dlg-in{
   width:100%;box-sizing:border-box;font-family:var(--f-ui);font-size:13.5px;color:var(--ink);
   background:var(--field);padding:4px 6px;margin-bottom:11px;
@@ -1168,7 +1170,7 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-soft);margin-bottom:2px;
 }
-#tipcard span{display:block;font-size:12px;line-height:1.45;}
+#tipcard span{display:block;font-family:var(--f-read);font-size:12px;line-height:1.45;}
 #tipcard i{
   display:block;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
   font-style:normal;font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
