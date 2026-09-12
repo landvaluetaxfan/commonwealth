@@ -152,11 +152,18 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #orbit-table td .sub{display:inline;margin-left:5px;font-size:8.5px;}
 
 /* ---- a station's seats, listed in full ---- */
-#cons-table td{padding:2px 6px;vertical-align:top;}
+#cons-table td{padding:2px 7px;vertical-align:top;font-size:11.5px;}
 #cons-table td.n{width:1%;white-space:nowrap;}
-#cons-table .mp{display:block;font-style:normal;font-size:10px;color:var(--ink);opacity:.78;}
-#cons-table .det{display:block;font-style:normal;font-size:8.5px;color:var(--ink-soft);
+/* The member and their office sit on ONE line — name, a middot, the title —
+   so a titled MP's row is the same height as a backbencher's, and the line
+   has room to run a little larger than the old stacked pair. */
+#cons-table .mp{display:block;font-style:normal;font-size:10.5px;color:var(--ink);opacity:.92;}
+#cons-table .det{display:inline;font-style:normal;font-size:9.5px;color:var(--ink-soft);
   font-family:var(--f-data);}
+/* Held: the mark and the party's short name, centred as one group. */
+#cons-table th.held,#cons-table td.held{text-align:center;white-space:nowrap;}
+#cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:9px;
+  letter-spacing:.04em;color:var(--ink-soft);}
 #cons-table .chair{color:#c9a227;letter-spacing:.06em;}
 /* Office badges — a mark, not a title: one word, spaced, coloured by how
    senior the office is. Speaker gold is the Chair's, above; these are the

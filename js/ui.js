@@ -21,6 +21,7 @@ const UI = (function () {
   };
   const pc = id => (C.partyById[id] || {}).colour || "var(--chrome-dk)";
   const pn = id => (C.partyById[id] || {}).name || id;
+  const ps = id => (C.partyById[id] || {}).short || id;
 
   /* Office badges. An office is a one-word mark on the seat table, not a job
      title — `role` carries the title. The key belongs to content; the label
@@ -1255,7 +1256,7 @@ const UI = (function () {
     Focus.seed("cons-table", selCons);
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
-      "<th class='n' data-tip='ratio'>Ratio</th><th class='n' data-tip='held'>Held</th>" +
+      "<th class='n' data-tip='ratio'>Ratio</th><th class='held' data-tip='held'>Held</th>" +
       "</tr></thead><tbody>" +
       mine.map(k => {
         const r = Engine.seatsFor(st, k.id);
@@ -1274,10 +1275,10 @@ const UI = (function () {
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
             : esc(ch ? bare(ch.name) : (k.member ? bare(k.member) : "\u2014"))}` +
-            `${!r.vacant && ch && ch.role ? ` <span class="det">${esc(ch.role)}</span>` : ""}</i></td>` +
+            `${!r.vacant && ch && ch.role ? ` <span class="det">\u00b7 ${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
           `<td class="n">${ap[k.id].toFixed(2)}</td>` +
-          `<td class="n">${held.map(pid => mark(pid)).join(" ")}</td></tr>`;
+          `<td class="held">${held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
       }).join("") + "</tbody>";
     $("#cons-table").querySelectorAll("tr[data-cons]").forEach(tr =>
       tr.addEventListener("click", () => Focus.activate("cons-table", tr.dataset.cons)));
@@ -1330,7 +1331,6 @@ const UI = (function () {
     const F = C.functional || [];
     if (!F.length || !$("#func-table")) return;
     const FR = { licensure:"licence", corporate:"companies", union_bloc:"union bloc", residual:"residual" };
-    const ps = id => (C.partyById[id] || {}).short || id;
     /* Holdings come from the functional roll, never the authored `held`: the
        roll is what instruments and elections move, and it is the only thing the
        division arithmetic reads. The authored value is the fallback. */
