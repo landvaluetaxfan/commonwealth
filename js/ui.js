@@ -15,13 +15,16 @@ const UI = (function () {
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
   const sw = col => `<i class="swatch" style="background:${col}"></i>`;
-  /* a party mark: its logo if one exists, otherwise the colour swatch */
-  const mark = id => {
+  /* The party mark in the lists and panels: the colour block. The logo is
+     reserved for the places with room for it, the constituency dossier and
+     the Concordance, through logoMark(). */
+  const mark = id => sw(pc(id));
+  const logoMark = (id, cls) => {
     const p = C.partyById[id];
-    if (p && p.logo) return `<img class="dith plogo" src="img/logos/${p.logo}" alt=""` +
+    if (!p || !p.logo) return sw(pc(id));
+    return `<img class="dith plogo${cls ? " " + cls : ""}" src="img/logos/${p.logo}" alt=""` +
       ` onerror="this.replaceWith(Object.assign(document.createElement('i'),` +
       `{className:'swatch',style:'background:${p.colour}'}))">`;
-    return sw(pc(id));
   };
   const pc = id => (C.partyById[id] || {}).colour || "var(--chrome-dk)";
   const pn = id => (C.partyById[id] || {}).name || id;
@@ -1393,7 +1396,7 @@ const UI = (function () {
           (ch && ch.role ? ` \u00b7 ${esc(ch.role)}` : "")}</div>
       <div class="rulehead">Held by</div>
       <div class="note">${held.length
-        ? held.map(pid => `${mark(pid)}${esc(pn(pid))} ${r.held[pid]}`).join(", ")
+        ? held.map(pid => `${logoMark(pid, "lg")}${esc(pn(pid))} ${r.held[pid]}`).join(", ")
         : "&mdash;"}</div>
       <div class="rulehead">Material interest</div>
       <div class="note">${(k.material_interest || []).map(x => esc(x)).join(" \u00b7 ")}</div>`;
