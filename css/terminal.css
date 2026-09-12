@@ -147,6 +147,22 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .p-stat>.pbody{overflow:hidden;}
 .p-map>.pbody{flex:0 0 auto;overflow:visible;}
 
+/* A DRAWN SCROLLBAR FOR ENGINES THAT CANNOT BEVEL ONE (Gecko).
+
+   js/ui.js wraps a scrolling orbit body in .sbwrap and appends a .sbar, so
+   the bar takes a column of its own and never runs under the rightmost
+   table column. The native bar is hidden. Engines with ::-webkit-scrollbar
+   keep the beveled native bar and never get this markup. */
+.g-orb>.panel>.sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
+.sbwrap>.pbody{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;}
+.sbwrap>.pbody::-webkit-scrollbar{display:none;}
+.sbwrap>.sbar{flex:0 0 13px;position:relative;background:var(--chrome-lt);
+  box-shadow:inset 1px 0 0 var(--chrome-dk);}
+.sbwrap>.sbar>.sbar-thumb{position:absolute;left:0;right:0;top:0;min-height:26px;
+  background:var(--chrome);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);}
+
 /* thirty-four rows have to fit in one column with no scrollbar */
 #orbit-table td{padding:1px 6px;font-size:10.5px;line-height:1.35;}
 #orbit-table td .sub{display:inline;margin-left:5px;font-size:8.5px;}

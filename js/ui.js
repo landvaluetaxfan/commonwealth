@@ -44,6 +44,65 @@ const UI = (function () {
 
   let wired = false;
 
+  /* ---------- the terminal's own scrollbar ----------
+
+     Firefox cannot bevel a scrollbar, and on some systems its bar is an
+     overlay that runs under the rightmost column. On an engine with no
+     ::-webkit-scrollbar to style, the panels that scroll get a drawn bar in
+     the terminal's own chrome: the native one is hidden and the track takes
+     a column of its own, so nothing is ever covered. Engines that can bevel
+     keep their native bar, which already matches. The track only lifts when
+     the body actually overflows. */
+  function decorateScrollers() {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+    let bevel = false;
+    try { bevel = !!(window.CSS && CSS.supports && CSS.supports("selector(::-webkit-scrollbar)")); }
+    catch (e) { bevel = false; }
+    if (bevel) return;
+    document.querySelectorAll(".p-cons>.pbody, .p-doss>.pbody, .p-cond>.pbody").forEach(box => {
+      if (box._sb) return;
+      box._sb = true;
+      const wrap = document.createElement("div");
+      wrap.className = "sbwrap";
+      box.parentNode.insertBefore(wrap, box);
+      wrap.appendChild(box);
+      const track = document.createElement("div");
+      track.className = "sbar";
+      const thumb = document.createElement("i");
+      thumb.className = "sbar-thumb";
+      track.appendChild(thumb);
+      wrap.appendChild(track);
+      const sync = () => {
+        const over = box.scrollHeight - box.clientHeight;
+        if (over <= 1) { track.style.display = "none"; return; }
+        track.style.display = "";
+        const th = Math.max(26, Math.round(box.clientHeight * box.clientHeight / box.scrollHeight));
+        thumb.style.height = th + "px";
+        thumb.style.top = Math.round((box.scrollTop / over) * (box.clientHeight - th)) + "px";
+      };
+      box.addEventListener("scroll", sync, { passive: true });
+      if (typeof ResizeObserver !== "undefined") {
+        const ro = new ResizeObserver(sync);
+        ro.observe(box);
+        if (box.firstElementChild) ro.observe(box.firstElementChild);
+      }
+      thumb.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        const y0 = e.clientY, top0 = box.scrollTop;
+        const range = box.scrollHeight - box.clientHeight;
+        const travel = box.clientHeight - thumb.offsetHeight;
+        const move = ev => { box.scrollTop = top0 + (ev.clientY - y0) * range / (travel || 1); };
+        const up = () => {
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", up);
+        };
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", up);
+      });
+      sync();
+    });
+  }
+
   function boot(state, content) {
     st = state; C = content;
     currentEvent = null; lastResult = null;
@@ -120,6 +179,7 @@ const UI = (function () {
     if (typeof Stream !== "undefined") Stream.wire();
     if (typeof Wait !== "undefined") Wait.wire();
     if (typeof Tips !== "undefined") Tips.wire();
+    decorateScrollers();
 
     /* THE CONCORDANCE, in one function instead of four copies of it.
        Every way of getting to an article - a link in the body, a link in
