@@ -221,7 +221,7 @@ const Shell = (function () {
      there is no game to export and nowhere to return to. */
   function menuOptions() {
     return `<div class="menu-sub">Options</div>
-      <div class="optpanel-inline">${optionsHTML(false)}</div>
+      <div class="optpanel-inline">${optionsHTML(false, false)}</div>
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
@@ -375,13 +375,13 @@ const Shell = (function () {
      is how two settings screens end up disagreeing about what a setting
      is called. `inGame` drops the three session buttons, because from the
      main menu there is no game to export and nowhere to return to. */
-  function optionsHTML(inGame) {
+  function optionsHTML(inGame, showTitle) {
     const row = (k, label, note) => `<label class="opt"><input type="checkbox" data-opt="${k}"
       ${opts[k] ? "checked" : ""}><span><b>${label}</b><i>${note}</i></span></label>`;
     const slider = (k, label) => `<label class="optlvl"><span>${label}</span>
       <input type="range" data-lvl="${k}" min="0" max="100" step="5"
         value="${Math.round((opts[k] || 0) * 100)}" aria-label="${label} volume"></label>`;
-    return `<div class="opt-title">Options</div>
+    return `${showTitle === false ? "" : `<div class="opt-title">Options</div>`}
       ${row("autosave", "Autosave", "Write to the current slot after every sitting")}
       ${row("motion", "Animations", "The signature ceremony and other transitions")}
       ${row("confirmDestructive", "Confirm overwrites", "Ask before replacing or deleting a save")}

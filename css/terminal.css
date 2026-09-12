@@ -827,8 +827,12 @@ img.dith{display:block;}
 #menu.on{display:flex;}
 body.menu-on{background:#0b1826;}
 .menu-stage{position:relative;flex:1 1 auto;min-height:0;overflow:auto;
-  /* the plate sits a little above centre so the sea at its foot stays in frame */
-  background:#0b1826 center 68%/cover no-repeat;
+  /* anchored to the foot, so the cloud-sea at the plate's bottom stays in
+     frame however short the band leaves the stage */
+  background-color:#0b1826;
+  background-position:center bottom;
+  background-size:cover;
+  background-repeat:no-repeat;
   /* a blue-hour stand-in until the photograph loads */
   background-image:linear-gradient(180deg,
     #08121d 0%, #10283c 42%, #1c3a54 68%, #0b1826 100%);}
@@ -884,7 +888,7 @@ body.menu-on{background:#0b1826;}
 /* the printed band under the plate, on the same stock as an instrument */
 .menu-footer{flex:0 0 auto;display:flex;align-items:flex-end;gap:40px;
   justify-content:space-between;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:36px 56px 38px;}
+  font-family:"Times New Roman",Times,Georgia,serif;padding:24px 56px 20px;}
 .menu-footer .mf-text{max-width:1080px;}
 .menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
 .menu-footer p{margin:0;font-size:13px;line-height:1.45;}
@@ -1250,4 +1254,17 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 
 .mbtn.wide i{display:block;font-style:normal;font-family:var(--f-data);
   font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
-.optpanel-inline{max-height:46vh;overflow:auto;padding-right:4px;}
+/* the inline options panel sits over the photograph in the main menu, so it
+   carries its own dark ground and light ink. The popover in the bar keeps the
+   chrome, where these overrides do not apply. */
+.optpanel-inline{max-height:46vh;overflow:auto;padding:14px 16px;
+  background:rgba(11,15,20,.85);
+  border:1px solid rgba(233,234,226,.16);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.optpanel-inline .opt{color:#eef0e8;}
+.optpanel-inline .opt b{color:#f5f6ef;}
+.optpanel-inline .opt i{color:#bcc1b2;}
+.optpanel-inline .opt-title{color:#b9beae;border-bottom-color:rgba(233,234,226,.2);}
+.optpanel-inline .opt-sep{background:rgba(233,234,226,.16);}
+.optpanel-inline .optlvl{color:#c6cabb;}
+.optpanel-inline .opt input[type=checkbox]{accent-color:#cfd3c4;}
