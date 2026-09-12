@@ -970,6 +970,11 @@ const UI = (function () {
        horizontal band and stacked the parties vertically, which reads as a
        bar chart lying on its side rather than as a chamber. */
     const ROWS = 5, CW = 9, RH = 10;
+    /* The crossbench at the Bar runs crosswise to the benches: five columns
+       wide and as many rows as forty functional seats need. It carries its
+       own metrics, because its label is centred on the columns rather than
+       on the chamber, and a shared constant would drift the two apart. */
+    const XCOLS = 5, XCW = 11, XRH = 10.5;
     const cols = n => Math.ceil(n / ROWS);
 
     function bench(seats, x0, yFront, dir) {
@@ -983,9 +988,9 @@ const UI = (function () {
 
     /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
-      let out = "", COLS = 5, CS = 11, RS = 10.5;
+      let out = "";
       seats.forEach((s, i) => {
-        out += glyph(x0 + (i % COLS) * CS, yTop + Math.floor(i / COLS) * RS, s);
+        out += glyph(x0 + (i % XCOLS) * XCW, yTop + Math.floor(i / XCOLS) * XRH, s);
       });
       return out;
     }
@@ -1020,7 +1025,7 @@ const UI = (function () {
     const govCols = Math.max(1, cols(gov.length));
     const oppCols = Math.max(1, cols(opp.length));
     const benchW = Math.max(govCols, oppCols) * CW;
-    const crossRows = Math.max(1, Math.ceil(cross.length / 5));
+    const crossRows = Math.max(1, Math.ceil(cross.length / XCOLS));
 
     const X0 = 66;                                    // clear of the Chair
     /* THE FLOOR IS EMPTY. There was a table of the House with the mace on
@@ -1037,10 +1042,14 @@ const UI = (function () {
     const CX = X0 + benchW / 2 - CW / 2;              // bench centre
 
     const crossX = X0 + benchW + 30;
-    const crossTop = FLOOR - ((crossRows - 1) * 10.5) / 2;
-    const crossBot = crossTop + (crossRows - 1) * 10.5;
+    const crossTop = FLOOR - ((crossRows - 1) * XRH) / 2;
+    const crossBot = crossTop + (crossRows - 1) * XRH;
+    /* The label is centred on the COLUMNS, not on crossX: the first column's
+       centre is crossX, so the middle of five columns is two spacings along.
+       Centring on crossX put both labels a column-width right of the bench. */
+    const crossCX = crossX + ((XCOLS - 1) * XCW) / 2;
 
-    const W = crossX + 5 * 11 + 14;
+    const W = crossX + XCOLS * XCW + 14;
     const H = Math.max(oppBot + 26, crossBot + 26) + 8;
     /* An inline <svg> with a viewBox and no width defaults to the width of
        its container, so shrinking the coordinate space only magnified the
@@ -1067,8 +1076,8 @@ const UI = (function () {
       crossbench(cross, crossX, crossTop) +
       label(CX, govTop - 12, "GOVERNMENT") +
       label(CX, oppBot + 22, "OPPOSITION") +
-      label(crossX + 30, crossTop - 14, "THE BENCH") +
-      label(crossX + 30, crossBot + 22, "functional tier", "sub");
+      label(crossCX, crossTop - 14, "THE BENCH") +
+      label(crossCX, crossBot + 22, "functional tier", "sub");
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     $("#chamber-tally").innerHTML =
