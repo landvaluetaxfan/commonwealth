@@ -335,6 +335,10 @@ const Tips = (function () {
         ? '<i>Concordance · ' + esc(CONTENT.encyclopediaById[t.go].title) + '</i>'
         : '') +
       membersTable(t.members);
+    /* A member table carries a full office title in its last column, so the
+       card is allowed to run wider than a one-line explanation needs. The
+       cap only lifts; a short card still sizes to its content. */
+    c.classList.toggle("wide", !!t.members);
     c.hidden = false;
     anchor = el;
     el.setAttribute("aria-describedby", "tipcard");

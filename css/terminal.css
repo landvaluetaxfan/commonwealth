@@ -1098,10 +1098,14 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   position:fixed;z-index:300;max-width:264px;
   background:var(--chrome-lt);color:var(--ink);padding:5px 7px;
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
-  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-dk);border-right:1px solid var(--chrome-dk);
   box-shadow:2px 2px 0 rgba(27,29,25,.28);
   pointer-events:none;   /* it can never be hovered, so it can never trap */
 }
+/* A card carrying a member table needs the width for a full office title in
+   its last column; the cap only lifts, so a short card still sizes to its
+   content. js/tips.js adds .wide when data-tip-members is present. */
+#tipcard.wide{max-width:360px;}
 #tipcard b{
   display:block;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-soft);margin-bottom:2px;
