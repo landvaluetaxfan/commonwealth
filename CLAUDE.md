@@ -57,6 +57,14 @@ Democratic Centre Ministers", a doubled "the").
 - Station populations sum to **7,006,000**; `labour.js totals.population` is
   **6,863,000**. 143,000 apart.
 
+**Also landed since that handoff:** row selection is now the gold tint in every
+table (`.sel` was the dark inverted block; the `#cons-table` override is gone and
+`tools/uxtest.js` was updated to match); a member-table tooltip widens to 360px
+(`#tipcard.wide`) so a full office title fits on one line; and three Liberal
+functional-seat MPs now hold shadow briefs — Quintana/Substrate, Ijaz/Transit,
+Estévez/Anchors — with Otrione, Caillet and Nadeau backbenched. `js/ui.js` gained
+`officeText()` for the full office in the functional tooltip.
+
 **Do not commit** the untracked root duplicates (`events.js`, `glossary.js`,
 `lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`, `js/codex.js`)
 or the `tools/dither.sh` mode change — they are pre-existing and left alone.
