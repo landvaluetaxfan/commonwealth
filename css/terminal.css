@@ -628,7 +628,7 @@ img.dith{display:block;}
 /* the party's own mark, where it has one, at the head of its infobox. The
    logos are transparent PNGs, so they sit on a light grey, the way an
    infobox logo does. */
-.cx-infobox .cx-logo{display:block;width:100%;height:auto;background:#f8f9fa;
+.cx-infobox .cx-logo,.cx-infobox .cx-flag{display:block;width:100%;height:auto;background:#f8f9fa;
   border-bottom:1px solid #c3c6bd;}
 .cx-infobox table{width:100%;border-collapse:collapse;}
 .cx-infobox th{
@@ -881,14 +881,19 @@ body.menu-on{background:#0b1826;}
   color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
 
 /* the printed band under the plate, on the same stock as an instrument */
-.menu-footer{flex:0 0 auto;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:20px 56px 24px;}
-.menu-footer h1{margin:0 0 9px;font-size:21px;font-weight:400;}
-.menu-footer p{margin:0;font-size:13px;line-height:1.5;max-width:1560px;}
+.menu-footer{flex:0 0 auto;display:flex;align-items:flex-end;gap:40px;
+  justify-content:space-between;background:#f1f0ea;color:#1d1d1b;
+  font-family:"Times New Roman",Times,Georgia,serif;padding:36px 56px 44px;}
+.menu-footer .mf-text{max-width:1080px;}
+.menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
+.menu-footer p{margin:0;font-size:13px;line-height:1.45;}
+/* the government's own mark, bottom-right of the printed band */
+.menu-footer .mf-gov{flex:0 0 auto;width:300px;height:auto;opacity:.92;}
 @media (max-width:700px){
-  .menu-footer{padding:16px 20px 20px;}
+  .menu-footer{flex-direction:column;align-items:flex-start;gap:18px;padding:16px 20px 20px;}
   .menu-footer h1{font-size:18px;}
   .menu-footer p{font-size:12px;}
+  .menu-footer .mf-gov{width:220px;}
 }
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */

@@ -98,6 +98,13 @@ const ENCYCLOPEDIA = {
 
   { id:"commonwealth", title:"Circumterrestrial Commonwealth", category:"Institutions",
     banners:["contested"],
+    infobox:{ title:"Circumterrestrial Commonwealth", flag:"flag.png", rows:[
+      ["Composition","Thirty stations, four altitude bands, five external constituencies"],
+      ["Largest station","Anselm Ring"],
+      ["Government","Parliamentary republic under the [[perigee_charter|Perigee Charter]]"],
+      ["Legislature","[[parliament|Parliament]]"],
+      ["Head of government","[[prime_minister|Prime Minister]]"]
+    ]},
     edited:{ by:"multiple", attested:true, note:"the demonym section is reverted about weekly" },
     summary:"The **Circumterrestrial Commonwealth** is a federated parliamentary republic "+
       "comprising the inhabited stations of Earth orbit, the Selene settlements and the Lagrange "+

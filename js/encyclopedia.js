@@ -319,6 +319,7 @@ const Concordance = (function () {
     }).join("");
 
     const info = a.infobox ? `<aside class="cx-infobox">` +
+      (a.infobox.flag ? `<img class="cx-flag" src="img/logos/${a.infobox.flag}" alt="">` : "") +
       (a.infobox.logo ? `<img class="cx-logo" src="img/logos/${a.infobox.logo}" alt="">` : "") +
       `<h4>${a.infobox.title}</h4><table>` +
       a.infobox.rows.map(r => r[2] === "head"

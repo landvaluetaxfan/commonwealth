@@ -119,16 +119,20 @@ const Shell = (function () {
       </div>
     </div>
     <div class="menu-footer">
-      <h1>Life in Space Needs People to Run It.</h1>
-      <p>Ways &amp; Means puts you in the position of Prime Minister Adriana Eireann Flash of the
-      Circumterrestrial Commonwealth, a federation of orbital habitats bound together by trade,
-      shared infrastructure, and mutual dependence. Its near-post-scarcity economy makes
-      manufactured goods abundant, while habitable volume, thermal capacity, substrate, and
-      transportation remain tightly constrained. The outcome is a sophisticated rentier economy
-      where private consortiums, public utilities, and federal institutions compete to manage the
-      Commonwealth's most vital resources. Navigate interparty relations, your governmental
-      coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
-      running.</p>
+      <div class="mf-text">
+        <h1>Life in Space Needs People to Run It.</h1>
+        <p>Ways &amp; Means puts you in the position of Prime Minister Adriana Eireann Flash of the
+        Circumterrestrial Commonwealth, a federation of orbital habitats bound together by trade,
+        shared infrastructure, and mutual dependence. Its near-post-scarcity economy makes
+        manufactured goods abundant, while habitable volume, thermal capacity, substrate, and
+        transportation remain tightly constrained. The outcome is a sophisticated rentier economy
+        where private consortiums, public utilities, and federal institutions compete to manage the
+        Commonwealth's most vital resources. Navigate interparty relations, your governmental
+        coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
+        running.</p>
+      </div>
+      <img class="mf-gov" src="img/menu/gov.png"
+        alt="Government of the Circumterrestrial Commonwealth">
     </div>`;
   }
 
@@ -147,13 +151,13 @@ const Shell = (function () {
     const m = document.getElementById("menu");
     m.classList.add("on");
     document.body.classList.add("menu-on");
-    paintMenu();
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
     : view === "new"     ? slotList("new")
     : view === "credits" ? credits()
     : view === "options" ? menuOptions()
     : root());
+    paintMenu();
     wireMenu(m, view);
   }
 
