@@ -110,11 +110,25 @@ const Shell = (function () {
 
 
   function menuShell(inner) {
-    return `<div class="menu-plate">
-      <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
-      <div class="menu-body">${inner}</div>
-      ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
-        survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
+    return `<div class="menu-stage">
+      <div class="menu-plate">
+        <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
+        <div class="menu-body">${inner}</div>
+        ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
+          survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
+      </div>
+    </div>
+    <div class="menu-footer">
+      <h1>Life in Space Needs People to Run It.</h1>
+      <p>Ways &amp; Means puts you in the position of Prime Minister Adriana Eireann Flash of the
+      Circumterrestrial Commonwealth, a federation of orbital habitats bound together by trade,
+      shared infrastructure, and mutual dependence. Its near-post-scarcity economy makes
+      manufactured goods abundant, while habitable volume, thermal capacity, substrate, and
+      transportation remain tightly constrained. The outcome is a sophisticated rentier economy
+      where private consortiums, public utilities, and federal institutions compete to manage the
+      Commonwealth's most vital resources. Navigate interparty relations, your governmental
+      coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
+      running.</p>
     </div>`;
   }
 
@@ -122,7 +136,7 @@ const Shell = (function () {
      window.__ASSETS; on disk it is a relative path. Either way a missing
      image leaves the dark ground the CSS already sets. */
   function paintMenu() {
-    const m = document.getElementById("menu");
+    const m = document.querySelector("#menu .menu-stage");
     if (!m) return;
     const path = "img/menu/tether.jpg";
     const url = (typeof window !== "undefined" && window.__ASSETS && window.__ASSETS[path]) || path;

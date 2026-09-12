@@ -818,21 +818,24 @@ img.dith{display:block;}
 
 /* --- the main menu ---
    A full-bleed photographic plate with a left scrim, so the title and the
-   buttons read over any image. The ground is the dark the plate is graded to,
-   so a missing image is a dark menu rather than a broken one. The image is
-   set by js/shell.js, which knows the single-file asset table. */
-#menu{display:none;position:fixed;inset:0;z-index:100;overflow:auto;
+   buttons read over any image, and a printed footer band beneath it. The
+   ground is the dark the plate is graded to, so a missing image is a dark
+   menu rather than a broken one. The image is set by js/shell.js, which
+   knows the single-file asset table. */
+#menu{display:none;position:fixed;inset:0;z-index:100;overflow:hidden;
+  flex-direction:column;background:#0b1826;}
+#menu.on{display:flex;}
+body.menu-on{background:#0b1826;}
+.menu-stage{position:relative;flex:1 1 auto;min-height:0;overflow:auto;
   background:#0b1826 center/cover no-repeat;
   /* a blue-hour stand-in until the photograph loads */
   background-image:linear-gradient(180deg,
     #08121d 0%, #10283c 42%, #1c3a54 68%, #0b1826 100%);}
-#menu.on{display:block;}
-body.menu-on{background:#0b1826;}
 /* the scrim: darkest at the left, clearing to the right */
-#menu::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+.menu-stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:
     linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
-#menu::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
+.menu-stage::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
   position:relative;z-index:2;display:block;background:rgba(28,31,25,.72);color:var(--bar-txt);
   font-family:var(--f-ui);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
   padding:4px 10px;border-bottom:1px solid rgba(233,234,226,.14);}
@@ -876,6 +879,17 @@ body.menu-on{background:#0b1826;}
 .menu-text .dim{color:#b9bcb2;font-size:13.5px;}
 .menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
   color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
+
+/* the printed band under the plate, on the same stock as an instrument */
+.menu-footer{flex:0 0 auto;background:#f1f0ea;color:#1d1d1b;
+  font-family:"Times New Roman",Times,Georgia,serif;padding:20px 56px 24px;}
+.menu-footer h1{margin:0 0 9px;font-size:21px;font-weight:400;}
+.menu-footer p{margin:0;font-size:13px;line-height:1.5;max-width:1560px;}
+@media (max-width:700px){
+  .menu-footer{padding:16px 20px 20px;}
+  .menu-footer h1{font-size:18px;}
+  .menu-footer p{font-size:12px;}
+}
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
 body.no-motion .sig-draw #sigpath,body.no-motion .sig-draw .sigpath{transition:none;}
