@@ -543,6 +543,28 @@ glossary terms `term_<slug>` or the bare slug.
 
 Run `node tools/cxcheck.js` to confirm every link, see-also and banner resolves.
 
+### The Wikipedia style
+
+The Concordance is written as Wikipedia, because that is what it is pretending
+to be. Hold to these:
+
+- **Lead.** The first sentence defines the subject and puts the title in bold:
+  "The **Perigee Charter** is the founding document of the Commonwealth." Not a
+  hook, not a scene, not a question.
+- **Headings** are sentence case: "The residual constituency", not "The Residual
+  Constituency".
+- **Neutral, third person.** No "you", no "we". Attribute contested claims:
+  "Critics argue…", "The Bureau does not publish…". The article reports the
+  dispute; it does not take a side.
+- **No rhetorical closers.** A sentence ends when the fact ends. If a line is
+  there for effect rather than information, cut it.
+- **The bias is in the furniture, not the prose.** The maintenance banners
+  (`neutrality`, `contested`, `stub`, `protected`), the edit record and the
+  protection status carry the in-world point of view. The body text stays
+  encyclopedic. The reader sees the bias in the machinery, never in the
+  sentences.
+- Em dashes are permitted here, unlike the constituency prose.
+
 ### Editing it
 
 The **Concordance** tab in the editor edits the hand-written articles: title,
