@@ -1377,8 +1377,12 @@ const UI = (function () {
         <span><b>${k.electorate.toLocaleString()}</b><i>electors</i></span>
         <span><b>${ap[k.id].toFixed(2)}</b><i>apportionment ratio</i></span>
         <span><b>${k.magnitude}</b><i>${k.magnitude === 1 ? "seat" : "seats"}</i></span>
-      </div>
-      <div class="rulehead">Member</div>
+      </div>` +
+      (k.description ? `<div class="rulehead">Description</div>` +
+        `<div class="note">${esc(k.description)}</div>` : "") +
+      (k.tendency ? `<div class="rulehead">Voting and tendencies</div>` +
+        `<div class="note">${esc(k.tendency)}</div>` : "") +
+      `<div class="rulehead">Member</div>
       <div class="note">${r.vacant ? `<span class="hn vac">vacant</span>`
         : esc(bare(ch ? ch.name : (k.member || "\u2014"))) +
           (ch && ch.role ? ` \u00b7 ${esc(ch.role)}` : "")}</div>
