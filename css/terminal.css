@@ -827,7 +827,8 @@ img.dith{display:block;}
 #menu.on{display:flex;}
 body.menu-on{background:#0b1826;}
 .menu-stage{position:relative;flex:1 1 auto;min-height:0;overflow:auto;
-  background:#0b1826 center/cover no-repeat;
+  /* the plate sits a little above centre so the sea at its foot stays in frame */
+  background:#0b1826 center 68%/cover no-repeat;
   /* a blue-hour stand-in until the photograph loads */
   background-image:linear-gradient(180deg,
     #08121d 0%, #10283c 42%, #1c3a54 68%, #0b1826 100%);}
@@ -883,7 +884,7 @@ body.menu-on{background:#0b1826;}
 /* the printed band under the plate, on the same stock as an instrument */
 .menu-footer{flex:0 0 auto;display:flex;align-items:flex-end;gap:40px;
   justify-content:space-between;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:36px 56px 44px;}
+  font-family:"Times New Roman",Times,Georgia,serif;padding:36px 56px 38px;}
 .menu-footer .mf-text{max-width:1080px;}
 .menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
 .menu-footer p{margin:0;font-size:13px;line-height:1.45;}
