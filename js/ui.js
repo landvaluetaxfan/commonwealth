@@ -593,10 +593,17 @@ const UI = (function () {
           `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>`).join("") +
         `</tbody></table>`;
     });
-    det.querySelectorAll(".whipslide").forEach(sl => sl.addEventListener("input", () => {
-      Engine.setWhip(st, C, id, sl.dataset.wp, sl.dataset.wt, +sl.value);
-      drawBill(id); drawStatus();
-    }));
+    det.querySelectorAll(".whipbar").forEach(bar => {
+      const wp = bar.dataset.wp, wt = bar.dataset.wt;
+      [...bar.querySelectorAll("i")].forEach((cell, i) =>
+        cell.addEventListener("click", () => {
+          const cur = ((st.whips[id] || {})[wp] || {})[wt] || 0;
+          /* Click a block to commit up to it; click the last committed block
+             again to release it. */
+          Engine.setWhip(st, C, id, wp, wt, i + 1 === cur ? i : i + 1);
+          drawBill(id); drawStatus();
+        }));
+    });
     const clr = $("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
@@ -648,8 +655,11 @@ const UI = (function () {
           `<td>${tier === "functional" ? "func" : "elected"}</td>` +
           `<td class="n">${cur} / ${cap.max}</td>` +
           `<td class="n">${cap.costPerSeat}&thinsp;${cap.currency === "loyalty" ? "loy" : "cap"}</td>` +
-          `<td><input class="whipslide" type="range" min="0" max="${cap.max}" value="${cur}" ` +
-          `data-wp="${pid}" data-wt="${tier}"></td></tr>`;
+          `<td class="mv"><div class="whipbar" data-wp="${pid}" data-wt="${tier}" ` +
+            `title="${cur} of ${cap.max} whipped">` +
+            Array.from({ length: cap.max }, (_, i) =>
+              `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
+          `</div></td></tr>`;
       });
     });
 

@@ -692,7 +692,18 @@ img.dith{
 .slotbar i.spent{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}
 .whiptab td:first-child{white-space:nowrap;}
-.whipslide{width:100%;min-width:90px;accent-color:var(--rule);height:14px;}
+/* The whip is one block per whippable seat. The number of blocks is what
+   can be moved; the filled ones are what is committed. Click a block to
+   commit up to it, click the last committed block to release it. */
+.whipbar{
+  display:flex;gap:1px;height:14px;min-width:80px;padding:1px;cursor:pointer;
+  background:var(--chrome-lt);
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}
+.whipbar i{flex:1 1 0;min-width:2px;background:var(--field);}
+.whipbar i.on{background:var(--ok);}
+.whipbar i:not(.on):hover{background:var(--chrome-dk);}
 .whipcost{
   background:#f4eddb;border-left:3px solid #8a6d22;padding:4px 7px;margin-top:5px;
   font-size:11px;line-height:1.45;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
