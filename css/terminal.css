@@ -25,10 +25,14 @@
   --p-gb:#4a5f75;
   --p-ind:#7d7d74;
 
-  --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
-  --f-data:"DejaVu Sans Mono","Courier New",Courier,monospace;
-  --f-doc:"Liberation Serif","Times New Roman",Times,serif;
-  --f-disp:"Bodoni MT",Didot,"Playfair Display","Liberation Serif",Georgia,"Times New Roman",serif;
+  /* The terminal's faces. The UI face was a NARROW sans (Liberation/Arial
+     Narrow) and the document face was Times; both read badly at these sizes.
+     They are now normal-width and screen-tuned, with the old faces kept as
+     fallbacks so nothing shifts off a machine that has them. */
+  --f-ui:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
+  --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
+  --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
+  --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif","Times New Roman",serif;
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
