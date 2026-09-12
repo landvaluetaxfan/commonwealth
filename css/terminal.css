@@ -603,6 +603,12 @@ img.dith{
   font-family:var(--f-data);font-size:11px;background:transparent;border:none;
   border-bottom:1px solid #e4e5de;padding:3px 7px;
 }
+/* a section heading inside the wikibox: "Offices held" */
+.cx-infobox .cx-infohead th{
+  text-align:center;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  color:#3c4038;font-weight:bold;background:#e8ebe0;width:auto;
+  border-top:1px solid #c3c6bd;border-bottom:1px solid #c3c6bd;padding:3px 7px;
+}
 
 .cx-toc{
   display:inline-block;border:1px solid #c3c6bd;background:#f6f6f2;

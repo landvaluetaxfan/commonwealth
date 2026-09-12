@@ -31,6 +31,44 @@ const Concordance = (function () {
     return String(text).split(/\n\n+/).map(p => `<p>${links(p)}</p>`).join("");
   }
 
+  /* ---------- offices, read from the content the game runs on ----------
+
+     A person's `role` is a title somebody typed; the truth of who holds
+     what is in the cabinet, in the parties and on the member. Derive the
+     offices from those, so a recast in content cannot leave the
+     Concordance describing a post the game does not recognise. */
+  function officesOf(ch) {
+    const out = [], seen = {};
+    const add = (kind, label, title) => {
+      if (!label || seen[label]) return;
+      seen[label] = true;
+      out.push({ kind: kind, label: label, title: title || label });
+    };
+    if (ch.id === st.pm) add("Government", "Prime Minister");
+    (C.cabinet || []).forEach(p => {
+      if (p.holder === ch.id) add("Ministry", p.name, p.title || "Minister for " + p.name);
+    });
+    if (ch.office === "opposition") add("House", "Leader of the Opposition");
+    if (ch.office === "whip") add("House", "Chief Whip");
+    if (ch.office === "shadow" && ch.role) add("House", ch.role);
+    (C.parties || []).forEach(p => { if (p.leader === ch.id) add("Party", "Leader, " + p.name); });
+    return out;
+  }
+
+  /* The one office that defines the person: a ministry or a House office
+     first, then a party leadership, then nothing. */
+  function mainOffice(offices) {
+    return offices.find(o => o.kind === "Government" || o.kind === "Ministry" ||
+                             o.kind === "House") || null;
+  }
+
+  /* How an office reads in prose, and in a wikibox row. */
+  function officeLine(o) {
+    return o.kind === "Ministry" ? "Holds the " + o.label + " portfolio."
+         : o.kind === "Party" ? "Leads the party."
+         : "Serves as " + o.label + ".";
+  }
+
   /* ---------- generated articles ---------- */
 
   function partyArticle(p) {
@@ -40,6 +78,12 @@ const Concordance = (function () {
     const cs = st.confidenceSupply.includes(p.id);
     const axisLine = ["ownership", "personhood", "sovereignty", "closure"]
       .map(k => p.axes[k] ? k + ": " + p.axes[k] : null).filter(Boolean).join(" · ") || "no settled position";
+
+    /* The leader is a character id on the party, and the office is read
+       from the same cabinet the game runs on — so the article can say
+       whether the leader holds a portfolio, and never guesses. */
+    const leader = p.leader && C.characterById ? C.characterById[p.leader] : null;
+    const leadOffice = leader ? mainOffice(officesOf(leader)) : null;
 
     const currents = C.currents.filter(c => c.party === p.id);
     const sections = [
@@ -54,6 +98,9 @@ const Concordance = (function () {
           ? "The party holds more functional than district seats and does not contest most constituencies."
           : "") }
     ];
+    if (leader) sections.push({ h: "Leadership", body:
+      `Led by [[person_${leader.id}|${leader.name}]]. ` +
+      (leadOffice ? officeLine(leadOffice) : "Holds no ministerial office.") });
     if (inGov) sections.push({ h: "In government", body:
       `A party of the present coalition. Party discipline is recorded at ${st.parties[p.id].loyalty}.` });
     else if (cs) sections.push({ h: "Confidence and supply", body:
@@ -69,13 +116,15 @@ const Concordance = (function () {
                (p.aliases ? ` Known in the press as the ${p.aliases[0]}.` : ""),
       sections,
       infobox: { title: p.name, rows: [
+        ["Leader", leader ? `[[person_${leader.id}|${leader.name}]]` : "None"],
+        ["Leader's office", leader ? (leadOffice ? leadOffice.label : "No portfolio") : "\u2014"],
         ["Seats", String(total)],
         ["District", String(seats.district)],
         ["List", String(seats.list)],
         ["Functional", String(seats.functional)],
         ["Status", inGov ? "Coalition" : cs ? "Confidence and supply" : "Opposition"]
       ]},
-      see: currents.length ? [] : []
+      see: leader ? ["person_" + leader.id] : []
     };
   }
 
@@ -166,20 +215,48 @@ const Concordance = (function () {
   }
 
   function personArticle(ch) {
+    const offices = officesOf(ch);
     const isPM = ch.id === st.pm;
+    const party = ch.party ? C.partyById[ch.party] : null;
+    const fc = ch.functional && C.functionalById ? C.functionalById[ch.functional] : null;
+
+    /* THE LEDE FOLLOWS THE OFFICE, NOT A TYPED TITLE. A minister is
+       described by the post the cabinet says they hold, so a recast
+       cannot leave the article calling a minister a backbencher. */
+    const lead = mainOffice(offices);
+    const partyOffice = offices.find(o => o.kind === "Party");
+    let summary;
+    if (lead) summary = lead.title + (partyOffice ? "; " + partyOffice.label : "");
+    else if (partyOffice) summary = partyOffice.label;
+    else summary = ch.role || "A backbencher";
+    if (party && summary.indexOf(party.name) < 0) summary += ", " + party.name;
+    summary += ".";
+    if (fc) summary += ` Sits for the ${fc.name} functional constituency.`;
+    else if (ch.seat) summary += ` Sits for ${ch.seat}.`;
+
     const sections = [];
     if (ch.note) sections.push({ h: "", body: ch.note });
     if (isPM) sections.push({ h: "Government", body:
       `Leads a government commanding ${Engine.confidence(st)} of ${Engine.chamberTotal(st)} ` +
       `seats against a majority of ${Engine.majority(st)}.` });
+
+    const rows = [];
+    if (party) rows.push(["Party", party.name]);
+    if (fc) rows.push(["Constituency", fc.name + " (functional)"]);
+    else if (ch.seat) rows.push(["Seat", ch.seat]);
+    if (offices.length) {
+      rows.push(["", "Offices held", "head"]);
+      offices.forEach(o => rows.push([o.kind, o.label]));
+    }
+
     return {
       id: "person_" + ch.id, title: ch.name, category: "Persons", generated: true,
       banners: isPM ? ["contested"] : [],
       edited: { by: "multiple", attested: true, note: isPM ? "elevated sourcing requirements apply" : "" },
-      summary: ch.role + (ch.party ? `, ${(C.partyById[ch.party] || {}).name || ch.party}.` : ".") +
-        (ch.functional && C.functionalById && C.functionalById[ch.functional]
-          ? ` Sits for the ${C.functionalById[ch.functional].name} functional constituency.` : ""),
-      sections, see: ch.party ? [ch.party] : []
+      summary: summary,
+      sections: sections,
+      infobox: rows.length ? { title: ch.name, rows: rows } : null,
+      see: ch.party ? [ch.party] : []
     };
   }
 
@@ -242,7 +319,9 @@ const Concordance = (function () {
     }).join("");
 
     const info = a.infobox ? `<aside class="cx-infobox"><h4>${a.infobox.title}</h4><table>` +
-      a.infobox.rows.map(r => `<tr><th>${r[0]}</th><td>${links(r[1])}</td></tr>`).join("") +
+      a.infobox.rows.map(r => r[2] === "head"
+        ? `<tr class="cx-infohead"><th colspan="2">${r[1]}</th></tr>`
+        : `<tr><th>${r[0]}</th><td>${links(r[1])}</td></tr>`).join("") +
       `</table></aside>` : "";
 
     const toc = (a.sections || []).filter(s => s.h).length > 1

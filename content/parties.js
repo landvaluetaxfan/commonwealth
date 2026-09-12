@@ -22,18 +22,21 @@
    Chartists — none currently seated. */
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
+    leader:"flash",
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
     note:"Old left. Embodied maintenance labour. The strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
+    leader:"watkins",
     seats:{district:22,list:19,functional:6},
     kind:"national", loyalty:20,
     axes:{ownership:"private",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
     note:"Cosmopolitan market party. Elevator and shipping money." },
 
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
+    leader:"trottier",
     aliases:["Substrate Left"],
     seats:{district:6,list:28,functional:2},
     kind:"national", loyalty:41,
@@ -41,30 +44,35 @@ const PARTIES = [
     note:"List-tier strength, almost no districts. Shares your economics, despises your personhood line." },
 
   { id:"sc",  name:"Home Rule",                    short:"HR",  colour:"var(--p-sc)",
+    leader:"laughon",
     seats:{district:26,list:8,functional:0},
     kind:"national", loyalty:35,
     axes:{ownership:null,personhood:null,sovereignty:"station",closure:"closurist"},
     note:"Confederalist. Cannot whip its own members." },
 
   { id:"hul", name:"Association of Engineers and Systems", short:"AES", colour:"var(--p-hul)",
+    leader:"wilde_hayward",
     seats:{district:9,list:6,functional:7},
     kind:"national", loyalty:15,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:"closurist"},
     note:"Habitat as lifeboat. Engineering authority supreme." },
 
   { id:"rv",  name:"Democratic Centre",            short:"DEC", colour:"var(--p-rv)",
+    leader:"park",
     seats:{district:12,list:5,functional:1},
     kind:"national", loyalty:23,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
     note:"Continuity of soul. A copy is not the person. Economically left, culturally immovable." },
 
   { id:"fh",  name:"Party of Property Owners",     short:"PPO", colour:"var(--p-fh)",
+    leader:"bluespan",
     seats:{district:8,list:3,functional:6},
     kind:"national", loyalty:12,
     axes:{ownership:"private",personhood:"restrictionist",sovereignty:"station",closure:null},
     note:"Volume owners. Property absolutists." },
 
   { id:"gb",  name:"Alliance of Business and Government", short:"ABG", colour:"var(--p-gb)",
+    leader:"hatt",
     aliases:["Guild Bench"],
     seats:{district:0,list:0,functional:9},
     kind:"professional", loyalty:30,
@@ -72,12 +80,14 @@ const PARTIES = [
     note:"Exists only in the functional tier. Does not campaign. Cannot be voted out." },
 
   { id:"des", name:"One-G",                        short:"ONE", colour:"var(--p-des)",
+    leader:"edelstein_powell",
     seats:{district:3,list:1,functional:0},
     kind:"national", loyalty:18,
     axes:{ownership:null,personhood:"restrictionist",sovereignty:null,closure:null},
     note:"Gravity as birthright. Draws the physiologically excluded." },
 
   { id:"geo", name:"Single Tax Party",             short:"STP", colour:"var(--p-geo)",
+    leader:"wheeler",
     seats:{district:0,list:3,functional:0},
     kind:"national", loyalty:66,
     axes:{ownership:null,personhood:null,sovereignty:"federal",closure:null},
@@ -88,6 +98,7 @@ const PARTIES = [
          "always within a point of the threshold." },
 
   { id:"upl", name:"Common Kind",                  short:"CMK", colour:"var(--p-upl)",
+    leader:"lindegaard",
     seats:{district:0,list:2,functional:0},
     kind:"national", loyalty:58,
     /* Bible 4.8: the list threshold exempts a party representing a single
@@ -101,6 +112,7 @@ const PARTIES = [
          "half the chamber would repeal tomorrow." },
 
   { id:"ind", name:"Independents",                 short:"IND", colour:"var(--p-ind)",
+    leader:null,
     seats:{district:6,list:0,functional:0},
     kind:"national", loyalty:50,
     axes:{},
