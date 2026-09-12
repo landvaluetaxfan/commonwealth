@@ -22,7 +22,7 @@
    Chartists — none currently seated. */
 const PARTIES = [
   { id:"cu",  name:"Party of Socialists and Democrats", short:"PSD", colour:"var(--p-cu)",
-    leader:"flash",
+    leader:"flash", logo:"cu.png",
     seats:{district:48,list:25,functional:9},
     kind:"national", loyalty:62,
     axes:{ownership:"public",personhood:"restrictionist",sovereignty:"federal",closure:null},
@@ -36,7 +36,7 @@ const PARTIES = [
     note:"Cosmopolitan market party. Elevator and shipping money." },
 
   { id:"psa", name:"New Progressive Party",        short:"NPP", colour:"var(--p-psa)",
-    leader:"trottier",
+    leader:"trottier", logo:"psa.png",
     aliases:["Substrate Left"],
     seats:{district:6,list:28,functional:2},
     kind:"national", loyalty:41,

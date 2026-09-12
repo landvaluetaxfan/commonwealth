@@ -115,7 +115,7 @@ const Concordance = (function () {
       summary: `A party of the House of Delegates holding ${total} of ${Engine.chamberTotal(st)} seats.` +
                (p.aliases ? ` Known in the press as the ${p.aliases[0]}.` : ""),
       sections,
-      infobox: { title: p.name, rows: [
+      infobox: { title: p.name, logo: p.logo || null, rows: [
         ["Leader", leader ? `[[person_${leader.id}|${leader.name}]]` : "None"],
         ["Leader's office", leader ? (leadOffice ? leadOffice.label : "No portfolio") : "\u2014"],
         ["Seats", String(total)],
@@ -318,7 +318,9 @@ const Concordance = (function () {
       return `<div class="cx-banner cx-${def.cls}">${def.text}</div>`;
     }).join("");
 
-    const info = a.infobox ? `<aside class="cx-infobox"><h4>${a.infobox.title}</h4><table>` +
+    const info = a.infobox ? `<aside class="cx-infobox">` +
+      (a.infobox.logo ? `<img class="cx-logo" src="img/logos/${a.infobox.logo}" alt="">` : "") +
+      `<h4>${a.infobox.title}</h4><table>` +
       a.infobox.rows.map(r => r[2] === "head"
         ? `<tr class="cx-infohead"><th colspan="2">${r[1]}</th></tr>`
         : `<tr><th>${r[0]}</th><td>${links(r[1])}</td></tr>`).join("") +

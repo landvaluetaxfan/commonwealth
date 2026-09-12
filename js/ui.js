@@ -1361,7 +1361,7 @@ const UI = (function () {
             `${!r.vacant && ch && ch.role ? ` <span class="det">\u00b7 ${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
           `<td class="n">${ap[k.id] != null ? ap[k.id].toFixed(2) : "&mdash;"}</td>` +
-          `<td class="held">${held.map(pid => `${mark(pid)}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
+          `<td class="held">${held.map(pid => `${sw(pc(pid))}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
         return row + (open
           ? `<tr class="consdet"><td colspan="4">${constituencyDetail(k)}</td></tr>` : "");
       }).join("") + "</tbody>";
