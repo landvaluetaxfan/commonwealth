@@ -10,7 +10,7 @@ Navigate interparty relations, your governmental coalition, parliament, and fore
 
 ## Run it
 
-Play it in the browser at (https://landvaluetaxfan.github.io/commonwealth/). I might get my own domain eventually. Or download at releases once I get around to doing that. There might also be an itch.io page someday. Who knows.
+Play it in the browser at (https://landvaluetaxfan.github.io/ways-and-means-game/). I might get my own domain eventually. Or download at releases once I get around to doing that. There might also be an itch.io page someday. Who knows.
 
 From a clone, open `index.html`. `file://` is supported.
 

@@ -857,12 +857,21 @@ body.menu-on{background:#0b1826;}
   color:#c9ccc2;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
 .menu-btns{display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
 .menu-btns.row{flex-direction:row;margin-top:16px;}
-/* glass buttons, so the plate shows through */
+/* glass buttons, bevelled like the terminal's chrome: light on the top and
+   left, dark on the bottom and right, so the plate shows through but they
+   still read as raised metal. All one width; Continue is no longer wider. */
 .mbtn{font-family:var(--f-ui);font-size:19px;color:#f2f2ec;text-align:left;
-  background:rgba(20,23,18,.52);border:1px solid rgba(242,242,236,.34);padding:9px 16px;width:306px;
+  background:rgba(20,23,18,.52);padding:9px 16px;width:306px;
+  border-top:1px solid rgba(242,242,236,.55);
+  border-left:1px solid rgba(242,242,236,.4);
+  border-bottom:1px solid rgba(8,10,8,.72);
+  border-right:1px solid rgba(8,10,8,.72);
   cursor:pointer;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);}
-.mbtn:hover{background:rgba(60,64,56,.66);border-color:rgba(242,242,236,.62);}
-.mbtn:active{background:rgba(90,95,84,.7);}
+.mbtn:hover{background:rgba(60,64,56,.66);
+  border-top-color:rgba(255,255,255,.72);border-left-color:rgba(255,255,255,.55);}
+.mbtn:active{background:rgba(90,95,84,.7);
+  border-top-color:rgba(8,10,8,.72);border-left-color:rgba(8,10,8,.72);
+  border-bottom-color:rgba(242,242,236,.5);border-right-color:rgba(242,242,236,.5);}
 .mbtn.off,.mbtn:disabled{opacity:.4;cursor:default;}
 .mbtn.off:hover,.mbtn:disabled:hover{background:rgba(20,23,18,.52);border-color:rgba(242,242,236,.34);}
 .mbtn.sm{font-size:12.5px;width:auto;padding:4px 11px;}
@@ -1255,7 +1264,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .art img{display:block;width:100%;height:100%;object-fit:contain;
   image-rendering:pixelated;}
 
-.mbtn.wide i{display:block;font-style:normal;font-family:var(--f-data);
+.mbtn.cont i{display:block;font-style:normal;font-family:var(--f-data);
   font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
 /* the inline options panel sits over the photograph in the main menu, so it
    carries its own dark ground and light ink. The popover in the bar keeps the

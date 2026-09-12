@@ -207,7 +207,7 @@ const Shell = (function () {
     const last = latest();
     const any = !!last;
     return `<div class="menu-btns">
-      ${last ? `<button class="mbtn wide" data-cont="${last.n}">Continue
+      ${last ? `<button class="mbtn cont" data-cont="${last.n}">Continue
           <i>${esc(last.name)} &middot; sitting ${last.sitting} &middot; chapter ${last.chapter}${
             last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
       <button class="mbtn" data-go="new">New Government</button>
