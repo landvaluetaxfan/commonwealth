@@ -160,8 +160,10 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #cons-table .mp{display:block;font-style:normal;font-size:10.5px;color:var(--ink);opacity:.92;}
 #cons-table .det{display:inline;font-style:normal;font-size:9.5px;color:var(--ink-soft);
   font-family:var(--f-data);}
-/* Held: the mark and the party's short name, centred as one group. */
-#cons-table th.held,#cons-table td.held{text-align:center;white-space:nowrap;}
+/* Held: the mark and the party's short name, centred as one group. width:1%
+   keeps the column as narrow as its content — without it the auto layout
+   hands it a share of the table and it reads as a wide empty box. */
+#cons-table th.held,#cons-table td.held{width:1%;text-align:center;white-space:nowrap;}
 #cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:9px;
   letter-spacing:.04em;color:var(--ink-soft);}
 #cons-table .chair{color:#c9a227;letter-spacing:.06em;}
