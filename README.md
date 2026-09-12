@@ -10,75 +10,15 @@ Navigate interparty relations, your governmental coalition, parliament, and fore
 
 ## Run it
 
-[Play in the browser](https://landvaluetaxfan.github.io/commonwealth/). Saves are
-per browser, per slot. Or download the single inlined file from
-[Releases](../../releases).
+Play it in the browser at (https://landvaluetaxfan.github.io/commonwealth/). I might get my own domain eventually. Or download at releases once I get around to doing that. There might also be an itch.io page someday. Who knows.
 
-From a clone, open `index.html`. `file://` is supported, which is why content is
-`.js` and not `.json`: `fetch()` is blocked on `file://` and `<script src>` is
-not. No framework, no bundler, nothing to compile before playing. `npm run
-build` is optional and only produces the single-file release.
-
-| | |
-|---|---|
-| `index.html` | the game |
-| `editor.html` | the content editor |
-| `npm run build` | writes `dist/ways-and-means.html`, everything inlined |
-
-## State
-
-| | |
-|---|---|
-| Engine | Complete for chapters one and two: divisions, whipping against per-partner capital, statutory instruments with prayer windows, cabinet vacancies, scarcity prices, save migration. |
-| Interface | Seven screens, keyboard-navigable, with a synthesised audio bus, text streaming and a tooltip layer. |
-| Content | Placeholder. 12 events against canon that supports hundreds. |
-| Canon | 1,881 lines in `bible.md`, plus `textbook.md`, an in-world primer. |
-
-Canon describes 34 stations, 11 parties and 140 constituencies. Content reaches
-a fraction of that. `js/coverage.js` reports what is unwritten from the content
-itself.
-
-## Rules
-
-Read `CLAUDE.md`, then `bible.md`.
-
-1. `js/engine.js` names no event, no party, no station. Content is data in
-   `content/*.js`.
-2. No randomness in event selection. Resolution is deterministic.
-3. The station, person and glossary rosters are frozen lists (§2.7).
-4. One concept cluster per event (§2.6). `tools/lint.js` enforces it.
-5. Bump `STATE_VERSION` and add an ascending migration block when the state
-   object changes shape.
-
-Two agents split the repo per `AGENTS.md`: Claude Code takes `js/`, `tools/` and
-tests; opencode takes `content/*.js` and prose.
-
-## Checks
-
-```
-npm install      # once, for jsdom
-npm run check    # all nine, about three seconds
-```
-
-| | |
-|---|---|
-| `test.js` | chamber arithmetic against the bible, tier reconciliation, instruments, save migration from every past version, 40-sitting smoke test |
-| `tools/lint.js` | concept load per event, terms used before taught |
-| `tools/cxcheck.js` | Concordance links, see-alsos, banners |
-| `tools/roundtrip.js` | serialise → reload → identical play |
-| `tools/renametest.js` | renaming an id preserves behaviour |
-| `tools/edtest.js` | the editor boots and every tab works |
-| `tools/uitest.js` | every screen renders, saves round-trip |
-| `tools/uxtest.js` | focus, tips, audio, streaming, the division dialog |
-| `tools/toc.js --check` | the bible's section index is current |
-
-Run them after any change.
+From a clone, open `index.html`. `file://` is supported.
 
 ## Layout
 
 ```
 index.html            the game
-editor.html           the content editor
+editor.html           useless content editor I don't use
 bible.md              canon, out-of-world
 textbook.md           canon, in-world
 sweep-brief.md        the current build phase
