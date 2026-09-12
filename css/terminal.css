@@ -828,11 +828,10 @@ img.dith{display:block;}
     #08121d 0%, #10283c 42%, #1c3a54 68%, #0b1826 100%);}
 #menu.on{display:block;}
 body.menu-on{background:#0b1826;}
-/* the scrim: darkest at the left, clearing to the right, plus a floor */
+/* the scrim: darkest at the left, clearing to the right */
 #menu::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
   background:
-    linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%),
-    linear-gradient(0deg, rgba(12,14,11,.8) 0%, rgba(12,14,11,0) 44%);}
+    linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
 #menu::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
   position:relative;z-index:2;display:block;background:rgba(28,31,25,.72);color:var(--bar-txt);
   font-family:var(--f-ui);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
