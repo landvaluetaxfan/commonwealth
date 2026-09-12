@@ -88,11 +88,14 @@ const Shell = (function () {
     try { return JSON.parse(raw); } catch (e) { return null; }
   }
   function writeSlot(n, name, stateStr) {
-    let sitting = 0, chapter = 1;
-    try { const s = JSON.parse(stateStr); sitting = s.sitting || 0; chapter = s.chapter || 1; }
-    catch (e) {}
+    let sitting = 0, chapter = 1, date = "";
+    try {
+      const s = JSON.parse(stateStr);
+      sitting = s.sitting || 0; chapter = s.chapter || 1; date = s.date || "";
+    } catch (e) {}
     write(KEY(n), JSON.stringify({
-      name: name, at: Date.now(), sitting: sitting, chapter: chapter, state: stateStr
+      name: name, at: Date.now(), sitting: sitting, chapter: chapter,
+      date: date, state: stateStr
     }));
   }
   function when(ms) {
@@ -105,8 +108,151 @@ const Shell = (function () {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  function menuShell(inner) {
-    return `<div class="menu-plate">
+  /* ---------- the standing board ----------
+
+     THE TERMINAL WAS LEFT ON. The menu is a departmental status board
+     that is already displaying the position when the player arrives, with
+     a small panel of controls in the corner. The board is a DISPLAY and
+     not a dashboard: nothing on it is clickable, nothing hovers, and
+     js/tips.js is told to ignore everything inside #menu, because an
+     explanation on a board nobody can act on is noise.
+
+     EVERY VALUE IS DERIVED FROM THE OPENING STATE, never written down
+     here, so the board cannot drift as content changes. Engine.newGame()
+     is pure and repeatable - two calls serialise identically - so the
+     board can build the opening position, read it, and never start it.
+     Built once and cached: it is a hundred lines of construction plus a
+     roll reconciliation, and the idle timer must not pay for it.
+
+     It must never read as a game in progress, which is why it is headed
+     as the standing position at the opening of the session and carries
+     its own date line. */
+  let opening = null;
+  function openingState() {
+    if (!opening && C && typeof Engine !== "undefined") {
+      try { opening = Engine.newGame(C); } catch (e) { opening = null; }
+    }
+    return opening;
+  }
+
+  /* The bill before the House: the live bill that has got furthest, by
+     the engine's own stage order. Not "the first in the file", which
+     would be arbitrary and would move when content is reordered. */
+  function billBeforeHouse(st) {
+    const order = (typeof Engine !== "undefined" && Engine.STAGE_ORDER) || [];
+    let best = null, bestAt = -1;
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || bs.dead || bs.stage === "withdrawn") return;
+      const at = order.indexOf(bs.stage);
+      if (at > bestAt) { bestAt = at; best = b; }
+    });
+    return best;
+  }
+
+  /* THE TICKER IS THE ORDER PAPER, not press copy. A standing board in a
+     government office shows the business before the House; it does not
+     invent headlines. st.wire is empty at the opening state, so anything
+     drawn from it would scroll nothing on a fresh install - which is
+     exactly when the menu matters most. */
+  function ticker(st) {
+    const order = (typeof Engine !== "undefined" && Engine.STAGE_ORDER) || [];
+    const out = [];
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || bs.dead) return;
+      const d = Engine.division(st, C, b.id);
+      out.push(`${b.ref ? b.ref + " · " : ""}${b.title.toUpperCase()} — ` +
+        `${String(bs.stage).replace(/_/g, " ")} · ` +
+        (b.dualMajority ? "dual majority required" : "simple majority") +
+        ` · ${d.popular.aye} of ${d.popular.need} on the popular benches`);
+    });
+    (C.instruments || []).forEach(si => {
+      const s = st.instruments[si.id];
+      if (s && s.inForce) out.push(`${si.number} — in force`);
+    });
+    if (!out.length) out.push("No business before the House.");
+    return out;
+  }
+
+  function boardHTML() {
+    const st = openingState();
+    if (!st) return "";
+    const maj = Engine.majority(st), conf = Engine.confidence(st);
+    const bill = billBeforeHouse(st);
+    const posts = ticker(st);
+
+    const meters = [
+      ["Party loyalty", "party_loyalty"], ["Public standing", "public_standing"],
+      ["Consumables", "consumables"], ["Thermal margin", "thermal_margin"],
+      ["Treasury", "treasury"]
+    ].map(([lab, k]) => {
+      const v = st.scalars[k];
+      return `<div class="meterrow"><label>${lab}</label>` +
+        `<div class="meter ${v <= 20 ? "warn" : v >= 65 ? "good" : ""}">` +
+        `<i style="width:${v}%"></i></div><output>${v}</output></div>`;
+    }).join("");
+
+    const sessions = log();
+
+    return `<div class="board" id="board">
+      <div class="board-head">
+        ${Artifacts.render("crest")}
+        <div class="board-title">
+          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
+          <span>Standing position at the opening of Session ${st.session}
+            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
+        </div>
+        ${Artifacts.render("department_mark")}
+      </div>
+
+      <div class="board-grid">
+        <div class="panel"><h2>The chamber</h2><div class="pbody">
+          <div class="kv"><dt>Seats</dt><dd>${Engine.chamberTotal(st)}</dd>
+            <dt>District</dt><dd>${st.law.tier_ratio_district}</dd>
+            <dt>List</dt><dd>${st.law.tier_ratio_list}</dd>
+            <dt>Functional</dt><dd>${Engine.functionalTotal(st)}</dd>
+            <dt>Majority</dt><dd>${maj}</dd>
+            <dt>Confidence</dt><dd>${conf} &middot; margin ${conf - maj >= 0 ? "+" : ""}${conf - maj}</dd></div>
+        </div></div>
+
+        <div class="panel"><h2>Standing indicators</h2>
+          <div class="pbody">${meters}</div></div>
+
+        <div class="panel"><h2>Before the House</h2><div class="pbody">
+          ${bill ? `<div class="board-bill"><b>${esc(bill.title)}</b>
+            <i>${esc(bill.ref || "")} &middot; ${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))}
+               &middot; ${bill.dualMajority ? "dual majority" : "simple majority"}</i></div>
+            <div class="note">${esc(bill.summary || "")}</div>`
+          : `<div class="note">Nothing before the House.</div>`}
+        </div></div>
+
+        <div class="panel"><h2>System notice</h2><div class="pbody">
+          ${Artifacts.render("notice_plate", "wide")}
+          ${typeof NOTICE !== "undefined" && NOTICE
+            ? `<div class="note"><b>${esc(NOTICE.ref || "")}</b>
+                 ${NOTICE.from ? "&middot; " + esc(NOTICE.from) : ""}</div>
+               <div class="note">${esc(NOTICE.text || "")}</div>`
+            : ""}
+        </div></div>
+
+        <div class="panel board-log"><h2>Session log</h2><div class="pbody">
+          ${sessions.length
+            ? sessions.slice(0, 6).map(s =>
+                `<div class="note"><b>${esc(s.name)}</b> &middot; sitting ${s.sitting}
+                   &middot; ${esc(s.date || "")} &mdash; ${esc(s.end)}</div>`).join("")
+            : `<div class="note">No completed session on this terminal.</div>`}
+        </div></div>
+      </div>
+
+      <div class="ticker" id="board-ticker"><div class="tk">${
+        posts.concat(posts).map(p => `<span>${esc(p)}</span>`).join("")
+      }</div></div>
+    </div>`;
+  }
+
+  function menuShell(inner, view) {
+    return boardHTML() + `<div class="menu-plate" id="menu-plate">
       <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
       <div class="menu-tag">A Space Story About Politics and Governance</div>
       <div class="menu-body">${inner}</div>
@@ -119,21 +265,81 @@ const Shell = (function () {
     const m = document.getElementById("menu");
     m.classList.add("on");
     document.body.classList.add("menu-on");
+    /* a tiling field rather than an element, so it is applied and not
+       rendered; empty leaves the CSS ground exactly as it was */
+    if (typeof Artifacts !== "undefined") Artifacts.applyBackdrop(m);
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
     : view === "new"     ? slotList("new")
     : view === "credits" ? credits()
-    : root());
+    : view === "options" ? menuOptions()
+    : root(), view);
     wireMenu(m, view);
+    idle.arm();
   }
 
+  /* ---------- the session log ----------
+
+     Outside every save, on purpose. wm.opts is a different localStorage
+     key from wm.slot.N and deleting a slot never touches it, so the log
+     survives deleting every game. It is an ARRAY under a flat key, which
+     is safe against the shallow merge that makes nested objects
+     dangerous here: a stored array replaces the default wholesale and an
+     array has no keys to lose. */
+  function log() { return Array.isArray(opts.sessions) ? opts.sessions : []; }
+  function record(entry) {
+    const l = log().slice();
+    l.unshift({
+      /* the caller knows the world; this file knows which slot it was */
+      at: Date.now(), name: entry.name || (current && current.name) || "Unnamed government",
+      sitting: entry.sitting || 0, chapter: entry.chapter || 1,
+      date: entry.date || "", end: entry.end || "ended"
+    });
+    opts.sessions = l.slice(0, 20);
+    saveOpts();
+  }
+
+  /* The most recent save by when it was written, which is what
+     "Continue" has to mean. */
+  function latest() {
+    let best = null;
+    for (let i = 1; i <= SLOTS; i++) {
+      const s = slot(i);
+      if (s && (!best || (s.at || 0) > (best.at || 0))) best = Object.assign({ n: i }, s);
+    }
+    return best;
+  }
+
+  /* ---------- the controls ----------
+
+     Plain language, no metaphor, no in-world renaming. The atmosphere is
+     on the board behind this panel; a control that has to be decoded is
+     a control between the player and the game.
+
+     Continue is ABSENT rather than disabled when there is nothing to
+     continue: a disabled button is a thing you are being refused, and on
+     a first run there is nothing to refuse. */
   function root() {
-    const any = [...Array(SLOTS).keys()].some(i => slot(i + 1));
+    const last = latest();
+    const any = !!last;
     return `<div class="menu-btns">
-      <button class="mbtn" data-go="new">Start New Save</button>
-      <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load Save</button>
+      ${last ? `<button class="mbtn wide" data-cont="${last.n}">Continue
+          <i>${esc(last.name)} &middot; sitting ${last.sitting} &middot; chapter ${last.chapter}${
+            last.date ? " &middot; " + esc(last.date) : ""}</i></button>` : ""}
+      <button class="mbtn" data-go="new">New Government</button>
+      <button class="mbtn${any ? "" : " off"}" data-go="load"${any ? "" : " disabled"}>Load</button>
+      <button class="mbtn" data-go="options">Options</button>
       <button class="mbtn" data-go="credits">Credits</button>
     </div>`;
+  }
+
+  /* The same Control Panel as the topbar's, rendered here rather than
+     forked. The three session buttons at the bottom of it are omitted:
+     there is no game to export and nowhere to return to. */
+  function menuOptions() {
+    return `<div class="menu-sub">Options</div>
+      <div class="optpanel-inline">${optionsHTML(false)}</div>
+      <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
   function slotList(mode) {
@@ -175,8 +381,27 @@ const Shell = (function () {
   }
 
   function wireMenu(m, view) {
+    if (view === "options") wireOptions(m, false);
+
     m.querySelectorAll("[data-go]").forEach(b =>
-      b.addEventListener("click", () => showMenu(b.dataset.go === "root" ? null : b.dataset.go)));
+      b.addEventListener("click", () => {
+        /* New Government confirms only when there is something to lose. */
+        if (b.dataset.go === "new" && latest() && opts.confirmDestructive &&
+            !confirm("Start a new government? Your existing saves are kept; " +
+                     "you will choose a slot next.")) return;
+        showMenu(b.dataset.go === "root" ? null : b.dataset.go);
+      }));
+
+    m.querySelectorAll("[data-cont]").forEach(b => b.addEventListener("click", () => {
+      const n = +b.dataset.cont, sv = slot(n);
+      if (sv) start(n, sv.name, sv.state);
+    }));
+
+    /* Continue takes focus when it exists, so Enter resumes. When it does
+       not exist the first control does, which is New Government - never a
+       disabled button and never nothing. */
+    const first = m.querySelector("[data-cont]") || m.querySelector(".menu-btns .mbtn:not([disabled])");
+    if (first && first.focus) first.focus({ preventScroll: true });
 
     m.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.new, existing = slot(n);
@@ -200,6 +425,51 @@ const Shell = (function () {
       drop(KEY(n)); showMenu("load");
     }));
   }
+
+  /* ---------- idle ----------
+
+     THE SCREENSAVER IS THE MENU WITH THE UI REMOVED, not a separate
+     mode. After ninety seconds the control panel fades and the board
+     stays, ticker still running, because the board is the thing worth
+     looking at. Any input brings the panel back.
+
+     It respects `motion`. A player who has turned animations off has
+     said what they want from transitions, and a fade that ignores that
+     is a bug against a setting they already set - so with motion off the
+     panel simply stays. */
+  const idle = (function () {
+    let timer = null, wired = false, hidden = false;
+    const IDLE_MS = 90000;
+
+    function panel() { return document.getElementById("menu-plate"); }
+    function show() {
+      if (!hidden) return;
+      hidden = false;
+      const p = panel(); if (p) p.classList.remove("idle");
+    }
+    function hide() {
+      const m = document.getElementById("menu");
+      if (!m || !m.classList.contains("on") || !opts.motion) return;
+      const p = panel(); if (!p) return;
+      hidden = true; p.classList.add("idle");
+    }
+    function arm() {
+      show();
+      clearTimeout(timer);
+      if (typeof document === "undefined" || !opts.motion) return;
+      timer = setTimeout(hide, IDLE_MS);
+    }
+    function wire() {
+      if (wired || typeof document === "undefined") return;
+      wired = true;
+      ["pointerdown", "pointermove", "keydown", "wheel"].forEach(ev =>
+        document.addEventListener(ev, () => {
+          const m = document.getElementById("menu");
+          if (m && m.classList.contains("on")) arm();
+        }, true));
+    }
+    return { arm, wire, hidden: () => hidden };
+  })();
 
   /* ---------- starting and saving ---------- */
   function start(n, name, stateStr) {
@@ -241,8 +511,14 @@ const Shell = (function () {
     flash._t = setTimeout(() => f.classList.remove("on"), 1800);
   }
 
-  /* ---------- options menu ---------- */
-  function optionsHTML() {
+  /* ---------- options menu ----------
+
+     ONE PANEL, TWO PLACES. The topbar popover and the menu's Options view
+     render the same HTML and are wired by the same function; forking it
+     is how two settings screens end up disagreeing about what a setting
+     is called. `inGame` drops the three session buttons, because from the
+     main menu there is no game to export and nowhere to return to. */
+  function optionsHTML(inGame) {
     const row = (k, label, note) => `<label class="opt"><input type="checkbox" data-opt="${k}"
       ${opts[k] ? "checked" : ""}><span><b>${label}</b><i>${note}</i></span></label>`;
     const slider = (k, label) => `<label class="optlvl"><span>${label}</span>
@@ -269,11 +545,36 @@ const Shell = (function () {
             .map(v => `<option value="${v}"${opts.streamSpeed === v ? " selected" : ""}>` +
                       v.charAt(0).toUpperCase() + v.slice(1) + `</option>`).join("")}
         </select></label>
-      <div class="opt-sep"></div>
+      ${inGame === false ? "" : `<div class="opt-sep"></div>
       <button class="mbtn sm wide" data-act="export">Export to file</button>
       <button class="mbtn sm wide" data-act="import">Import from file</button>
       <div class="opt-sep"></div>
-      <button class="mbtn sm wide danger" data-act="menu">Return to main menu</button>`;
+      <button class="mbtn sm wide danger" data-act="menu">Return to main menu</button>`}`;
+  }
+
+  function wireOptions(p, inGame) {
+    p.querySelectorAll("[data-opt]").forEach(cb => cb.addEventListener("change", () => {
+      opts[cb.dataset.opt] = cb.checked; saveOpts(); applyOpts();
+    }));
+    /* change, not input: a select lands when it lands. */
+    p.querySelectorAll("[data-pick]").forEach(sel => sel.addEventListener("change", () => {
+      setOpt(sel.dataset.pick, sel.value);
+    }));
+    /* input, not change: a volume slider that only lands when you let go is
+       a slider you cannot aim. */
+    p.querySelectorAll("[data-lvl]").forEach(sl => sl.addEventListener("input", () => {
+      opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts(); applyOpts();
+    }));
+    if (inGame === false) return;
+    p.querySelector('[data-act="export"]').addEventListener("click", exportFile);
+    p.querySelector('[data-act="import"]').addEventListener("click", () =>
+      document.getElementById("file-load").click());
+    p.querySelector('[data-act="menu"]').addEventListener("click", () => {
+      if (opts.confirmDestructive && !confirm("Return to the main menu? Unsaved progress is lost.")) return;
+      toggleOptions(false);
+      document.getElementById("shell").classList.remove("on");
+      current = null; showMenu(null);
+    });
   }
 
   function toggleOptions(force) {
@@ -288,28 +589,8 @@ const Shell = (function () {
       if (b && p.contains(document.activeElement)) b.focus();
       return;
     }
-    p.innerHTML = optionsHTML();
-    p.querySelectorAll("[data-opt]").forEach(cb => cb.addEventListener("change", () => {
-      opts[cb.dataset.opt] = cb.checked; saveOpts();
-    }));
-    /* input, not change: a volume slider that only lands when you let go is
-       a slider you cannot aim. */
-    /* change, not input: a select lands when it lands. */
-    p.querySelectorAll("[data-pick]").forEach(sel => sel.addEventListener("change", () => {
-      setOpt(sel.dataset.pick, sel.value);
-    }));
-    p.querySelectorAll("[data-lvl]").forEach(sl => sl.addEventListener("input", () => {
-      opts[sl.dataset.lvl] = (+sl.value || 0) / 100; saveOpts();
-    }));
-    p.querySelector('[data-act="export"]').addEventListener("click", exportFile);
-    p.querySelector('[data-act="import"]').addEventListener("click", () =>
-      document.getElementById("file-load").click());
-    p.querySelector('[data-act="menu"]').addEventListener("click", () => {
-      if (opts.confirmDestructive && !confirm("Return to the main menu? Unsaved progress is lost.")) return;
-      toggleOptions(false);
-      document.getElementById("shell").classList.remove("on");
-      current = null; showMenu(null);
-    });
+    p.innerHTML = optionsHTML(true);
+    wireOptions(p, true);
   }
 
   function exportFile() {
@@ -349,6 +630,7 @@ const Shell = (function () {
        graph and makes no sound until the player's first click or keypress,
        because every browser refuses to start one before that anyway. */
     if (typeof Sound !== "undefined") Sound.init();
+    idle.wire();
     document.addEventListener("click", e => {
       const p = document.getElementById("tb-optpanel");
       if (p.classList.contains("on") && !p.contains(e.target)) toggleOptions(false);
@@ -374,5 +656,8 @@ const Shell = (function () {
   }
 
   return { boot: boot, autosave: autosave, save: saveNow, options: opts,
-           opt: opt, setOpt: setOpt, flash: flash };
+           opt: opt, setOpt: setOpt, flash: flash,
+           /* the session log: written when a government ends, read by the
+              board. Outside every save on purpose. */
+           record: record, sessions: log };
 })();

@@ -736,13 +736,9 @@ img.dith{
 /* --- the main menu --- */
 #menu{display:none;position:fixed;inset:0;z-index:100;background:var(--chrome);
   overflow:auto;}
-#menu.on{display:block;}
+#menu.on{display:flex;flex-direction:column;overflow:hidden;}
 /* the menu covers the desktop chrome, so the page ground matches it */
 body.menu-on{background:var(--chrome);}
-#menu::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
-  display:block;background:var(--bar);color:var(--bar-txt);
-  font-family:var(--f-ui);font-size:11px;letter-spacing:.09em;text-transform:uppercase;
-  padding:4px 8px;}
 .menu-plate{max-width:920px;padding:74px 40px 60px 56px;}
 .menu-title{font-family:var(--f-disp);color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 1px 0 rgba(27,29,25,.18);}
@@ -1072,3 +1068,100 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
    rectangle everywhere in this game and nothing else may compete with it,
    so a mode marker has to say what it means in some other way. */
 body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
+
+/* =============================================================
+   THE STANDING BOARD — the main menu.
+
+   The terminal was left on. The board is the screen; the controls
+   are a small panel in a corner. Same panel chrome as the game,
+   because it is the same machine — no new visual language.
+   ============================================================= */
+#menu{background-repeat:repeat;}          /* the backdrop slot, when filled */
+.board{
+  flex:1 1 auto;min-height:0;
+  display:flex;flex-direction:column;gap:5px;padding:5px 5px 0;
+  pointer-events:none;                     /* a display, not a dashboard */
+}
+.board-head{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bar);color:var(--bar-txt);padding:5px 8px;
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+}
+.board-title{flex:1 1 auto;min-width:0;}
+.board-title b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.board-title span{display:block;font-family:var(--f-data);font-size:10px;opacity:.75;}
+.board-grid{
+  flex:1 1 auto;min-height:0;overflow:auto;
+  display:grid;gap:5px;align-content:start;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+}
+.board-grid .panel{align-self:start;}
+.board-bill b{font-size:12px;}
+.board-bill i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;color:var(--ink-soft);margin:1px 0 4px;}
+.board-log{grid-column:1 / -1;}
+.board-log .note + .note{margin-top:2px;}
+
+/* the ticker: the order paper, scrolling. The one animation on this
+   screen apart from the idle fade. The list is rendered twice so the
+   loop has no seam; no-motion parks it. */
+.ticker{
+  flex:0 0 auto;overflow:hidden;white-space:nowrap;
+  background:var(--bar);color:var(--bar-txt);
+  font-family:var(--f-data);font-size:10px;padding:3px 0;
+}
+.ticker .tk{display:inline-block;animation:tk 70s linear infinite;}
+.ticker span{padding:0 28px;}
+.ticker span::after{content:"\2022";margin-left:28px;opacity:.5;}
+@keyframes tk{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+body.no-motion .ticker .tk{animation:none;padding-left:8px;}
+
+/* THE CONTROLS ARE A PANEL IN A CORNER, not the screen. #menu is
+   position:fixed, so the plate anchors to the viewport and the board
+   lays out as though the plate were not there. The board is
+   the screen. The title shrinks to a masthead over the buttons rather
+   than being the thing you arrive at. */
+#menu.on{display:flex;flex-direction:column;overflow:hidden;}
+.menu-plate{
+  position:absolute;left:20px;bottom:24px;z-index:2;
+  width:330px;max-width:calc(100% - 40px);padding:12px 14px 14px;
+  background:var(--chrome);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  box-shadow:3px 3px 0 rgba(27,29,25,.22);
+  pointer-events:auto;
+}
+.menu-plate .menu-title{color:var(--ink);text-shadow:none;}
+.menu-plate .menu-title .w,.menu-plate .menu-title .m{font-size:30px;}
+.menu-plate .menu-title .a{font-size:19px;}
+.menu-plate .menu-tag{margin-top:7px;font-size:10px;padding:2px 7px;}
+.menu-plate .menu-body{margin-top:14px;}
+.menu-plate .mbtn{width:100%;}
+.menu-plate.idle{opacity:0;transition:opacity 1.4s linear;pointer-events:none;}
+body.no-motion .menu-plate.idle{opacity:1;pointer-events:auto;}
+.mbtn.wide i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;opacity:.72;margin-top:2px;letter-spacing:0;text-transform:none;}
+.optpanel-inline{max-height:46vh;overflow:auto;padding-right:4px;}
+
+/* ---------- artifact slots ----------
+
+   OUT OF FLOW, ALWAYS. An empty slot must leave no gap and a filled one
+   must shift nothing, and the only way to have both is for the slot never
+   to take part in layout at all: each is absolutely placed against an
+   anchor that is already the size it is going to be. Empty renders an
+   empty box that paints nothing; filled paints an image over the same
+   rectangle. tools/uxtest.js measures the page with each slot toggled.
+
+   No chrome. A slot image is an in-world artifact (bible 12.2) and takes
+   no bevel, no border and no panel styling. */
+.art{position:absolute;line-height:0;pointer-events:none;}
+.art img{display:block;width:100%;height:100%;object-fit:contain;
+  image-rendering:pixelated;}
+.board-head{position:relative;padding-left:52px;padding-right:40px;}
+.art-crest{left:6px;top:50%;transform:translateY(-50%);width:38px;height:38px;}
+.art-department_mark{right:6px;top:50%;transform:translateY(-50%);width:26px;height:26px;}
+/* the notice plate sits behind its panel's text, as a plate would */
+.art-notice_plate{left:0;top:0;width:100%;aspect-ratio:12/5;opacity:.5;z-index:0;}
+.board-grid .panel .pbody{position:relative;}
+.board-grid .panel .pbody > .note{position:relative;z-index:1;}

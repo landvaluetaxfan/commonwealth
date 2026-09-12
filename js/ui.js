@@ -243,6 +243,13 @@ const UI = (function () {
       fallen = true;
       cue("knell");
       setStatus("The government has fallen \u2014 " + loss.reason, "transient");
+      /* The session log outlives every save, so a government is recorded
+         as it ends rather than when the player next reaches the menu.
+         Shell owns the storage; this file owns knowing that it ended. */
+      if (typeof Shell !== "undefined" && Shell.record) {
+        Shell.record({ sitting: st.sitting, chapter: st.chapter,
+                       date: st.date, end: loss.reason });
+      }
     } else if (!loss.lost) fallen = false;
   }
 

@@ -295,6 +295,13 @@ const Tips = (function () {
   }
 
   function show(el) {
+    /* NOTHING ON THE MAIN MENU. The standing board reuses the game's
+       panels and inherits their annotations with them, but the board is a
+       display and not a dashboard: an explanation attached to a readout
+       nobody can act on is noise. Enforced here rather than by remembering
+       to strip data-tip in the renderer, which is a thing somebody will
+       forget. */
+    if (el.closest("#menu")) return;
     const t = find(el.getAttribute("data-tip"));
     if (!t) return;
     const c = build();

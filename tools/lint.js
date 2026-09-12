@@ -129,6 +129,56 @@ const sus = Object.keys(seenSuspect);
 n += section("IN PROSE BUT NOT IN THE GLOSSARY", sus,
   s => `"${s}" — used in ${seenSuspect[s].join(", ")}`);
 
+/* =============================================================
+   ARTIFACT SHAPES (bible 12.11)
+
+   Shapes are pinned in the pipeline and in the CSS. An image that
+   arrives the wrong shape gets cropped a second time in the browser
+   and the framing is lost, so this is a HARD FAILURE and not a
+   legibility note: it exits non-zero on its own.
+
+   PNG dimensions live in the IHDR chunk at a fixed offset - width
+   and height as big-endian 32-bit integers at bytes 16 and 20 - so
+   no decoder and no dependency is needed to read them.
+   ============================================================= */
+const fs2 = require("fs"), path2 = require("path");
+const ART_ROOT = path2.join(__dirname, "..");
+
+function pngSize(file) {
+  const b = fs2.readFileSync(file);
+  if (b.length < 24 || b.toString("ascii", 1, 4) !== "PNG") return null;
+  return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+}
+
+let artBad = [];
+try {
+  const Artifacts = require(path2.join(ART_ROOT, "js/artifacts.js"));
+  const src = fs2.readFileSync(path2.join(ART_ROOT, "content/artifacts.js"), "utf8");
+  const vm2 = require("vm");
+  const sandbox = {};
+  vm2.runInNewContext(src + ";this.__A = ARTIFACTS;", sandbox);
+  const manifest = sandbox.__A || {};
+
+  Object.keys(manifest).forEach(slot => {
+    const want = Artifacts.size(slot);
+    const file = path2.join(ART_ROOT, Artifacts.dir, manifest[slot]);
+    if (!Artifacts.spec(slot)) { artBad.push(`${slot}: no such slot`); return; }
+    if (!fs2.existsSync(file)) { artBad.push(`${slot}: ${manifest[slot]} is missing`); return; }
+    const got = pngSize(file);
+    if (!got) { artBad.push(`${slot}: ${manifest[slot]} is not a PNG`); return; }
+    if (!want) return;                       /* a tiling field has no pinned size */
+    if (got.w !== want.w || got.h !== want.h)
+      artBad.push(`${slot}: ${manifest[slot]} is ${got.w}x${got.h}, ` +
+                  `declared ${want.w}x${want.h} (${Artifacts.spec(slot).aspect}) — ` +
+                  `re-run tools/dither.sh ${Artifacts.spec(slot).palette} ${want.w} ` +
+                  `${Artifacts.spec(slot).aspect}`);
+  });
+} catch (e) { artBad.push("could not read the artifact manifest: " + e.message); }
+
+section("ARTIFACT IMAGES OF THE WRONG SHAPE", artBad, x => x);
+
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
+if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
 console.log(R.join("\n"));
+if (artBad.length) process.exit(1);

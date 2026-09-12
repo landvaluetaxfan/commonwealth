@@ -25,6 +25,8 @@ const CONTENT = (function () {
   /* the authored articles only; the Concordance generates its own for
      parties, stations and persons and keeps those to itself. The
      encyclopedia is an OBJECT - meta, banners, articles - not a list. */
+  C.artifacts = typeof ARTIFACTS !== "undefined" ? ARTIFACTS : {};
+  C.notice = typeof NOTICE !== "undefined" ? NOTICE : null;
   C.encyclopediaById = ((C.encyclopedia||{}).articles||[]).reduce((m,a)=>(m[a.id]=a,m),{});
   C.glossaryByTerm = GLOSSARY.reduce((m,g)=>(m[g.term.toLowerCase()]=g,m),{});
   return C;
