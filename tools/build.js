@@ -61,7 +61,7 @@ html = html.replace(/<script src=["']([^"']+)["']><\/script>/g, (m, src) => {
    lookup the UI can consult, and let the existing onerror fallbacks handle
    anything not present. */
 const assets = {};
-["img/logos", "img/portraits", "img/events"].forEach(dir => {
+["img/logos", "img/portraits", "img/events", "img/menu"].forEach(dir => {
   const d = path.join(root, dir);
   if (!fs.existsSync(d)) return;
   fs.readdirSync(d).forEach(f => {

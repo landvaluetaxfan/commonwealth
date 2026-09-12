@@ -108,357 +108,39 @@ const Shell = (function () {
   const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  /* ---------- the standing board ----------
 
-     THE TERMINAL WAS LEFT ON. The menu is a departmental status board
-     that is already displaying the position when the player arrives, with
-     a small panel of controls in the corner. The board is a DISPLAY and
-     not a dashboard: nothing on it is clickable, nothing hovers, and
-     js/tips.js is told to ignore everything inside #menu, because an
-     explanation on a board nobody can act on is noise.
-
-     EVERY VALUE IS DERIVED FROM THE OPENING STATE, never written down
-     here, so the board cannot drift as content changes. Engine.newGame()
-     is pure and repeatable - two calls serialise identically - so the
-     board can build the opening position, read it, and never start it.
-     Built once and cached: it is a hundred lines of construction plus a
-     roll reconciliation, and the idle timer must not pay for it.
-
-     It must never read as a game in progress, which is why it is headed
-     as the standing position at the opening of the session and carries
-     its own date line. */
-  let opening = null;
-  function openingState() {
-    if (!opening && C && typeof Engine !== "undefined") {
-      try { opening = Engine.newGame(C); } catch (e) { opening = null; }
-    }
-    return opening;
-  }
-
-  /* The bill before the House: the live bill that has got furthest, by
-     the engine's own stage order. Not "the first in the file", which
-     would be arbitrary and would move when content is reordered. */
-  function billBeforeHouse(st) {
-    const order = (typeof Engine !== "undefined" && Engine.STAGE_ORDER) || [];
-    let best = null, bestAt = -1;
-    (C.bills || []).forEach(b => {
-      const bs = st.bills[b.id];
-      if (!bs || bs.dead || bs.stage === "withdrawn") return;
-      const at = order.indexOf(bs.stage);
-      if (at > bestAt) { bestAt = at; best = b; }
-    });
-    return best;
-  }
-
-  /* THE TICKER IS THE ORDER PAPER, not press copy. A standing board in a
-     government office shows the business before the House; it does not
-     invent headlines. st.wire is empty at the opening state, so anything
-     drawn from it would scroll nothing on a fresh install - which is
-     exactly when the menu matters most. */
-  function ticker(st) {
-    const order = (typeof Engine !== "undefined" && Engine.STAGE_ORDER) || [];
-    const out = [];
-    (C.bills || []).forEach(b => {
-      const bs = st.bills[b.id];
-      if (!bs || bs.dead) return;
-      const d = Engine.division(st, C, b.id);
-      /* "128 of 121" reads as nonsense when the forecast is over the line,
-         which it usually is. Say what each number is. */
-      out.push(`${b.ref ? b.ref + " · " : ""}${b.title.toUpperCase()} — ` +
-        `${String(bs.stage).replace(/_/g, " ")} · ` +
-        (b.dualMajority ? "dual majority required" : "simple majority") +
-        ` · forecast ${d.popular.aye} on the popular benches, ${d.popular.need} needed` +
-        (b.dualMajority ? `, ${d.functional.aye} of ${d.functional.need} functional` : ""));
-    });
-    (C.instruments || []).forEach(si => {
-      const s = st.instruments[si.id];
-      if (s && s.inForce) out.push(`${si.number} — in force`);
-    });
-    if (!out.length) out.push("No business before the House.");
-    return out;
-  }
-
-  /* TEMPORARY: three board layouts behind ?board=. Delete the losers and
-     this switch once one is chosen. Every variant derives from the same
-     opening state; only the arrangement differs. */
-  function variant() {
-    try { return (location.search.match(/board=(\w+)/) || [])[1] || "a"; }
-    catch (e) { return "a"; }
-  }
-
-  function boardHTML() {
-    const v = variant();
-    if (v === "b") return boardDocument();
-    if (v === "c") return boardSparse();
-    if (v === "d") return boardSpine();
-    const st = openingState();
-    if (!st) return "";
-    const maj = Engine.majority(st), conf = Engine.confidence(st);
-    const bill = billBeforeHouse(st);
-    const posts = ticker(st);
-
-    const meters = [
-      ["Party loyalty", "party_loyalty"], ["Public standing", "public_standing"],
-      ["Consumables", "consumables"], ["Thermal margin", "thermal_margin"],
-      ["Treasury", "treasury"]
-    ].map(([lab, k]) => {
-      const v = st.scalars[k];
-      return `<div class="meterrow"><label>${lab}</label>` +
-        `<div class="meter ${v <= 20 ? "warn" : v >= 65 ? "good" : ""}">` +
-        `<i style="width:${v}%"></i></div><output>${v}</output></div>`;
-    }).join("");
-
-    const sessions = log();
-
-    return `<div class="board" id="board">
-      <div class="board-head">
-        ${Artifacts.render("crest")}
-        <div class="board-title">
-          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
-          <span>Standing position at the opening of Session ${st.session}
-            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
-        </div>
-        ${Artifacts.render("department_mark")}
-      </div>
-
-      <div class="board-grid">
-        <div class="panel"><h2>The chamber</h2><div class="pbody">
-          <div class="kv"><dt>Seats</dt><dd>${Engine.chamberTotal(st)}</dd>
-            <dt>District</dt><dd>${st.law.tier_ratio_district}</dd>
-            <dt>List</dt><dd>${st.law.tier_ratio_list}</dd>
-            <dt>Functional</dt><dd>${Engine.functionalTotal(st)}</dd>
-            <dt>Majority</dt><dd>${maj}</dd>
-            <dt>Confidence</dt><dd>${conf} &middot; margin ${conf - maj >= 0 ? "+" : ""}${conf - maj}</dd></div>
-        </div></div>
-
-        <div class="panel"><h2>Standing indicators</h2>
-          <div class="pbody">${meters}</div></div>
-
-        <div class="panel"><h2>Before the House</h2><div class="pbody">
-          ${bill ? `<div class="board-bill"><b>${esc(bill.title)}</b>
-            <i>${esc(bill.ref || "")} &middot; ${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))}
-               &middot; ${bill.dualMajority ? "dual majority" : "simple majority"}</i></div>
-            <div class="note">${esc(bill.summary || "")}</div>`
-          : `<div class="note">Nothing before the House.</div>`}
-        </div></div>
-
-        <div class="panel"><h2>System notice</h2><div class="pbody">
-          ${Artifacts.render("notice_plate", "wide")}
-          ${typeof NOTICE !== "undefined" && NOTICE
-            ? `<div class="note"><b>${esc(NOTICE.ref || "")}</b>
-                 ${NOTICE.from ? "&middot; " + esc(NOTICE.from) : ""}</div>
-               <div class="note">${esc(NOTICE.text || "")}</div>`
-            : ""}
-        </div></div>
-
-        <div class="panel board-log"><h2>Session log</h2><div class="pbody">
-          ${sessions.length
-            ? sessions.slice(0, 6).map(s =>
-                `<div class="note"><b>${esc(s.name)}</b> &middot; sitting ${s.sitting}
-                   &middot; ${esc(s.date || "")} &mdash; ${esc(s.end)}</div>`).join("")
-            : `<div class="note">No completed session on this terminal.</div>`}
-        </div></div>
-      </div>
-
-      <div class="board-tick" id="board-ticker"><div class="tk">${
-        posts.concat(posts).map(p => `<span>${esc(p)}</span>`).join("")
-      }</div></div>
-    </div>`;
-  }
-
-  /* ---------- B: ONE DOCUMENT ----------
-
-     The board is not four panels, it is one paper: the standing position,
-     typed up and left on the desk. Reuses the Papers screen's .paper, so
-     it is the same object the game already prints instruments on. Clutter
-     goes because there is one thing to read; the height fills because a
-     document is tall. */
-  function boardDocument() {
-    const st = openingState();
-    if (!st) return "";
-    const maj = Engine.majority(st), conf = Engine.confidence(st);
-    const bill = billBeforeHouse(st);
-    const live = (C.bills || []).filter(b => { const bs = st.bills[b.id];
-      return bs && !bs.dead && bs.stage !== "withdrawn"; });
-    const sessions = log();
-
-    return `<div class="board board-doc" id="board">
-      <div class="board-head">
-        ${Artifacts.render("crest")}
-        <div class="board-title">
-          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
-          <span>Standing position at the opening of Session ${st.session}
-            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
-        </div>
-        ${Artifacts.render("department_mark")}
-      </div>
-      <div class="board-sheet"><div class="paper">
-        <h5>Standing position &mdash; Session ${st.session}, ${esc(st.date)}</h5>
-        <p>The House stands at ${Engine.chamberTotal(st)} seats:
-          ${st.law.tier_ratio_district} returned by district,
-          ${st.law.tier_ratio_list} allocated from party lists and
-          ${Engine.functionalTotal(st)} returned by functional constituency.
-          A majority is ${maj}. The government commands ${conf},
-          a margin of ${conf - maj >= 0 ? "+" : ""}${conf - maj}.</p>
-
-        <div class="rulehead">Before the House</div>
-        <ol>${live.map(b => `<li><b>${esc(b.title)}</b> &mdash;
-          ${esc(String(st.bills[b.id].stage).replace(/_/g, " "))},
-          ${b.dualMajority ? "dual majority" : "simple majority"}.
-          Forecast ${Engine.division(st, C, b.id).popular.aye} on the popular
-          benches against ${Engine.division(st, C, b.id).popular.need} needed.</li>`).join("")}</ol>
-
-        <div class="rulehead">Standing indicators</div>
-        <p>${[["Party loyalty","party_loyalty"],["Public standing","public_standing"],
-              ["Consumables","consumables"],["Thermal margin","thermal_margin"],
-              ["Treasury","treasury"]]
-          .map(([l,k]) => `${l} ${st.scalars[k]}`).join(" &middot; ")}.</p>
-
-        ${typeof NOTICE !== "undefined" && NOTICE ? `
-        <div class="rulehead">${esc(NOTICE.ref || "Notice")}</div>
-        <p>${esc(NOTICE.text || "")}</p>` : ""}
-
-        <div class="rulehead">Session log</div>
-        ${sessions.length
-          ? `<ol>${sessions.slice(0, 8).map(x => `<li>${esc(x.name)} &mdash; sitting
-              ${x.sitting}, ${esc(x.date || "")}. ${esc(x.end)}.</li>`).join("")}</ol>`
-          : `<p>No completed session on this terminal.</p>`}
-      </div></div>
-    </div>`;
-  }
-
-  /* ---------- C: THE DEPARTURE BOARD ----------
-
-     Almost nothing, set large. A status board in a corridor rather than a
-     desk: four figures and the bill, at a size you read from across the
-     room. Fills the screen by using it rather than by adding to it. */
-  function boardSparse() {
-    const st = openingState();
-    if (!st) return "";
-    const maj = Engine.majority(st), conf = Engine.confidence(st);
-    const bill = billBeforeHouse(st);
-    const big = (v, l) => `<div class="bigfig"><b>${v}</b><span>${l}</span></div>`;
-
-    return `<div class="board board-sparse" id="board">
-      <div class="board-head">
-        ${Artifacts.render("crest")}
-        <div class="board-title">
-          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
-          <span>Standing position at the opening of Session ${st.session}
-            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
-        </div>
-        ${Artifacts.render("department_mark")}
-      </div>
-      <div class="sparse-body">
-        <div class="bigrow">
-          ${big(conf, "confidence of " + Engine.chamberTotal(st))}
-          ${big(maj, "majority")}
-          ${big((conf - maj >= 0 ? "+" : "") + (conf - maj), "margin")}
-          ${big(st.slots.total - st.slots.used, "order paper slots")}
-        </div>
-        ${bill ? `<div class="bigbill">
-          <span>Before the House</span>
-          <b>${esc(bill.title)}</b>
-          <i>${esc(bill.ref || "")} &middot;
-             ${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))} &middot;
-             ${bill.dualMajority ? "dual majority" : "simple majority"}</i>
-        </div>` : ""}
-      </div>
-      <div class="board-tick" id="board-ticker"><div class="tk">${
-        ticker(st).concat(ticker(st)).map(p => `<span>${esc(p)}</span>`).join("")
-      }</div></div>
-    </div>`;
-  }
-
-  /* ---------- D: THE ORDER PAPER AS THE SPINE ----------
-
-     The business before the House is the tall thing, so it becomes the
-     left column and runs the full height. Everything else stacks narrow on
-     the right. No ticker: the order paper is no longer a scrap to scroll,
-     it is the content. */
-  function boardSpine() {
-    const st = openingState();
-    if (!st) return "";
-    const maj = Engine.majority(st), conf = Engine.confidence(st);
-    const live = (C.bills || []).filter(b => { const bs = st.bills[b.id];
-      return bs && !bs.dead; });
-    const sessions = log();
-    const meters = [["Party loyalty","party_loyalty"],["Public standing","public_standing"],
-      ["Consumables","consumables"],["Thermal margin","thermal_margin"],["Treasury","treasury"]]
-      .map(([lab, k]) => { const v = st.scalars[k];
-        return `<div class="meterrow"><label>${lab}</label>` +
-          `<div class="meter ${v <= 20 ? "warn" : v >= 65 ? "good" : ""}">` +
-          `<i style="width:${v}%"></i></div><output>${v}</output></div>`; }).join("");
-
-    return `<div class="board board-spine" id="board">
-      <div class="board-head">
-        ${Artifacts.render("crest")}
-        <div class="board-title">
-          <b>Circumterrestrial Commonwealth &mdash; Office of the Prime Minister</b>
-          <span>Standing position at the opening of Session ${st.session}
-            &middot; ${esc(st.date)} &middot; no sitting in progress</span>
-        </div>
-        ${Artifacts.render("department_mark")}
-      </div>
-      <div class="spine">
-        <div class="panel"><h2>Order paper <em>business before the House</em></h2>
-          <div class="pbody flush"><table class="ordertab">
-            <thead><tr><th>Bill</th><th>Stage</th><th class="n">Popular</th>
-              <th class="n">Functional</th><th>Test</th></tr></thead>
-            <tbody>${live.map(b => { const d = Engine.division(st, C, b.id);
-              return `<tr><td><b>${esc(b.title)}</b><i class="sub">${esc(b.ref || "")}</i></td>
-                <td>${esc(String(st.bills[b.id].stage).replace(/_/g, " "))}</td>
-                <td class="n">${d.popular.aye}<i>/${d.popular.need}</i></td>
-                <td class="n">${b.dualMajority ? d.functional.aye + "<i>/" + d.functional.need + "</i>" : "&mdash;"}</td>
-                <td><span class="flag ${b.dualMajority ? "bad" : ""}">${b.dualMajority ? "DUAL" : "SIMPLE"}</span></td></tr>`;
-            }).join("")}</tbody></table></div></div>
-
-        <div class="spine-side">
-          <div class="panel"><h2>The chamber</h2><div class="pbody">
-            <div class="kv"><dt>Seats</dt><dd>${Engine.chamberTotal(st)}</dd>
-              <dt>Majority</dt><dd>${maj}</dd>
-              <dt>Confidence</dt><dd>${conf}</dd>
-              <dt>Margin</dt><dd>${conf - maj >= 0 ? "+" : ""}${conf - maj}</dd></div></div></div>
-          <div class="panel"><h2>Standing indicators</h2><div class="pbody">${meters}</div></div>
-          <div class="panel"><h2>System notice</h2><div class="pbody">
-            ${Artifacts.render("notice_plate", "wide")}
-            ${typeof NOTICE !== "undefined" && NOTICE
-              ? `<div class="note">${esc(NOTICE.text || "")}</div>` : ""}</div></div>
-          <div class="panel"><h2>Session log</h2><div class="pbody">
-            ${sessions.length
-              ? sessions.slice(0, 5).map(x => `<div class="note"><b>${esc(x.name)}</b>
-                  &middot; sitting ${x.sitting} &mdash; ${esc(x.end)}</div>`).join("")
-              : `<div class="note">No completed session on this terminal.</div>`}</div></div>
-        </div>
-      </div>
-    </div>`;
-  }
-
-  function menuShell(inner, view) {
-    return boardHTML() + `<div class="menu-plate" id="menu-plate">
+  function menuShell(inner) {
+    return `<div class="menu-plate">
       <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
-      <div class="menu-tag">A Space Story About Politics and Governance</div>
       <div class="menu-body">${inner}</div>
       ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
         survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
     </div>`;
   }
 
+  /* The plate. In the single-file build the image is a data URI in
+     window.__ASSETS; on disk it is a relative path. Either way a missing
+     image leaves the dark ground the CSS already sets. */
+  function paintMenu() {
+    const m = document.getElementById("menu");
+    if (!m) return;
+    const path = "img/menu/tether.jpg";
+    const url = (typeof window !== "undefined" && window.__ASSETS && window.__ASSETS[path]) || path;
+    m.style.backgroundImage = 'url("' + url + '")';
+  }
+
   function showMenu(view) {
     const m = document.getElementById("menu");
     m.classList.add("on");
     document.body.classList.add("menu-on");
-    /* a tiling field rather than an element, so it is applied and not
-       rendered; empty leaves the CSS ground exactly as it was */
-    if (typeof Artifacts !== "undefined") Artifacts.applyBackdrop(m);
+    paintMenu();
     m.innerHTML = menuShell(
       view === "load"    ? slotList("load")
     : view === "new"     ? slotList("new")
     : view === "credits" ? credits()
     : view === "options" ? menuOptions()
-    : root(), view);
+    : root());
     wireMenu(m, view);
-    idle.arm();
   }
 
   /* ---------- the session log ----------
@@ -496,7 +178,7 @@ const Shell = (function () {
   /* ---------- the controls ----------
 
      Plain language, no metaphor, no in-world renaming. The atmosphere is
-     on the board behind this panel; a control that has to be decoded is
+     in the plate behind this panel; a control that has to be decoded is
      a control between the player and the game.
 
      Continue is ABSENT rather than disabled when there is nothing to
@@ -626,51 +308,6 @@ const Shell = (function () {
       else remove();
     }));
   }
-
-  /* ---------- idle ----------
-
-     THE SCREENSAVER IS THE MENU WITH THE UI REMOVED, not a separate
-     mode. After ninety seconds the control panel fades and the board
-     stays, ticker still running, because the board is the thing worth
-     looking at. Any input brings the panel back.
-
-     It respects `motion`. A player who has turned animations off has
-     said what they want from transitions, and a fade that ignores that
-     is a bug against a setting they already set - so with motion off the
-     panel simply stays. */
-  const idle = (function () {
-    let timer = null, wired = false, hidden = false;
-    const IDLE_MS = 90000;
-
-    function panel() { return document.getElementById("menu-plate"); }
-    function show() {
-      if (!hidden) return;
-      hidden = false;
-      const p = panel(); if (p) p.classList.remove("idle");
-    }
-    function hide() {
-      const m = document.getElementById("menu");
-      if (!m || !m.classList.contains("on") || !opts.motion) return;
-      const p = panel(); if (!p) return;
-      hidden = true; p.classList.add("idle");
-    }
-    function arm() {
-      show();
-      clearTimeout(timer);
-      if (typeof document === "undefined" || !opts.motion) return;
-      timer = setTimeout(hide, IDLE_MS);
-    }
-    function wire() {
-      if (wired || typeof document === "undefined") return;
-      wired = true;
-      ["pointerdown", "pointermove", "keydown", "wheel"].forEach(ev =>
-        document.addEventListener(ev, () => {
-          const m = document.getElementById("menu");
-          if (m && m.classList.contains("on")) arm();
-        }, true));
-    }
-    return { arm, wire, hidden: () => hidden };
-  })();
 
   /* ---------- starting and saving ---------- */
   function start(n, name, stateStr) {
@@ -838,7 +475,6 @@ const Shell = (function () {
        graph and makes no sound until the player's first click or keypress,
        because every browser refuses to start one before that anyway. */
     if (typeof Sound !== "undefined") Sound.init();
-    idle.wire();
     document.addEventListener("click", e => {
       const p = document.getElementById("tb-optpanel");
       if (p.classList.contains("on") && !p.contains(e.target)) toggleOptions(false);
