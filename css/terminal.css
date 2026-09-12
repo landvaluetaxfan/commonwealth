@@ -922,9 +922,12 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
    every ::-webkit-scrollbar rule for it is dropped and you get the default
    rounded overlay bar back. So the standard two-colour fallback is fenced
    off behind a query for engines that have no pseudo-elements to lose,
-   which today means Gecko. */
+   which today means Gecko. Gecko cannot bevel a scrollbar either, so the
+   era's wide bar would read as a plain browser strip; the closest match is
+   the panel's own values — a track that disappears into the panel and a
+   darker thumb — which is what the orbit seat list shows. */
 @supports not selector(::-webkit-scrollbar){
-  *{scrollbar-color:var(--chrome) var(--chrome-lt);scrollbar-width:auto;}
+  *{scrollbar-color:var(--chrome-dk) var(--chrome);scrollbar-width:auto;}
 }
 ::-webkit-scrollbar{width:16px;height:16px;background:var(--chrome-lt);}
 ::-webkit-scrollbar-track{
