@@ -241,37 +241,26 @@ td.n,th.n{text-align:right;font-family:var(--f-data);font-size:10px;}
 
    .sel MEANS ONE THING: this row is the one you picked, and clicking a row
    in this table is what picked it. Four tables qualify - #gov-bills,
-   #orbit-table, #pp-list and #cons-table - and the rule is global because .sel
-   appears nowhere else. It is a solid inverted block: unmistakable at a
-   glance, and impossible to confuse with the 1px dotted rectangle that means
-   focus. The seat list overrides it below with a gold tint and a gutter,
-   because its rows carry member text and office badges that the bar swallows.
+   #orbit-table, #pp-list and #cons-table - and the rule is global because
+   .sel appears nowhere else.
 
-   NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection you
-   are not sure you made. The click lands, the block is there.
+   IT IS A GOLD TINT, NOT AN INVERTED BLOCK. The block was the first
+   selection mark, and it swallowed the member text and office badges the
+   seat list carries, so that list was given a gold tint instead. The tint
+   is now the one selection mark everywhere: a splash of colour the dark
+   terminal chrome has nowhere else, and one that lets every row keep its
+   own ink. The block also shared its colour with the title bar, so a
+   selected row read as chrome rather than as a choice.
 
-   The other three states below used to borrow .sel, which is how a row that
-   was merely disloyal came to look identical to a row you had chosen. They
-   differ from each other in FORM and not only in hue - a block, a gutter, a
-   hatch, a ghost - so they stay legible next to each other and to anyone who
-   reads the colours differently. */
-tr.sel td{background:var(--bar);color:var(--bar-txt);border-color:var(--chrome-dkr);}
-tr.sel td b{font-weight:600;}
-/* everything a row can carry has to survive the inversion. --alert and --ok
-   are chosen against a paper field and go nearly black on the bar. */
-tr.sel td .note,tr.sel td .sub,tr.sel td i.sub{color:var(--chrome);opacity:1;}
-tr.sel td .flag{color:var(--bar-txt);border-color:var(--chrome-dk);}
-tr.sel td .flag.good{color:#9fc48f;border-color:#9fc48f;}
-tr.sel td .flag.bad{color:#e0907f;border-color:#e0907f;}
-tr.sel td .hn,tr.sel td .det{color:var(--chrome);}
+   NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection
+   you are not sure you made. The click lands, the tint is there.
 
-/* THE SEAT LIST SELECTS TOO, and it takes a different form: a gold tint and a
-   gutter rather than the inverted block. Its rows carry a member block and
-   office badges chosen against the paper field, which the bar swallows — the
-   one list that must keep them legible gets its own mark. Different form as
-   well as hue, so the two selections never read as the same one. */
-#cons-table tr.sel td{background:#f2e4b3;color:var(--ink);border-color:#d8c07a;}
-#cons-table tr.sel td:first-child{box-shadow:inset 3px 0 0 #c9a227;}
+   The other three states below differ from it in texture and hue: a rose
+   tint with a red gutter, a green hatch, a grey ghost. They used to borrow
+   .sel, which is how a row that was merely disloyal came to look identical
+   to a row you had chosen. */
+tr.sel td{background:#f2e4b3;color:var(--ink);border-color:#d8c07a;}
+tr.sel td:first-child{box-shadow:inset 3px 0 0 #c9a227;}
 
 /* A GUTTER: something is wrong with this row. #gov-currents, loyalty under 20. */
 tr.warn td{background:#efe0da;}

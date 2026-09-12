@@ -132,13 +132,13 @@ try {
   const lits = jssrc.match(/["']sel["']/g) || [];
   ok("nothing else emits a sel class", lits.length === 4, lits.length + " literals");
 
-  /* the three replacements differ in form as well as hue - a gutter, a hatch,
+  /* the three other states differ in texture and hue - a gutter, a hatch,
      a ghost - so they cannot be read as paler selections */
   const css2 = fs.readFileSync(path.join(root, "css/terminal.css"), "utf8");
   ["tr.warn td", "tr.inforce td", "tr.vacant td"].forEach(sel =>
     ok("a rule of its own for " + sel, css2.includes(sel)));
-  ok("selection is distinct from all three",
-     /tr\.sel td\{background:var\(--bar\)/.test(css2));
+  ok("selection is a gold tint, distinct from all three",
+     /tr\.sel td\{background:#f2e4b3/.test(css2));
 
   /* NOTHING ABOUT PICKING A ROW FADES. A selection that eases in is one you
      are not sure you made, and the same goes for focus. */
