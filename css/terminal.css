@@ -12,8 +12,8 @@
   --alert:#7a2e22;
   --ok:#3d5c33;
 
-  --p-cu:#b8442e;
-  --p-psa:#4a7c8c;
+  --p-cu:#fe0000;
+  --p-psa:#0c9bdf;
   --p-cl:#d9a441;
   --p-sc:#6b8f47;
   --p-hul:#4a4a52;
@@ -125,7 +125,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    instead, with the plan on the remainder. */
 .g-cham{grid-template-columns:minmax(0,660px) minmax(250px,310px) minmax(0,500px);}
 .g-orb{
-  grid-template-columns:216px minmax(0,1.3fr) minmax(0,1fr);
+  grid-template-columns:216px minmax(0,1090px) minmax(0,1fr);
   grid-template-rows:minmax(0,1fr) auto;
   height:100%;align-items:stretch;
 }
@@ -179,7 +179,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* The member and their office sit on ONE line — name, a middot, the title —
    so a titled MP's row is the same height as a backbencher's, and the line
    has room to run a little larger than the old stacked pair. */
-#cons-table .mp{display:block;font-style:normal;font-size:12.5px;color:var(--ink);opacity:.92;}
+#cons-table .mp{display:block;font-style:normal;font-family:var(--f-read);font-size:12.5px;color:var(--ink);opacity:.92;}
 #cons-table .det{display:inline;font-style:normal;font-size:11.5px;color:var(--ink-soft);
   font-family:var(--f-data);}
 /* Held: the mark and the party's short name, centred as one group. width:1%
@@ -238,7 +238,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 /* .plate svg is width:100% for the full-bleed diagrams; a chip glyph is a
    13px icon and must win that. */
 .plate .oglyph,.okey .oglyph{display:block;flex:0 0 13px;width:13px;height:13px;}
-.oname{white-space:nowrap;}
+.oname{font-family:var(--f-read);white-space:nowrap;}
 .oseats{font-family:var(--f-data);font-size:10px;color:#8d9683;}
 .otier{position:absolute;top:2px;right:2px;width:4px;height:4px;background:#c07a5a;}
 .obar{position:absolute;left:0;bottom:0;width:100%;height:2px;}
@@ -626,8 +626,11 @@ img.dith{
 }
 .cx-infobox h4{
   margin:0;padding:4px 7px;background:#e0e4d6;border-bottom:1px solid #c3c6bd;
-  font-size:12.5px;letter-spacing:.05em;text-align:center;
+  font-size:11.5px;letter-spacing:.05em;text-align:center;
 }
+/* the party's own mark, where it has one, at the head of its infobox */
+.cx-infobox .cx-logo{display:block;width:100%;height:auto;background:#fff;
+  border-bottom:1px solid #c3c6bd;}
 .cx-infobox table{width:100%;border-collapse:collapse;}
 .cx-infobox th{
   text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
@@ -670,9 +673,11 @@ img.dith{
   .cx-infobox{float:none;width:auto;margin:0 0 12px;}
 }
 
-/* party logos, where a party has one */
+/* party logos, where a party has one. The NPP's is a landscape wordmark, so
+   the mark is height-fixed and width-capped rather than square. */
 .plogo{
-  width:11px;height:11px;image-rendering:pixelated;image-rendering:crisp-edges;
+  height:11px;width:auto;max-width:22px;object-fit:contain;
+  image-rendering:pixelated;image-rendering:crisp-edges;
   display:inline-block;vertical-align:-1px;margin-right:4px;
   border:1px solid rgba(0,0,0,.45);
 }
