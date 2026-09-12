@@ -111,6 +111,7 @@ const STATIONS = [
     closure:0.92, suspended:180, attested:0.96,
     composition:{biological:0.78,emulation:0.18,uplift:0.02,synthetic:0.02},
     material_interest:["charter_interpretation", "attestation_enforcement"],
+    description:"The capital, and the only habitat in the Commonwealth built as a single continuous garden: a river running from the cold end to the warm, a hill at the centre, forest and meadow on the flanks, and the congress hall where the Charter was signed standing in the middle of it. The Earth states keep their legations sealed along the river, little pieces of their own worlds dropped into the biome, and the walk between them passes six climates in a mile.",
     dependency:"The government it houses.",
     grievance:"That it is nobody's constituency." },
 

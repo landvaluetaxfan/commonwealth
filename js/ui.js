@@ -1270,6 +1270,8 @@ const UI = (function () {
        figures, a quarter of the height, and the ones that carry an argument
        (closure, apportionment) get the emphasis. */
     d.innerHTML =
+      (s.description ? `<div class="rulehead">Description</div>` +
+        `<div class="note">${esc(s.description)}</div>` : "") +
       `<div class="ostats">
         <span><b>${s.population.toLocaleString()}</b><i>population</i></span>
         <span><b>${s.seats}</b><i>seats</i></span>
