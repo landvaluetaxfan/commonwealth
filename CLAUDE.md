@@ -65,6 +65,16 @@ functional-seat MPs now hold shadow briefs — Quintana/Substrate, Ijaz/Transit,
 Estévez/Anchors — with Otrione, Caillet and Nadeau backbenched. `js/ui.js` gained
 `officeText()` for the full office in the functional tooltip.
 
+**More since:** Gecko gets a drawn scrollbar (`decorateScrollers()` in `js/ui.js`
+wraps `.p-cons`/`.p-doss` bodies in `.sbwrap` and appends `.sbar`; WebKit/Blink
+keep their native bar — the check is `CSS.supports("selector(::-webkit-scrollbar)")`);
+the whip's `MOVE` column is a segmented `.whipbar` (one block per whippable seat),
+not a range input; and the orbit tab dropped the `p-cond` panel — the constituency
+dossier is now an expandable `.consdet` row inside `#cons-table` (`consOpen` state,
+`constituencyDetail()`), with `p-doss` spanning the full right column. Next up,
+per the author: constituency prose (description, voting tendencies) in the expanded
+row, then a capital designation.
+
 **Do not commit** the untracked root duplicates (`events.js`, `glossary.js`,
 `lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`, `js/codex.js`)
 or the `tools/dither.sh` mode change — they are pre-existing and left alone.
