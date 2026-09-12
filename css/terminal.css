@@ -510,13 +510,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .newsbody{column-count:1;}
 }
 
-/* ---------- images: dithered, palette-indexed, never smoothed ---------- */
-img.dith{
-  image-rendering:pixelated;
-  image-rendering:-moz-crisp-edges;
-  image-rendering:crisp-edges;
-  display:block;
-}
+/* ---------- images: photographic plates, not machine scans ---------- */
+img.dith{display:block;}
 /* registry portrait — an ID photo on a government system */
 .portrait{
   float:left;margin:0 8px 4px 0;width:96px;
@@ -533,22 +528,24 @@ img.dith{
   font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
   padding-top:2px;text-align:center;letter-spacing:.02em;
 }
-/* event plate — a captioned press or broadcast still */
-.plate-img{margin:0 0 8px;background:#12150f;}
+/* event plate — a printed photograph, not a terminal scan: a paper mount,
+   the image inset with a hairline, and a serif caption under a rule. */
+.plate-img{margin:0 0 10px;background:#efeae0;border:1px solid #c9c2b2;padding:8px;}
 /* A plate is a BAND, never whatever shape the source happens to be.
    aspect-ratio sets it; max-height and object-fit are the guards for
    old browsers and for images that arrive the wrong shape anyway. */
 .plate-img img{
   display:block;width:100%;
-  aspect-ratio:12/5;max-height:300px;
+  aspect-ratio:12/5;max-height:320px;
   object-fit:cover;object-position:center;
+  border:1px solid #b7ae95;
 }
 .plate-img .cap{
-  font-family:var(--f-ui);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--bar-txt);background:var(--bar);padding:2px 6px;
+  font-family:var(--f-doc);font-size:11.5px;line-height:1.35;color:#4e4838;
+  border-top:1px solid #c9c2b2;margin-top:6px;padding-top:4px;
   display:flex;justify-content:space-between;gap:10px;
 }
-.plate-img .cap em{font-style:normal;opacity:.6;font-family:var(--f-data);letter-spacing:0;text-transform:none;}
+.plate-img .cap em{font-style:normal;opacity:.7;font-family:var(--f-data);font-size:10px;}
 
 /* ---------- glossary: first use gets a footnote, not a wiki ---------- */
 .gl{border-bottom:1px dotted var(--rule);cursor:help;}
@@ -679,7 +676,6 @@ img.dith{
    the mark is height-fixed and width-capped rather than square. */
 .plogo{
   height:11px;width:auto;max-width:22px;object-fit:contain;
-  image-rendering:pixelated;image-rendering:crisp-edges;
   display:inline-block;vertical-align:-1px;margin-right:4px;
 }
 /* The constituency dossier has room for the wordmark at reading size. */

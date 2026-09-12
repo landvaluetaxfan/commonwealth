@@ -1011,6 +1011,47 @@ const Editor = (function () {
   }
 
   /* Fill-crop to the target box, never letterbox and never squash. */
+  /* THE GRADE. Replaces the palette dither: the plates are printed
+     photographs now, not machine scans, so the treatment is film rather than
+     a limited palette. Order matters — tone, then split colour, then grain,
+     then the vignette, so the grain survives the curve and the vignette sits
+     over everything. */
+  function tone(v, lift, roll) {
+    v = lift + v * (255 - lift) / 255;
+    if (v > roll) v = roll + (v - roll) * 0.5;
+    return v;
+  }
+  function gradeImage(cv) {
+    const cx = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    const d = cx.getImageData(0, 0, W, H), p = d.data;
+    const SAT = 0.86, LIFT = 9, ROLL = 238, GRAIN = 5, VIG = 0.26;
+    const mx = W / 2, my = H / 2, maxR = Math.sqrt(mx * mx + my * my) || 1;
+    for (let i = 0; i < p.length; i += 4) {
+      let r = p[i], g = p[i + 1], b = p[i + 2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = r * SAT + lum * (1 - SAT);
+      g = g * SAT + lum * (1 - SAT);
+      b = b * SAT + lum * (1 - SAT);
+      r = tone(r, LIFT, ROLL); g = tone(g, LIFT, ROLL); b = tone(b, LIFT, ROLL);
+      /* split tone: warm highlights against cool shadows */
+      const l2 = (r + g + b) / 765;
+      const warm = l2 * l2, cool = (1 - l2) * (1 - l2);
+      r += 10 * warm - 6 * cool;
+      b += -8 * warm + 9 * cool;
+      /* grain, at final resolution */
+      const n = (Math.random() - 0.5) * GRAIN * 2;
+      r += n; g += n; b += n;
+      /* vignette */
+      const x = (i / 4) % W, y = ((i / 4) / W) | 0;
+      const dx = (x - mx) / maxR, dy = (y - my) / maxR;
+      const v = 1 - VIG * Math.pow(dx * dx + dy * dy, 1.1);
+      r *= v; g *= v; b *= v;
+      p[i] = r; p[i + 1] = g; p[i + 2] = b;
+    }
+    cx.putImageData(d, 0, 0);
+  }
+
   function processImage(img, kind, palette, dither) {
     const K = IMG_KINDS[kind];
     const W = K.w, H = Math.round(K.w * K.aspect[1] / K.aspect[0]);
@@ -1021,16 +1062,7 @@ const Editor = (function () {
     const scale = Math.max(W / img.width, H / img.height);
     const dw = img.width * scale, dh = img.height * scale;
     cx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-    /* slight desaturation before quantising, as the CLI pipeline does */
-    const d0 = cx.getImageData(0, 0, W, H), p0 = d0.data;
-    for (let i = 0; i < p0.length; i += 4) {
-      const g = (p0[i] * 0.299 + p0[i+1] * 0.587 + p0[i+2] * 0.114);
-      p0[i] = p0[i] * 0.88 + g * 0.12;
-      p0[i+1] = p0[i+1] * 0.88 + g * 0.12;
-      p0[i+2] = p0[i+2] * 0.88 + g * 0.12;
-    }
-    cx.putImageData(d0, 0, 0);
-    ditherToPalette(cv, (PALETTE_HEX[palette] || PALETTE_HEX.registry).map(rgb), dither);
+    gradeImage(cv);
     return cv;
   }
 
