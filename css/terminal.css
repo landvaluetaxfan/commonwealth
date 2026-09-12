@@ -1231,19 +1231,26 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .board-log{grid-column:1 / -1;}
 .board-log .note + .note{margin-top:2px;}
 
-/* the ticker: the order paper, scrolling. The one animation on this
-   screen apart from the idle fade. The list is rendered twice so the
-   loop has no seam; no-motion parks it. */
-.ticker{
+/* the board's ticker: the order paper, scrolling. The one animation on
+   this screen apart from the idle fade. The list is rendered twice so the
+   loop has no seam; no-motion parks it.
+
+   NOT `.ticker`. That class already belongs to another component whose
+   `.ticker div` rule sets padding-left:100% — nesting inside it pushed
+   every headline exactly one screen to the right, off the visible edge,
+   with no error and nothing in the DOM to see. Same trap as `.sel`: a
+   class named for an appearance gets reached into by whoever owned it
+   first. */
+.board-tick{
   flex:0 0 auto;overflow:hidden;white-space:nowrap;
   background:var(--bar);color:var(--bar-txt);
   font-family:var(--f-data);font-size:10px;padding:3px 0;
 }
-.ticker .tk{display:inline-block;animation:tk 70s linear infinite;}
-.ticker span{padding:0 28px;}
-.ticker span::after{content:"\2022";margin-left:28px;opacity:.5;}
-@keyframes tk{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-body.no-motion .ticker .tk{animation:none;padding-left:8px;}
+.board-tick .tk{display:inline-block;padding-left:0;animation:btk 70s linear infinite;}
+.board-tick span{padding:0 28px;}
+.board-tick span::after{content:"\2022";margin-left:28px;opacity:.5;}
+@keyframes btk{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+body.no-motion .board-tick .tk{animation:none;}
 
 /* THE CONTROLS ARE A PANEL IN A CORNER, not the screen. #menu is
    position:fixed, so the plate anchors to the viewport and the board

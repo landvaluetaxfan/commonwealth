@@ -162,10 +162,13 @@ const Shell = (function () {
       const bs = st.bills[b.id];
       if (!bs || bs.dead) return;
       const d = Engine.division(st, C, b.id);
+      /* "128 of 121" reads as nonsense when the forecast is over the line,
+         which it usually is. Say what each number is. */
       out.push(`${b.ref ? b.ref + " · " : ""}${b.title.toUpperCase()} — ` +
         `${String(bs.stage).replace(/_/g, " ")} · ` +
         (b.dualMajority ? "dual majority required" : "simple majority") +
-        ` · ${d.popular.aye} of ${d.popular.need} on the popular benches`);
+        ` · forecast ${d.popular.aye} on the popular benches, ${d.popular.need} needed` +
+        (b.dualMajority ? `, ${d.functional.aye} of ${d.functional.need} functional` : ""));
     });
     (C.instruments || []).forEach(si => {
       const s = st.instruments[si.id];
@@ -245,7 +248,7 @@ const Shell = (function () {
         </div></div>
       </div>
 
-      <div class="ticker" id="board-ticker"><div class="tk">${
+      <div class="board-tick" id="board-ticker"><div class="tk">${
         posts.concat(posts).map(p => `<span>${esc(p)}</span>`).join("")
       }</div></div>
     </div>`;
