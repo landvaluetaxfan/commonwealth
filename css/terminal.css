@@ -681,7 +681,6 @@ img.dith{
   height:11px;width:auto;max-width:22px;object-fit:contain;
   image-rendering:pixelated;image-rendering:crisp-edges;
   display:inline-block;vertical-align:-1px;margin-right:4px;
-  border:1px solid rgba(0,0,0,.45);
 }
 /* The constituency dossier has room for the wordmark at reading size. */
 .plogo.lg{height:24px;max-width:80px;vertical-align:middle;margin-right:6px;}
