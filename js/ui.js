@@ -1330,7 +1330,7 @@ const UI = (function () {
       return (f.members || []).map(m => {
         const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
         return { r: m.ref || null, n: bare(ch ? ch.name : m.name), p: m.party,
-                 o: ch ? (ch.office || null) : null };
+                 o: ch && ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null };
       });
     };
     /* The hover overview: what the seat returns, who is on its roll, who holds

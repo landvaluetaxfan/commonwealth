@@ -1102,6 +1102,7 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
 #tipcard table.tipmem td:first-child{white-space:nowrap;color:var(--ink-soft);padding-right:5px;}
 #tipcard table.tipmem td:nth-child(2){white-space:nowrap;color:var(--ink-soft);padding-right:6px;}
 #tipcard table.tipmem .swatch{width:7px;height:7px;margin-right:3px;}
+#tipcard table.tipmem .office{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
 
 /* Explain mode: ? puts every annotated readout into the tab order, and
    says so, because a tab stop you cannot see is a tab stop you fall into.
