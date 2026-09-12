@@ -241,6 +241,8 @@ js/stream.js          text arriving a character at a time. Never called
 js/wait.js            the three ways the terminal says it is thinking.
 js/tips.js            what the abbreviations mean. Explains the TERMINAL;
                       defers to the Concordance for the WORLD.
+js/artifacts.js       named image slots. Reusable: key on a slot name, not
+                      a path, and never make it menu-specific.
 tools/harness.js      one jsdom, shared by uitest and uxtest
 tools/                checks, index generator, image pipeline, bundle
 ```
@@ -285,6 +287,12 @@ version of any of them is in the header of the file it names.
   appearance: `.sel` came to mean four things at once. It now means selection
   only; `.warn`, `.inforce`, `.vacant` and the editor's `.here` say what they
   mean, and differ in form as well as hue.
+- The same trap from the other side: reusing an EXISTING component's class
+  name for a new component. The main menu's ticker was nested in `.ticker`,
+  whose `.ticker div` rule sets `padding-left:100%`, so every headline was
+  pushed exactly one screen right and off the edge — rendering correctly,
+  present in the DOM, invisible. Found by measuring: a span at x=1195 in a
+  container ending at x=1195. Check whether a class exists before taking it.
 
 **Interface**
 

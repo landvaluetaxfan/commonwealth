@@ -187,4 +187,160 @@ ok("the station list lists every station",
 
 
 
+/* THE STANDING BOARD.
+
+   The menu is a departmental status board that is already displaying the
+   position when the player arrives. Two things have to hold: it must be
+   DERIVED, so it cannot drift as content changes, and it must never read
+   as a game already running.
+
+   The drift test is the one that matters. Every value on the board is
+   asserted against Engine.newGame() rather than against a string written
+   here, so renaming a party or moving a bill's stage updates both sides
+   at once and the check keeps its teeth. */
+try {
+  const st = w.eval("Engine.newGame(CONTENT)");
+  const board = $("#board");
+  ok("the board renders", !!board && board.textContent.length > 200,
+     board ? board.textContent.length + " chars" : "no board");
+
+  const head = w.document.querySelector(".board-head").textContent;
+  ok("the board carries the opening date", head.indexOf(st.date) >= 0, st.date);
+  ok("and says which session", head.indexOf("Session " + st.session) >= 0);
+  /* It must not read as a session in progress. */
+  ok("and says no sitting is in progress", /no sitting in progress/.test(head));
+
+  const text = board.textContent;
+  ok("the chamber figures are the engine's",
+     text.indexOf(String(w.eval("Engine.chamberTotal(Engine.newGame(CONTENT))"))) >= 0 &&
+     text.indexOf(String(w.eval("Engine.majority(Engine.newGame(CONTENT))"))) >= 0);
+
+  /* The bill before the House is the live bill furthest along the engine's
+     own stage order - not the first in the file, which would move whenever
+     content is reordered. */
+  const want = w.eval(`
+    (function () {
+      var st = Engine.newGame(CONTENT), best = null, at = -1;
+      CONTENT.bills.forEach(function (b) {
+        var bs = st.bills[b.id];
+        if (!bs || bs.dead || bs.stage === "withdrawn") return;
+        var i = Engine.STAGE_ORDER.indexOf(bs.stage);
+        if (i > at) { at = i; best = b; }
+      });
+      return best ? best.title : "";
+    })()
+  `);
+  ok("the bill before the House is the furthest-advanced live bill",
+     !!want && text.indexOf(want) >= 0, want);
+
+  /* THE TICKER IS THE ORDER PAPER. st.wire is empty at the opening state,
+     so a ticker drawn from it would scroll nothing on a fresh install -
+     which is exactly when the menu matters most. */
+  ok("the opening state has no wire traffic to scroll", st.wire.length === 0);
+  const tick = w.document.querySelector(".board-tick");
+  ok("so the ticker is drawn from the order paper instead",
+     !!tick && tick.querySelectorAll("span").length >= CONTENT.bills.length,
+     tick ? tick.querySelectorAll("span").length + " items" : "no ticker");
+  ok("and it names a bill that is actually before the House",
+     !!tick && tick.textContent.indexOf(want.toUpperCase()) >= 0);
+
+  /* A DISPLAY, NOT A DASHBOARD. */
+  ok("nothing on the board is a control",
+     board.querySelectorAll("button, input, select, a[href], [tabindex]").length === 0,
+     board.querySelectorAll("button, input, select, a[href], [tabindex]").length + " found");
+  w.eval('Shell.setOpt("tips", true);');
+  const anno = board.querySelector("[data-tip]");
+  if (anno) { anno.dispatchEvent(new w.MouseEvent("pointerover", { bubbles: true })); }
+  const card = w.document.getElementById("tipcard");
+  ok("and a readout on it explains nothing", !card || card.hidden === true);
+} catch (e) { ok("the standing board", false, e.message); }
+
+/* THE CONTROLS. Plain language, no metaphor, and Continue ABSENT rather
+   than disabled when there is nothing to continue: a disabled button is a
+   thing you are being refused, and on a first run there is nothing to
+   refuse. */
+try {
+  /* Both states are driven here rather than inherited: earlier blocks have
+     already made a save, and "a fresh install" is the case most likely to
+     be broken precisely because nobody is ever in it twice. */
+  const clear = () => { for (let i = 1; i <= 4; i++) w.localStorage.removeItem("wm.slot." + i); };
+
+  clear();
+  w.eval("Shell.boot(CONTENT)");
+  ok("a fresh terminal offers no Continue at all", !$("[data-cont]"));
+  ok("and does not offer a disabled one either",
+     ![...w.document.querySelectorAll(".menu-btns .mbtn")]
+       .some(b => /^Continue/.test(b.textContent.trim())));
+  ok("New Government takes focus instead",
+     w.document.activeElement === w.document.querySelector('[data-go="new"]'),
+     (w.document.activeElement.textContent || "").trim().slice(0, 20));
+  const labels = [...w.document.querySelectorAll(".menu-btns .mbtn")]
+    .map(b => b.textContent.trim().split("\n")[0].trim());
+  ok("the labels are plain language, not in-world", labels.join("|") ===
+     "New Government|Load|Options|Credits", labels.join(" | "));
+
+  /* now with a save, which is the other half of the acceptance */
+  w.eval(`
+    var st = Engine.newGame(CONTENT);
+    st.sitting = 14; st.chapter = 2; st.date = "2287-09-02";
+    Shell.__t = Engine.save(st);
+  `);
+  w.localStorage.setItem("wm.slot.2", JSON.stringify({
+    name: "The Ashfield ministry", at: Date.now(),
+    sitting: 14, chapter: 2, date: "2287-09-02", state: w.eval("Shell.__t")
+  }));
+  w.eval("Shell.boot(CONTENT)");
+  const cont = $("[data-cont]");
+  ok("with a save, Continue appears", !!cont);
+  ok("and is focused, so Enter resumes", w.document.activeElement === cont);
+  const label = cont ? cont.textContent : "";
+  ok("and its label states the sitting, the chapter and the in-world date",
+     /14/.test(label) && /2/.test(label) && /2287-09-02/.test(label),
+     label.replace(/\s+/g, " ").trim());
+  ok("it resumes the most recent save", cont.dataset.cont === "2", cont.dataset.cont);
+  clear();
+} catch (e) { ok("the menu controls", false, e.message); }
+
+/* ARTIFACT SLOTS. Empty on ship, and out of flow either way: an empty slot
+   must leave no gap and a filled one must shift nothing, so each is
+   toggled INDIVIDUALLY and the page measured against itself. */
+try {
+  ok("every slot ships empty",
+     w.eval("Artifacts.names().filter(function(n){return Artifacts.file(n);}).length") === 0);
+
+  const shape = () => w.eval(`
+    [].slice.call(document.querySelectorAll("#board .panel, .board-head, .menu-plate"))
+      .map(function (n) { var r = n.getBoundingClientRect();
+        return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)].join(","); })
+      .join(" | ")
+  `);
+  const before = shape();
+  const moved = [];
+  w.eval("Artifacts.names()").forEach(name => {
+    w.eval(`ARTIFACTS[${JSON.stringify(name)}] = "probe.png"; Shell.boot(CONTENT);`);
+    if (shape() !== before) moved.push(name);
+    w.eval(`delete ARTIFACTS[${JSON.stringify(name)}]; Shell.boot(CONTENT);`);
+  });
+  ok("filling any one slot moves nothing on the page", moved.length === 0,
+     moved.length ? "shifted: " + moved.join(", ") : "all four toggled individually");
+  ok("and the page is back where it started", shape() === before);
+} catch (e) { ok("artifact slots", false, e.message); }
+
+/* THE SESSION LOG OUTLIVES EVERY SAVE. wm.opts is a different key from
+   wm.slot.N and deleting a slot never touches it. */
+try {
+  w.eval(`Shell.record({ name: "The Ashfield ministry", sitting: 14, chapter: 2,
+                         date: "2287-09-02", end: "confidence lost on the thermal vote" });`);
+  ok("a finished government is recorded", w.eval("Shell.sessions().length") === 1);
+  for (let i = 1; i <= 4; i++) w.localStorage.removeItem("wm.slot." + i);
+  w.eval("Shell.boot(CONTENT)");
+  ok("and survives deleting every save", w.eval("Shell.sessions().length") === 1);
+  ok("the board shows it", /Ashfield ministry/.test($("#board").textContent) &&
+     /confidence lost/.test($("#board").textContent));
+  const stored = JSON.parse(w.localStorage.getItem("wm.opts") || "{}");
+  ok("it lives in Shell.opts, outside every save", Array.isArray(stored.sessions),
+     typeof stored.sessions);
+  w.eval("Shell.options.sessions = []; Shell.save && 0;");
+} catch (e) { ok("the session log", false, e.message); }
+
 H.finish("shell and game are healthy");
