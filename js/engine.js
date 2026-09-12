@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 6;   // 3 prices, 4 cabinet and instruments, 5 the district roll, 6 content reconciliation
+  const STATE_VERSION = 7;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll
 
   /* ---------------------------------------------------------
      1. STATE
@@ -52,7 +52,7 @@ const Engine = (function () {
          partner is one you do not get. */
       slots: { total: C.setup.slotsPerSession || 6, used: 0 },
 
-      /* Halloran needs nine more names for a leadership ballot. Things the
+      /* Czarnecki needs nine more names for a leadership ballot. Things the
          player does add to the counter; §3.5's second loss condition reads it. */
       signatures: 0,
 
@@ -108,6 +108,7 @@ const Engine = (function () {
     });
 
     seedRoll(st, C);
+    seedFunctional(st, C);
     return st;
   }
 
@@ -157,6 +158,14 @@ const Engine = (function () {
          seen to have passed through it. */
       st.version = 6;
     }
+    if (st.version < 7) {                     // the functional roll
+      /* Saves from before the roll carry only a party functional total. There
+         is no way to recover which constituency each seat was, so the roll is
+         reseeded from content on load and the total is whatever the roll says
+         — the same honest reconstruction as the district roll in v5. */
+      st.functionalReseeded = true;
+      st.version = 7;
+    }
     return st;
   }
 
@@ -188,7 +197,9 @@ const Engine = (function () {
 
   function reconcile(st, C) {
     if (!C) return st;
-    const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [] };
+    const notes = { stationsAdded: [], stationsDropped: [], seatsAdded: [], seatsDropped: [],
+                    partiesAdded: [], currentsAdded: [], cabinetAdded: [], cabinetRepaired: [],
+                    functionalAdded: [], functionalDropped: [] };
 
     st.stations = st.stations || {};
     C.stations.forEach(s0 => {
@@ -205,10 +216,59 @@ const Engine = (function () {
       if (!C.stationById[id]) { delete st.stations[id]; notes.stationsDropped.push(id); }
     });
 
+    /* Parties and currents the save has never seen. Content owns identity, so a
+       content party the save lacks is seeded whole; syncRoll() below then
+       refreshes its district count from the roll. Without this, a save written
+       before a party existed leaves st.parties[id] undefined, and the chamber,
+       the orbit chart and the Concordance - all of which iterate C.parties and
+       read the save - throw and leave blank panels. */
+    st.parties = st.parties || {};
+    C.parties.forEach(p0 => {
+      if (st.parties[p0.id]) return;
+      st.parties[p0.id] = {
+        id: p0.id, loyalty: p0.loyalty == null ? 100 : p0.loyalty,
+        seats: Object.assign({}, p0.seats)
+      };
+      notes.partiesAdded.push(p0.id);
+    });
+    st.currents = st.currents || {};
+    (C.currents || []).forEach(c0 => {
+      if (st.currents[c0.id]) return;
+      st.currents[c0.id] = { id: c0.id, loyalty: c0.loyalty, members: c0.members };
+      notes.currentsAdded.push(c0.id);
+    });
+
+    /* Cabinet. Content owns the post; the save owns who holds it, because
+       appointments, refusals and resignations are play. But a holder id content
+       no longer names is a recast, not a decision — repair it to content's
+       holder, or the panel prints a raw id like "onyema". Posts content has
+       added are seeded whole, so a save written before a ministry existed still
+       opens and the panel does not read undefined. */
+    st.cabinet = st.cabinet || {};
+    (C.cabinet || []).forEach(p0 => {
+      const was = st.cabinet[p0.id];
+      if (!was) {
+        st.cabinet[p0.id] = { id: p0.id, holder: p0.holder || null, party: p0.party || null };
+        notes.cabinetAdded.push(p0.id);
+        return;
+      }
+      if (was.holder && !C.characterById[was.holder]) {
+        was.holder = p0.holder || null;
+        was.party = p0.party || null;
+        notes.cabinetRepaired.push(p0.id);
+      }
+    });
+
     if (st.roll) {
       (C.constituencies || []).forEach(k => {
-        if (st.roll[k.id]) return;
+        if (st.roll[k.id]) {
+          /* keep the flag in step with content, in case it was added later */
+          if (k.nonVoting) st.roll[k.id].nonVoting = true;
+          else delete st.roll[k.id].nonVoting;
+          return;
+        }
         st.roll[k.id] = { held: Object.assign({}, k.held), vacant: 0 };
+        if (k.nonVoting) st.roll[k.id].nonVoting = true;
         notes.seatsAdded.push(k.id);
       });
       Object.keys(st.roll).forEach(cid => {
@@ -216,6 +276,23 @@ const Engine = (function () {
       });
       syncRoll(st, C);
     }
+
+    /* The functional roll, on the same terms: content owns the opening
+       holdings, the save owns what play has moved, and a constituency content
+       has added is seeded from its authored holder. The party total is then
+       derived by syncFunctional(), so the panel and the divisions agree. */
+    st.functional = st.functional || {};
+    (C.functional || []).forEach(f0 => {
+      if (st.functional[f0.id]) return;
+      st.functional[f0.id] = { held: Object.assign({}, f0.held || {}) };
+      notes.functionalAdded.push(f0.id);
+    });
+    Object.keys(st.functional).forEach(fid => {
+      if (!C.functionalById || !C.functionalById[fid]) {
+        delete st.functional[fid]; notes.functionalDropped.push(fid);
+      }
+    });
+    syncFunctional(st, C);
 
     /* Notes live on the module, not on the state. Anything written onto st
        here would be saved, reloaded and compared, and a save would stop
@@ -250,14 +327,19 @@ const Engine = (function () {
     st.roll = {};
     (C.constituencies || []).forEach(k => {
       st.roll[k.id] = { held: Object.assign({}, k.held || {}), vacant: 0 };
+      if (k.nonVoting) st.roll[k.id].nonVoting = true;
     });
     syncRoll(st, C);
   }
 
-  /* Refresh the derived district counts. The only writer. */
+  /* Refresh the derived district counts. The only writer. A non-voting seat
+     (the capital territory) lives in the roll so it has a holder and shows
+     in the panels, but it is never counted: it is not part of the tier, the
+     chamber or a division. */
   function syncRoll(st, C) {
     Object.keys(st.parties).forEach(id => { st.parties[id].seats.district = 0; });
     Object.keys(st.roll).forEach(cid => {
+      if (st.roll[cid].nonVoting) return;
       const h = st.roll[cid].held;
       Object.keys(h).forEach(pid => {
         if (st.parties[pid]) st.parties[pid].seats.district += h[pid];
@@ -266,12 +348,45 @@ const Engine = (function () {
     return st;
   }
 
+  /* ---------------------------------------------------------
+     1c. THE FUNCTIONAL ROLL — who holds which functional seat
+
+     The same rule as the district roll: every functional seat lives in
+     one place and every functional total is DERIVED from it. The count
+     on st.parties[id].seats.functional is a projection refreshed by
+     syncFunctional() and never written directly. A functional seat
+     moves by the `functional` effect, which names the constituency, so
+     the panel, the tooltips and the divisions can never disagree about
+     who holds what.
+     --------------------------------------------------------- */
+
+  function seedFunctional(st, C) {
+    st.functional = {};
+    (C.functional || []).forEach(f => {
+      st.functional[f.id] = { held: Object.assign({}, f.held || {}) };
+    });
+    syncFunctional(st, C);
+  }
+
+  /* Refresh the derived functional counts. The only writer. */
+  function syncFunctional(st, C) {
+    Object.keys(st.parties).forEach(id => { st.parties[id].seats.functional = 0; });
+    Object.keys(st.functional || {}).forEach(fid => {
+      const h = st.functional[fid].held;
+      Object.keys(h).forEach(pid => {
+        if (st.parties[pid]) st.parties[pid].seats.functional += h[pid];
+      });
+    });
+    return st;
+  }
+
   function partyDistrict(st, id) {
     return Object.keys(st.roll || {}).reduce(
-      (n, cid) => n + (st.roll[cid].held[id] || 0), 0);
+      (n, cid) => st.roll[cid].nonVoting ? n : n + (st.roll[cid].held[id] || 0), 0);
   }
   function vacantSeats(st) {
-    return Object.keys(st.roll || {}).reduce((n, cid) => n + st.roll[cid].vacant, 0);
+    return Object.keys(st.roll || {}).reduce(
+      (n, cid) => st.roll[cid].nonVoting ? n : n + st.roll[cid].vacant, 0);
   }
   function seatsFor(st, cid) { return st.roll[cid] || { held: {}, vacant: 0 }; }
 
@@ -422,6 +537,7 @@ const Engine = (function () {
     const districtResults = {};
     Object.keys(st.roll).forEach(cid => {
       const k = C.constituencyById[cid];
+      if (!k || k.nonVoting) return;   /* the capital territory is not contested */
       const won = divisorAllocate(swungShares(st, C, k), k.magnitude,
                                   st.law.district_divisor);
       districtResults[cid] = won;
@@ -699,7 +815,7 @@ const Engine = (function () {
     /* Carrying is not the end. The bill goes to the President, who signs or
        refers it for constitutional review. Referral is not a veto — it delays
        and returns a verdict — but it is the reserve power with the sharpest
-       teeth, and Tenaya has privately indicated he would use it on a threshold
+       teeth, and King has privately indicated he would use it on a threshold
        bill carried on a contested dual majority. */
     bs.stage = "awaiting_assent";
     bs.carriedAt = st.sitting;
@@ -960,7 +1076,9 @@ const Engine = (function () {
      --------------------------------------------------------- */
 
   function apportionment(C) {
-    const cons = C.constituencies || [];
+    /* The voting districts only. A non-voting seat has no apportionment: it
+       is not returned by an electorate in the sense the ratio measures. */
+    const cons = (C.constituencies || []).filter(c => !c.nonVoting);
     if (!cons.length) return {};
     const seats = cons.reduce((n, c) => n + c.magnitude, 0);
     const el = cons.reduce((n, c) => n + c.electorate, 0);
@@ -973,7 +1091,8 @@ const Engine = (function () {
   /* The district tier must equal the sum of constituency magnitudes.
      Nothing checked this before and the two had drifted by 84 seats. */
   function tierCheck(st, C) {
-    const cons = (C.constituencies || []).reduce((n, c) => n + c.magnitude, 0);
+    const cons = (C.constituencies || []).filter(c => !c.nonVoting)
+                   .reduce((n, c) => n + c.magnitude, 0);
     const party = Object.values(st.parties).reduce((n, p) => n + (p.seats.district || 0), 0)
                 + vacantSeats(st);   /* an empty seat is still a seat in the tier */
     return { constituencies: cons, party: party, ok: cons === party };
@@ -1082,16 +1201,38 @@ const Engine = (function () {
     }),
     seats: (st, C, v) => Object.keys(v).forEach(pid => {
       Object.keys(v[pid]).forEach(t => {
-        /* district is derived from the roll; setting it here would be undone
-           by the next syncRoll without saying so. Use cross/vacate_seat. */
+        /* district and functional are derived from their rolls; setting one
+           here would be undone by the next sync without saying so. */
         if (t === "district") {
           st.log.unshift({ sitting: st.sitting, text:
             "IGNORED: a seats effect tried to set district seats for " + pid +
             ". District seats live in the roll — use cross or vacate_seat." });
           return;
         }
+        if (t === "functional") {
+          st.log.unshift({ sitting: st.sitting, text:
+            "IGNORED: a seats effect tried to set functional seats for " + pid +
+            ". Functional seats live in the functional roll — use the functional verb." });
+          return;
+        }
         st.parties[pid].seats[t] += v[pid][t];
       });
+    }),
+    /* A functional seat moves inside a named constituency: { fc_legal:{psa:2,
+       gb:-1} }. The party total is then derived, exactly as district seats are
+       derived from the district roll. */
+    functional: (st, C, v) => Object.keys(v).forEach(fid => {
+      const roll = st.functional && st.functional[fid];
+      if (!roll) {
+        st.log.unshift({ sitting: st.sitting, text:
+          "IGNORED: a functional effect named no such constituency: " + fid + "." });
+        return;
+      }
+      Object.keys(v[fid]).forEach(pid => {
+        roll.held[pid] = (roll.held[pid] || 0) + v[fid][pid];
+        if (roll.held[pid] <= 0) delete roll.held[pid];
+      });
+      syncFunctional(st, C);
     }),
     flag:   (st, C, v) => [].concat(v).forEach(f => st.flags[f] = true),
     unflag: (st, C, v) => [].concat(v).forEach(f => delete st.flags[f]),
@@ -1305,6 +1446,7 @@ const Engine = (function () {
   function load(str, C) {
     const st = migrate(JSON.parse(str));
     if (C && (st.rollReseeded || !st.roll)) { seedRoll(st, C); delete st.rollReseeded; }
+    if (C && (st.functionalReseeded || !st.functional)) { seedFunctional(st, C); delete st.functionalReseeded; }
     return reconcile(st, C);
   }
 

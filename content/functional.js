@@ -20,8 +20,11 @@
                  dependent, the suspended. Enormous, powerless,
                  grotesque. Bible 4.6.5 — the super-seat.
 
-   held must sum, across all sectors, to each party's `functional`
-   seat count in parties.js. tools/lint.js checks this.
+   held is the OPENING. At runtime the authority is the state's functional
+   roll (st.functional), seeded from this and moved only by the `functional`
+   effect, and each party's functional count is DERIVED from it. This held
+   must still sum, across all sectors, to the party counts in parties.js;
+   test.js checks both directions.
 
    electors — WHO IS ACTUALLY ON THE ROLL. Individual licence-holders,
    recognised unions casting for their membership, or registered
@@ -53,8 +56,15 @@ const FUNCTIONAL = [
            "the certifying grades. This is the board-packing lever in 4.6.4, "+
            "named: it is these eleven thousand people." }, board:"Life Support Licensing Board",
     held:{ gb:5, hul:1 },
+    members:[ { ref:"LS-1", party:"gb", name:"Kazuya Tanako" },
+              { ref:"LS-2", party:"gb", name:"Sunniva Osei" },
+              { ref:"LS-3", party:"gb", name:"Torsten Kessel" },
+              { ref:"LS-4", party:"gb", name:"Anneke Verhoeven" },
+              { ref:"LS-5", party:"gb", name:"Casimir Falk" },
+              { ref:"LS-6", party:"hul", name:"Ruslan Enyeto" } ],
     interest:["integrity_standards","licensure_scope"],
-    note:"The panel that justified the whole tier. Has not divided with a government on licensure since 2279." },
+    note:"The panel that justified the whole tier. Has not divided with a government on licensure since 2279.",
+    description:"Six seats on a roll of 4,100 certifying and systems engineers, the narrowest licensed electorate in the Commonwealth. The board that sets the roll is appointed by the government, and the eleven thousand licensed technicians it excludes are the whole argument about the tier." },
 
   { id:"fc_maintenance", name:"Maintenance and Trades", seats:7,
     franchise:"union_bloc", electorate:214000,
@@ -69,8 +79,16 @@ const FUNCTIONAL = [
       "holds all seven and why the union is a scandal surface rather than a "+
       "safe bloc.", board:null,
     held:{ cu:7 },
+    members:[ { ref:"MT-1", party:"cu", name:"Marit Thibault" },
+              { ref:"MT-2", party:"cu", name:"Corin Rasheed" },
+              { ref:"MT-3", party:"cu", name:"Wren Cardew" },
+              { ref:"MT-4", party:"cu", name:"Bax Drummond" },
+              { ref:"MT-5", party:"cu", name:"Osma Nkemelu" },
+              { ref:"MT-6", party:"cu", name:"Taavi Lund" },
+              { ref:"MT-7", party:"cu", name:"Bright Stavros" } ],
     interest:["essential_services_law","shed_order_priority"],
-    note:"The largest functional electorate by two orders of magnitude, and the reason the tier is not uniformly right-wing." },
+    note:"The largest functional electorate by two orders of magnitude, and the reason the tier is not uniformly right-wing.",
+    description:"Seven seats decided by four union executives casting for 214,000 members. The largest electorate in the tier by two orders of magnitude, and the reason it is not uniformly right-wing: the maintenance union holds all seven and votes with the left." },
 
   { id:"fc_substrate", name:"Substrate and Hosting", seats:4,
     franchise:"corporate", electorate:411,
@@ -84,8 +102,13 @@ const FUNCTIONAL = [
       "capacity floor is the only defence, which is how six of them came to be "+
       "incorporated in the same week.", board:null,
     held:{ cl:2, psa:2 },
+    members:[ { ref:"SH-1", party:"cl", name:"Petra Quintana" },
+              { ref:"SH-2", party:"cl", name:"Emeric Haruna" },
+              { ref:"SH-3", party:"psa", name:"Vesna Girard" },
+              { ref:"SH-4", party:"psa", name:"Idris Ulanov" } ],
     interest:["substrate_ownership","thermal_quota"],
-    note:"Four hundred and eleven registered corporate voters. Six of them were incorporated in the same week." },
+    note:"Four hundred and eleven registered corporate voters. Six of them were incorporated in the same week.",
+    description:"Four seats on 411 registered companies, nine of which hold most of the hosting capacity. Incorporation is cheap and the capacity floor is the only defence, and six of the registrations arrived in the same week." },
 
   { id:"fc_consumables", name:"Consumables and Agriculture", seats:4,
     franchise:"licensure", electorate:8900,
@@ -96,8 +119,13 @@ const FUNCTIONAL = [
     note_franchise:"Growers and the landlords of growing space, on one roll, "+
       "permanently. Neither can leave and neither can win outright.", board:"Agricultural Standards Board",
     held:{ cu:2, fh:2 },
+    members:[ { ref:"CA-1", party:"cu", name:"Selim Ashgrove" },
+              { ref:"CA-2", party:"cu", name:"Thea Bellweather" },
+              { ref:"CA-3", party:"fh", name:"Aurel Xhosa" },
+              { ref:"CA-4", party:"fh", name:"Mira Yarrow" } ],
     interest:["consumables_subsidy","volume_rationing"],
-    note:"Deck cooperativists and volume owners, in the same electorate, permanently." },
+    note:"Deck cooperativists and volume owners, in the same electorate, permanently.",
+    description:"Four seats on 8,900 licensed growers and volume-holders, on one roll. The cooperativists and the landlords cannot leave and neither can win outright, which is the arrangement the founding compromise intended." },
 
   { id:"fc_transit", name:"Transit and Orbital Mechanics", seats:3,
     franchise:"licensure", electorate:3400,
@@ -107,8 +135,12 @@ const FUNCTIONAL = [
       { body:"Traffic controllers", count:1180 },
       { body:"Debris and conjunction analysts", count:710 } ], board:"Transit Certification Board",
     held:{ hul:2, cl:1 },
+    members:[ { ref:"TO-1", party:"hul", name:"Rasmus Zerbe" },
+              { ref:"TO-2", party:"hul", name:"Ilse Pentreath" },
+              { ref:"TO-3", party:"cl", name:"Anouk Ijaz" } ],
     interest:["transit_windows","debris_remediation"],
-    note:"Certifies every crewed transfer. Takes Kessler risk more seriously than the chamber does." },
+    note:"Certifies every crewed transfer. Takes Kessler risk more seriously than the chamber does.",
+    description:"Three seats on 3,400 certified pilots, controllers and conjunction analysts. The board certifies every crewed transfer, and the seat takes Kessler risk more seriously than the chamber does." },
 
   { id:"fc_elevator", name:"Tether and Anchorage", seats:4,
     franchise:"corporate", electorate:62,
@@ -121,8 +153,13 @@ const FUNCTIONAL = [
       "Sixty-two voters and the largest balance sheet in the Commonwealth; a "+
       "flat franchise would understate them and everyone knows it.", board:null,
     held:{ cl:3, fh:1 },
+    members:[ { ref:"TA-1", party:"cl", name:"Lorcan Estévez" },
+              { ref:"TA-2", party:"cl", name:"Ottilie Jekabs" },
+              { ref:"TA-3", party:"cl", name:"Dmitri Tokarev" },
+              { ref:"TA-4", party:"fh", name:"Sena Reyes" } ],
     interest:["anchor_concession","tether_traffic"],
-    note:"Sixty-two voters. The smallest electorate in the Commonwealth and the largest balance sheet." },
+    note:"Sixty-two voters. The smallest electorate in the Commonwealth and the largest balance sheet.",
+    description:"Four seats on 62 voters, weighted by tether capacity rather than one body one vote. The smallest electorate in the Commonwealth and the largest balance sheet, which is the whole case for the tier and against it." },
 
   { id:"fc_medicine", name:"Medicine and Embodiment", seats:3,
     franchise:"licensure", electorate:2700,
@@ -132,8 +169,12 @@ const FUNCTIONAL = [
       { body:"Embodiment practitioners", count:480 },
       { body:"Restoration nursing register", count:280 } ], board:"Medical Licensing Board",
     held:{ rv:1, hul:2 },
+    members:[ { ref:"ME-1", party:"rv", name:"Nadia Abadi" },
+              { ref:"ME-2", party:"hul", name:"Yusuf Achterberg" },
+              { ref:"ME-3", party:"hul", name:"Halle Kowalczyk" } ],
     interest:["bone_density_standards","embodiment_access"],
-    note:"Where continuity-of-soul arguments arrive dressed as clinical guidance." },
+    note:"Where continuity-of-soul arguments arrive dressed as clinical guidance.",
+    description:"Three seats on 2,700 licensed physicians and embodiment practitioners. The continuity-of-soul argument arrives here dressed as clinical guidance, and the roll is set by a government-appointed board." },
 
   { id:"fc_attestation", name:"Attestation and Registry", seats:2,
     franchise:"licensure", electorate:890,
@@ -146,8 +187,11 @@ const FUNCTIONAL = [
       "The recursion is not an oversight; nobody has been able to propose a fix "+
       "that does not hand the roll to someone worse.", board:"Registry Practice Board",
     held:{ gb:2 },
+    members:[ { ref:"AR-1", party:"gb", name:"Edward Hatt" },
+              { ref:"AR-2", party:"gb", name:"Imre Chatterjee" } ],
     interest:["attestation_enforcement","registry_powers"],
-    note:"Administers the roll that decides who may vote, and is itself elected by a roll of 890." },
+    note:"Administers the roll that decides who may vote, and is itself elected by a roll of 890.",
+    description:"Two seats on 890 registrars and attestation officers, on a roll that decides who may vote anywhere else. The recursion is not an oversight, and nobody has proposed a fix that does not hand the roll to someone worse." },
 
   { id:"fc_underwriting", name:"Insurance and Underwriting", seats:3,
     franchise:"corporate", electorate:140,
@@ -157,8 +201,12 @@ const FUNCTIONAL = [
       { body:"Mutuals", count:94 } ],
     note_franchise:"Weighted by book size.", board:null,
     held:{ fh:3 },
+    members:[ { ref:"IU-1", party:"fh", name:"Rane Rossi" },
+              { ref:"IU-2", party:"fh", name:"Saskia Delacroix" },
+              { ref:"IU-3", party:"fh", name:"Osric Nakamura" } ],
     interest:["risk_pricing","substrate_insurance"],
-    note:"Prices every risk in the Commonwealth and has accurate numbers on all of them." },
+    note:"Prices every risk in the Commonwealth and has accurate numbers on all of them.",
+    description:"Three seats on 140 corporate voters, weighted by book size. The only electorate in the Commonwealth with accurate numbers on everything, and the only one whose business is pricing the others' risk." },
 
   { id:"fc_legal", name:"Legal", seats:3,
     franchise:"licensure", electorate:5200,
@@ -167,8 +215,12 @@ const FUNCTIONAL = [
       { body:"Admitted advocates", count:3900 },
       { body:"Instance-law specialists", count:1300 } ], board:"Bar Admissions Board",
     held:{ gb:2, hul:1 },
+    members:[ { ref:"LG-1", party:"gb", name:"Sunniva Tanaka" },
+              { ref:"LG-2", party:"gb", name:"Corin Wexler" },
+              { ref:"LG-3", party:"hul", name:"Nikolai Schneider" } ],
     interest:["reclassification_practice","charter_interpretation"],
-    note:"Instance law is a branch of practice because the Charter's schedule of persons was drafted badly." },
+    note:"Instance law is a branch of practice because the Charter's schedule of persons was drafted badly.",
+    description:"Three seats on 5,200 admitted advocates and instance-law specialists. Instance law is a branch of practice because the Charter's schedule of persons was drafted badly, and the bar is the constituency that argues it." },
 
   { id:"fc_residual", name:"Residual Constituency", seats:1,
     franchise:"residual", electorate:3910000,
@@ -182,8 +234,10 @@ const FUNCTIONAL = [
       "Every board-packing decision moves people across this line, which is the "+
       "strongest argument against the government's own sharpest tool.", board:null,
     held:{ hul:1 },
+    members:[ { ref:"RC-1", party:"hul", name:"Perpetua Volkov" } ],
     interest:["consumables_floor","substrate_insurance"],
     note:"Everyone in no recognised sector: the unemployed, the dependent, the suspended. " +
-         "Three million nine hundred thousand electors, one seat. Held, at present, by a Hullist." }
+         "Three million nine hundred thousand electors, one seat. Held, at present, by a Hullist.",
+    description:"One seat on the complement of every other roll: the unemployed, the dependent, the suspended, 3,910,000 electors in all. Nobody registers for it, you arrive by being excluded, and narrowing any licensed roll enlarges it." }
 
 ];

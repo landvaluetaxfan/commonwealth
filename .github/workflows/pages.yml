@@ -43,6 +43,11 @@ jobs:
           cp index.html editor.html _site/
           cp -r css js content img _site/
           cp dist/ways-and-means.html _site/
+          # Cache-bust every script and style URL with the commit. Pages caches
+          # each file for ten minutes, so without this a browser can hold old JS
+          # against new content and render a half-updated game.
+          find _site -name '*.html' -exec sed -i \
+            "s/\(src=\"[^\"]*\.js\)\"/\1?v=${GITHUB_SHA}\"/g; s/\(href=\"[^\"]*\.css\)\"/\1?v=${GITHUB_SHA}\"/g" {} +
           # Pages runs Jekyll by default, which drops files it does not
           # recognise. We are plain static; opt out.
           touch _site/.nojekyll

@@ -385,11 +385,17 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-go]").forEach(b =>
       b.addEventListener("click", () => {
-        /* New Government confirms only when there is something to lose. */
-        if (b.dataset.go === "new" && latest() && opts.confirmDestructive &&
-            !confirm("Start a new government? Your existing saves are kept; " +
-                     "you will choose a slot next.")) return;
-        showMenu(b.dataset.go === "root" ? null : b.dataset.go);
+        const go = () => showMenu(b.dataset.go === "root" ? null : b.dataset.go);
+        /* New Government confirms only when there is something to lose, and
+           through the terminal's own dialog rather than the browser's. */
+        if (b.dataset.go === "new" && latest() && opts.confirmDestructive) {
+          Dialog.confirm("Start a new government? Your existing saves are kept; " +
+                         "you will choose a slot next.",
+            { title: "New government", yes: "Choose a slot" },
+            ok => { if (ok) go(); });
+          return;
+        }
+        go();
       }));
 
     m.querySelectorAll("[data-cont]").forEach(b => b.addEventListener("click", () => {
@@ -405,11 +411,20 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.new, existing = slot(n);
-      if (existing && opts.confirmDestructive &&
-          !confirm(`Overwrite "${existing.name}"? This cannot be undone.`)) return;
-      const name = (prompt("Name this game", existing ? existing.name : "New government") || "").trim();
-      if (!name) return;
-      start(n, name, null);
+      const askName = () => Dialog.prompt("Name this game", {
+        title: "New save",
+        value: existing ? existing.name : "New government",
+        yes: "Start"
+      }, answer => {
+        const name = (answer || "").trim();
+        if (!name) return;
+        start(n, name, null);
+      });
+      if (existing && opts.confirmDestructive)
+        Dialog.confirm(`Overwrite "${existing.name}"? This cannot be undone.`,
+          { title: "Overwrite save", yes: "Overwrite", danger: true },
+          ok => { if (ok) askName(); });
+      else askName();
     }));
 
     m.querySelectorAll("[data-load]").forEach(b => b.addEventListener("click", () => {
@@ -420,9 +435,12 @@ const Shell = (function () {
 
     m.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => {
       const n = +b.dataset.del, s = slot(n);
-      if (s && opts.confirmDestructive &&
-          !confirm(`Delete "${s.name}"? This cannot be undone.`)) return;
-      drop(KEY(n)); showMenu("load");
+      const remove = () => { drop(KEY(n)); showMenu("load"); };
+      if (s && opts.confirmDestructive)
+        Dialog.confirm(`Delete "${s.name}"? This cannot be undone.`,
+          { title: "Delete save", yes: "Delete", danger: true },
+          ok => { if (ok) remove(); });
+      else remove();
     }));
   }
 
@@ -475,7 +493,8 @@ const Shell = (function () {
   function start(n, name, stateStr) {
     let state;
     try { state = stateStr ? Engine.load(stateStr, C) : Engine.newGame(C); }
-    catch (e) { alert("That save could not be read: " + e.message); return; }
+    catch (e) { Dialog.alert("That save could not be read: " + e.message,
+                             { title: "Could not load" }); return; }
     current = { n: n, name: name };
     document.getElementById("menu").classList.remove("on");
     document.body.classList.remove("menu-on");
@@ -570,10 +589,16 @@ const Shell = (function () {
     p.querySelector('[data-act="import"]').addEventListener("click", () =>
       document.getElementById("file-load").click());
     p.querySelector('[data-act="menu"]').addEventListener("click", () => {
-      if (opts.confirmDestructive && !confirm("Return to the main menu? Unsaved progress is lost.")) return;
-      toggleOptions(false);
-      document.getElementById("shell").classList.remove("on");
-      current = null; showMenu(null);
+      const go = () => {
+        toggleOptions(false);
+        document.getElementById("shell").classList.remove("on");
+        current = null; showMenu(null);
+      };
+      if (opts.confirmDestructive)
+        Dialog.confirm("Return to the main menu? Unsaved progress is lost.",
+          { title: "Return to menu", yes: "Return", danger: true },
+          ok => { if (ok) go(); });
+      else go();
     });
   }
 
@@ -647,7 +672,8 @@ const Shell = (function () {
           document.getElementById("shell").classList.add("on");
           if (!current) current = { n: 1, name: f.name.replace(/\.json$/i, "") };
           UI.boot(state, C); stampSlot(); flash("Imported " + f.name);
-        } catch (err) { alert("That file could not be read: " + err.message); }
+        } catch (err) { Dialog.alert("That file could not be read: " + err.message,
+                                     { title: "Could not import" }); }
       };
       r.readAsText(f);
       e.target.value = "";

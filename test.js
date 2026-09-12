@@ -71,21 +71,26 @@ console.log("  save/load round-trip:", rt.sitting === z.sitting && rt.log.length
 console.log("\nTIER RECONCILIATION:");
 (function(){
   const K = CONTENT.constituencies || [];
-  const consSeats = K.reduce((n,c)=>n+c.magnitude,0);
+  /* A non-voting seat (the capital territory) returns a member but is not
+     part of the district tier: it is excluded from every count here. */
+  const voting = K.filter(k => !k.nonVoting);
+  const consSeats = voting.reduce((n,c)=>n+c.magnitude,0);
   const partyDist = CONTENT.parties.reduce((n,p)=>n+p.seats.district,0);
   const stnSeats  = CONTENT.stations.reduce((n,s)=>n+s.seats,0);
   let bad = 0;
   const ok = (l,a,b)=>{ const g=a===b; if(!g)bad++;
     console.log((g?"  ok  ":"  FAIL")+" "+l+" = "+a+(g?"":" (want "+b+")")); };
-  /* 140 single-member seats. Every district returns one member by first
-     past the post; the multi-member constituencies they were subdivided
-     from survive as each seat's `parent`. */
-  ok("constituencies", K.length, 140);
+  /* 140 single-member voting seats, plus the capital's non-voting delegate.
+     Every district returns one member by first past the post; the
+     multi-member constituencies they were subdivided from survive as each
+     seat's `parent`. */
+  ok("constituencies", K.length, 141);
+  ok("voting constituencies", voting.length, 140);
   ok("every district is single-member",
      K.filter(k => k.magnitude !== 1).length, 0);
-  ok("constituency seats", consSeats, 140);
+  ok("voting constituency seats", consSeats, 140);
   ok("party district seats", partyDist, 140);
-  ok("station seats", stnSeats, 140);
+  ok("station seats", stnSeats, 141);
   CONTENT.stations.forEach(s=>{
     const m = K.filter(k=>k.station===s.id).reduce((n,k)=>n+k.magnitude,0);
     if (m !== s.seats) { bad++; console.log("  FAIL "+s.id+": "+s.seats+" seats vs "+m+" from constituencies"); }
@@ -158,6 +163,16 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     });
     ok("every constituency is fully returned", magBad.length === 0, magBad.join(", "));
 
+    /* At-large means exactly one thing: the station returns a single
+       constituency, so the seat is the whole station. */
+    const perStation = {};
+    CONTENT.constituencies.forEach(k => perStation[k.station] = (perStation[k.station] || 0) + 1);
+    const alBad = CONTENT.constituencies
+      .filter(k => !!k.at_large !== (perStation[k.station] === 1))
+      .map(k => k.id);
+    ok("at-large marks exactly the single-constituency stations",
+       alBad.length === 0, alBad.join(", "));
+
     let partyBad = [];
     CONTENT.parties.forEach(p => {
       const rolled = Engine.partyDistrict(r, p.id);
@@ -166,6 +181,28 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("the roll reproduces every authored district total",
        partyBad.length === 0, partyBad.join(", "));
     ok("the roll reconciles both ways", Engine.tierCheck(r, CONTENT).ok);
+
+    /* The functional roll, on the same terms: content's per-constituency held
+       must reproduce each party's authored functional total, and a move must
+       land in the roll rather than on the stored count. */
+    let fnBad = [];
+    CONTENT.parties.forEach(p => {
+      const rolled = Object.keys(r.functional || {}).reduce(
+        (n, fid) => n + ((r.functional[fid].held || {})[p.id] || 0), 0);
+      if (rolled !== p.seats.functional) fnBad.push(`${p.id} ${rolled}/${p.seats.functional}`);
+    });
+    ok("the functional roll reproduces every authored functional total",
+       fnBad.length === 0, fnBad.join(", "));
+    {
+      const s = Engine.newGame(CONTENT);
+      const before = s.parties.cu.seats.functional;
+      Engine.makeInstrument(s, CONTENT, "si_2287_44");
+      ok("a functional seat moves inside the roll, and the derived total follows",
+         s.parties.cu.seats.functional === before + 2 &&
+         s.functional.fc_lifesupport.held.cu === 2 &&
+         s.functional.fc_lifesupport.held.gb === 3,
+         JSON.stringify(s.functional.fc_lifesupport.held));
+    }
 
     /* a vacancy costs the government a vote and is not quietly absorbed */
     const conf0 = Engine.confidence(r);
@@ -206,7 +243,8 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
        the 140 must sum back to it exactly. They were uniform at ~28,040 once,
        which made every apportionment ratio ~1.04 and quietly deleted the
        malapportionment that bible 4.7 and 4.10 are about. */
-    const districtRoll = CONTENT.constituencies.reduce((n, k) => n + k.electorate, 0);
+    const districtRoll = CONTENT.constituencies.filter(k => !k.nonVoting)
+                           .reduce((n, k) => n + k.electorate, 0);
     ok("district electorates sum to the adult roll", districtRoll === 4149803,
        districtRoll + " vs 4149803");
 
@@ -287,7 +325,9 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("every authored stage is in STAGE_ORDER", strays.length === 0, strays.join(", "));
   }
 
-  ok("cabinet is data", Object.keys(Engine.newGame(CONTENT).cabinet).length === 9);
+  ok("cabinet is data",
+     Object.keys(Engine.newGame(CONTENT).cabinet).length === CONTENT.cabinet.length,
+     CONTENT.cabinet.length + " posts");
   /* Content keeps moving after a save is written. A station added to the
      roster left older saves with a hole in st.stations, and the orbital
      chart read .band off undefined and drew nothing — a blank tab, with no
@@ -309,6 +349,37 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     ok("a seat content has dropped is dropped", !back.roll.ghost_seat);
     ok("the reconciled roll still reconciles", Engine.tierCheck(back, CONTENT).ok,
        JSON.stringify(Engine.tierCheck(back, CONTENT)));
+  }
+
+  /* The same hole one layer up: a party added to content left older saves
+     without st.parties[id], and the chamber, the orbit chart and the
+     Concordance all iterate C.parties and read the save — so they threw and
+     drew blank panels. load() must backfill it, and say so. */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const lastParty = CONTENT.parties[CONTENT.parties.length - 1];
+    delete fresh.parties[lastParty.id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a save missing a party regains it", !!back.parties[lastParty.id]);
+    ok("the party is reported as added",
+       ((Engine.lastReconcile() || {}).partiesAdded || []).indexOf(lastParty.id) >= 0);
+    ok("every content party is present after load",
+       CONTENT.parties.every(p => back.parties[p.id]));
+  }
+
+  /* The cabinet lives in the save, so a recast in content leaves an old holder
+     id behind and the panel prints the raw id. load() must repair it, and a
+     ministry content has added must appear. */
+  {
+    const fresh = Engine.newGame(CONTENT);
+    const post = CONTENT.cabinet[1];
+    fresh.cabinet[post.id] = { id: post.id, holder: "nobody_at_all", party: post.party };
+    delete fresh.cabinet[CONTENT.cabinet[2].id];
+    const back = Engine.load(Engine.save(fresh), CONTENT);
+    ok("a stale cabinet holder is repaired", back.cabinet[post.id].holder === post.holder);
+    ok("the repair is reported",
+       ((Engine.lastReconcile() || {}).cabinetRepaired || []).indexOf(post.id) >= 0);
+    ok("a save missing a ministry regains it", !!back.cabinet[CONTENT.cabinet[2].id]);
   }
 
   /* Content owns a station's identity; the save owns what play has moved.
@@ -409,6 +480,34 @@ console.log("\nINSTRUMENTS AND CABINET (sweep brief, Part F):");
     });
     ok("every elector roll sums to its electorate", rollBad.length === 0, rollBad.join(", "));
     ok("every roll has a gatekeeper", noGate.length === 0, noGate.join(", "));
+
+    /* A person who sits for a functional constituency must name a real one. */
+    const badFn = (CONTENT.characters || [])
+      .filter(c => c.functional && !(CONTENT.functionalById || {})[c.functional])
+      .map(c => c.id + " → " + c.functional);
+    ok("every functional seat a person sits for exists", badFn.length === 0, badFn.join(", "));
+
+    /* Every functional seat has a named member, party for party, against the
+       authored held. Districts name everyone; this is the functional roster. */
+    const memBad = [];
+    FUNCTIONAL.forEach(f => {
+      const ms = f.members || [];
+      if (ms.length !== f.seats) { memBad.push(`${f.id} ${ms.length}/${f.seats}`); return; }
+      const by = {};
+      ms.forEach(m => by[m.party] = (by[m.party] || 0) + 1);
+      Object.keys(f.held).forEach(pid => {
+        if ((by[pid] || 0) !== f.held[pid]) memBad.push(`${f.id} ${pid} ${by[pid] || 0}/${f.held[pid]}`);
+      });
+    });
+    ok("every functional seat has a named member, party for party",
+       memBad.length === 0, memBad.join(", "));
+
+    /* Every seat carries a unique reference, like LS-1 for Life Support. */
+    const refs = [];
+    FUNCTIONAL.forEach(f => (f.members || []).forEach(m => refs.push(m.ref)));
+    const dupRef = refs.filter((r, i) => refs.indexOf(r) !== i);
+    ok("every functional seat has a unique reference",
+       dupRef.length === 0 && refs.every(Boolean), dupRef.join(", "));
 
     const gov = FUNCTIONAL.filter(f => f.gatekeeper &&
                   f.gatekeeper.appointed_by === "government");

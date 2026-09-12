@@ -62,7 +62,7 @@ const Tips = (function () {
             "debt; granting one to your own advances nothing but your programme. " +
             "They do not refill until the session does." },
     signatures: { title: "Signatures",
-      body: "Names Halloran has collected toward the nine she needs to force a " +
+      body: "Names Czarnecki has collected toward the nine he needs to force a " +
             "leadership ballot. Your own conduct feeds this counter - packing a " +
             "licensing board is worth two names, packing a second is worth three." },
     confidence: { title: "Confidence",
@@ -294,6 +294,27 @@ const Tips = (function () {
     return card;
   }
 
+  function parseMembers(s) {
+    if (!s) return null;
+    try { const a = JSON.parse(s); return Array.isArray(a) && a.length ? a : null; }
+    catch (e) { return null; }
+  }
+
+  /* A tabled list of the people a data-driven card names: the party mark and
+     short name in one column, the member in the other. */
+  function membersTable(list) {
+    if (!list || !list.length) return "";
+    const C = typeof CONTENT !== "undefined" ? CONTENT : null;
+    const rows = list.map(m => {
+      const p = C && C.partyById ? C.partyById[m.p] : null;
+      const sw = p ? '<i class="swatch" style="background:' + esc(p.colour) + '"></i>' : "";
+      const off = m.o ? ' <i class="office">' + esc(m.o) + "</i>" : "";
+      return "<tr><td>" + esc(m.r || "") + "</td><td>" + sw +
+             esc(p ? p.short : (m.p || "")) + "</td><td>" + esc(m.n) + off + "</td></tr>";
+    }).join("");
+    return '<table class="tipmem"><tbody>' + rows + '</tbody></table>';
+  }
+
   function show(el) {
     /* NOTHING ON THE MAIN MENU. The standing board reuses the game's
        panels and inherits their annotations with them, but the board is a
@@ -302,7 +323,15 @@ const Tips = (function () {
        to strip data-tip in the renderer, which is a thing somebody will
        forget. */
     if (el.closest("#menu")) return;
-    const t = find(el.getAttribute("data-tip"));
+    /* An element may carry its own one-off body, for content that is data
+       rather than a fixed token - a functional constituency's roll, seats and
+       members, say. The keyed map stays the fallback. */
+    const inline = el.getAttribute("data-tip-body");
+    const t = inline
+      ? { title: el.getAttribute("data-tip-title") || "", body: inline,
+          go: el.getAttribute("data-tip-go") || null,
+          members: parseMembers(el.getAttribute("data-tip-members")) }
+      : find(el.getAttribute("data-tip"));
     if (!t) return;
     const c = build();
     c.innerHTML =
@@ -311,7 +340,12 @@ const Tips = (function () {
       (t.go && typeof CONTENT !== "undefined" && CONTENT.encyclopediaById &&
        CONTENT.encyclopediaById[t.go]
         ? '<i>Concordance · ' + esc(CONTENT.encyclopediaById[t.go].title) + '</i>'
-        : '');
+        : '') +
+      membersTable(t.members);
+    /* A member table carries a full office title in its last column, so the
+       card is allowed to run wider than a one-line explanation needs. The
+       cap only lifts; a short card still sizes to its content. */
+    c.classList.toggle("wide", !!t.members);
     c.hidden = false;
     anchor = el;
     el.setAttribute("aria-describedby", "tipcard");

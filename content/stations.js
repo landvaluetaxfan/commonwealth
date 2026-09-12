@@ -1,5 +1,5 @@
 /* =============================================================
-   STATIONS — the frozen roster. 33 habitats across five bands.
+   STATIONS — the frozen roster. 35 habitats across five bands.
 
    A station is a PLACE: a mark on the orbital chart with a form, a
    population and a closure ratio. A CONSTITUENCY is a thing that
@@ -49,7 +49,7 @@ const STATIONS = [
   { id:"anselm", name:"Anselm Ring", band:"ring", type:"single", form:"cylinder",
     seats:37, population:1940000,
     closure:0.79, suspended:2100, attested:0.94,
-    composition:{biological:0.61,emulation:0.31,uplift:0.04,synthetic:0.04},
+    composition:{biological:0.5187,emulation:0.3814,uplift:0.0388,synthetic:0.0611},
     material_interest:["tether_traffic", "volume_rationing"],
     dependency:"Nothing it cannot buy.",
     grievance:"That everyone else resents it." },
@@ -101,6 +101,19 @@ const STATIONS = [
     material_interest:["risk_pricing", "substrate_supply"],
     dependency:"Continuous access to every other station's figures.",
     grievance:"Attempts to place underwriting under statutory oversight." },
+
+  /* THE CAPITAL. A garden habitat built where the independence congress met:
+     one continuous biome with the congress hall at its centre, and the Earth
+     states' legations sealed in jars along the river. It returns a delegate
+     who may speak and not vote - see the `nonVoting` flag on its seat. */
+  { id:"winter_garden", name:"The Winter Garden", band:"ring", type:"single", form:"cylinder",
+    seats:1, population:80000,
+    closure:0.92, suspended:180, attested:0.96,
+    composition:{biological:0.78,emulation:0.18,uplift:0.02,synthetic:0.02},
+    material_interest:["charter_interpretation", "attestation_enforcement"],
+    description:"The capital, and the only habitat in the Commonwealth built as a single continuous garden: a river running from the cold end to the warm, a hill at the centre, forest and meadow on the flanks, and the congress hall where the Charter was signed standing in the middle of it. The Earth states keep their legations sealed along the river, little pieces of their own worlds dropped into the biome, and the walk between them passes six climates in a mile.",
+    dependency:"The government it houses.",
+    grievance:"That it is nobody's constituency." },
 
   { id:"hollows", name:"Brant—Ellery—Kincaid", band:"far", type:"bundled", form:"cluster", settlements:16,
     seats:6, population:378000,
@@ -278,7 +291,7 @@ const STATIONS = [
     dependency:"Debris salvage contracts and the Kessler appropriation.",
     grievance:"That the work is dangerous, necessary, and treated as scavenging." },
 
-  { id:"selene", name:"The Lunar Territory", band:"external", type:"external", form:"surface",
+  { id:"selene", name:"Lunar Territory", band:"external", type:"external", form:"surface",
     seats:1, population:60000,
     closure:0.83, suspended:560, attested:0.9,
     composition:{biological:0.69,emulation:0.23,uplift:0.04,synthetic:0.04},

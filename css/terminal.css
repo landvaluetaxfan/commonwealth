@@ -12,8 +12,8 @@
   --alert:#7a2e22;
   --ok:#3d5c33;
 
-  --p-cu:#b8442e;
-  --p-psa:#4a7c8c;
+  --p-cu:#fe0000;
+  --p-psa:#0c9bdf;
   --p-cl:#d9a441;
   --p-sc:#6b8f47;
   --p-hul:#4a4a52;
@@ -22,12 +22,19 @@
   --p-des:#6e2c3a;
   --p-upl:#4f8c6e;
   --p-geo:#8aa0b8;
-  --p-gb:#7d7d74;
+  --p-gb:#4a5f75;
+  --p-ind:#7d7d74;
 
+  /* TWO FACES, TWO VOICES. The NARROW face is the terminal's own: chrome,
+     labels, table data, the readouts it reports. The NORMAL face is the human
+     voice: prose, descriptions, dialogue, help. The machine speaks narrow;
+     people and documents do not. The document serif is Georgia, the one serif
+     tuned for screens. */
   --f-ui:"Liberation Sans Narrow","Arial Narrow",Arial,Helvetica,sans-serif;
-  --f-data:"DejaVu Sans Mono","Courier New",Courier,monospace;
-  --f-doc:"Liberation Serif","Times New Roman",Times,serif;
-  --f-disp:"Bodoni MT",Didot,"Playfair Display","Liberation Serif",Georgia,"Times New Roman",serif;
+  --f-read:"Segoe UI","Liberation Sans",Roboto,Helvetica,Arial,sans-serif;
+  --f-data:"DejaVu Sans Mono",Consolas,"Liberation Mono","Courier New",monospace;
+  --f-doc:Georgia,"Liberation Serif","Times New Roman",Times,serif;
+  --f-disp:"Bodoni MT",Didot,"Playfair Display",Georgia,"Liberation Serif","Times New Roman",serif;
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
@@ -35,7 +42,7 @@ body{
   background:var(--chrome-dkr);
   color:var(--ink);
   font-family:var(--f-ui);
-  font-size:12px;
+  font-size:12.5px;
   line-height:1.25;
   -webkit-font-smoothing:none;
 }
@@ -58,7 +65,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   background:var(--bar);color:var(--bar-txt);
   padding:3px 6px;
   display:flex;justify-content:space-between;align-items:center;gap:16px;
-  font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  font-size:12px;letter-spacing:.09em;text-transform:uppercase;
   flex:0 0 auto;
 }
 #titlebar .sys{font-family:var(--f-data);letter-spacing:0;text-transform:none;opacity:.7;}
@@ -78,7 +85,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
   border-right:1px solid var(--chrome-dkr);border-bottom:1px solid var(--chrome-dkr);
   padding:3px 12px 4px 12px;
-  font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   cursor:pointer;white-space:nowrap;
   color:var(--ink-soft);
 }
@@ -97,7 +104,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
   flex:0 0 auto;
   display:flex;gap:3px;padding:3px 4px;
   border-top:1px solid var(--chrome-lt);
-  font-family:var(--f-data);font-size:10px;
+  font-family:var(--f-data);font-size:11px;
 }
 #statusbar span{
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
@@ -118,7 +125,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
    instead, with the plan on the remainder. */
 .g-cham{grid-template-columns:minmax(0,660px) minmax(250px,310px) minmax(0,500px);}
 .g-orb{
-  grid-template-columns:216px minmax(0,1fr) 268px;
+  grid-template-columns:216px minmax(0,1090px) minmax(0,1fr);
   grid-template-rows:minmax(0,1fr) auto;
   height:100%;align-items:stretch;
 }
@@ -136,51 +143,107 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 #s-orb.screen.on{display:block;height:100%;min-height:0;}
 .p-stat{grid-column:1;grid-row:1 / span 2;}
 .p-cons{grid-column:2;grid-row:1;}
-.p-doss{grid-column:3;grid-row:1;}
-.p-map {grid-column:2 / span 2;grid-row:2;}
+.p-map {grid-column:2;grid-row:2;}
+/* The station dossier is the one panel that runs the full height of the
+   right column. The constituency dossier that used to share it now expands
+   inside the seat list, which is where the selection already is. */
+.p-doss{grid-column:3;grid-row:1 / span 2;}
 .g-orb>.panel{display:flex;flex-direction:column;min-height:0;}
 .g-orb>.panel>.pbody{flex:1 1 auto;min-height:0;overflow:auto;}
 .p-stat>.pbody{overflow:hidden;}
 .p-map>.pbody{flex:0 0 auto;overflow:visible;}
 
+/* A DRAWN SCROLLBAR FOR ENGINES THAT CANNOT BEVEL ONE (Gecko).
+
+   js/ui.js wraps a scrolling orbit body in .sbwrap and appends a .sbar, so
+   the bar takes a column of its own and never runs under the rightmost
+   table column. The native bar is hidden. Engines with ::-webkit-scrollbar
+   keep the beveled native bar and never get this markup. */
+.g-orb>.panel>.sbwrap{flex:1 1 auto;min-height:0;min-width:0;display:flex;}
+.sbwrap>.pbody{flex:1 1 auto;min-height:0;min-width:0;overflow:auto;scrollbar-width:none;}
+.sbwrap>.pbody::-webkit-scrollbar{display:none;}
+.sbwrap>.sbar{flex:0 0 13px;position:relative;background:var(--chrome-lt);
+  box-shadow:inset 1px 0 0 var(--chrome-dk);}
+.sbwrap>.sbar>.sbar-thumb{position:absolute;left:0;right:0;top:0;min-height:26px;
+  background:var(--chrome);
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);}
+
 /* thirty-four rows have to fit in one column with no scrollbar */
-#orbit-table td{padding:1px 6px;font-size:10.5px;line-height:1.35;}
-#orbit-table td .sub{display:inline;margin-left:5px;font-size:8.5px;}
+#orbit-table td{padding:1px 6px;font-size:11.5px;line-height:1.35;}
+#orbit-table td .sub{display:inline;margin-left:5px;font-size:9.5px;}
 
 /* ---- a station's seats, listed in full ---- */
-#cons-table td{padding:2px 6px;vertical-align:top;}
+#cons-table td{padding:2px 7px;vertical-align:top;font-size:13px;}
 #cons-table td.n{width:1%;white-space:nowrap;}
-#cons-table .mp{display:block;font-style:normal;font-size:10px;color:var(--ink);opacity:.78;}
-#cons-table .det{display:block;font-style:normal;font-size:8.5px;color:var(--ink-soft);
+/* The member and their office sit on ONE line — name, a middot, the title —
+   so a titled MP's row is the same height as a backbencher's, and the line
+   has room to run a little larger than the old stacked pair. */
+#cons-table .mp{display:block;font-style:normal;font-family:var(--f-read);font-size:12.5px;color:var(--ink);opacity:.92;}
+#cons-table .det{display:inline;font-style:normal;font-size:11.5px;color:var(--ink-soft);
   font-family:var(--f-data);}
+/* Held: the mark and the party's short name, centred as one group. width:1%
+   keeps the column as narrow as its content — without it the auto layout
+   hands it a share of the table and it reads as a wide empty box. */
+#cons-table th.held,#cons-table td.held{width:1%;text-align:center;white-space:nowrap;}
+#cons-table .hs{font-style:normal;font-family:var(--f-data);font-size:11px;
+  letter-spacing:.04em;color:var(--ink-soft);}
 #cons-table .chair{color:#c9a227;letter-spacing:.06em;}
+/* Office badges — a mark, not a title: one word, spaced, coloured by how
+   senior the office is. Speaker gold is the Chair's, above; these are the
+   rest. font-style normal because the <i> is only a hook. */
+#cons-table .office{font-style:normal;letter-spacing:.05em;}
+#cons-table .o-pm{color:#2f3a2c;font-weight:700;}
+#cons-table .o-dep{color:#5a4a1e;font-weight:700;}
+#cons-table .o-min{color:#4a4a52;}
+#cons-table .o-opp{color:#7a2e22;font-weight:700;}
+#cons-table .o-shadow{color:#8a6d22;}
+#cons-table .o-leader{color:#5a5f55;}
+#cons-table .o-whip{color:#4a7c8c;}
+/* A station that returns one seat returns the whole station. */
+#cons-table .atlarge{font-style:normal;letter-spacing:.05em;color:var(--ink-soft);}
+/* The capital territory's delegate: a seat that may speak and not vote. */
+#cons-table .nonvote{font-style:normal;letter-spacing:.05em;color:#7a6428;
+  border:1px solid #c9a227;padding:0 3px;}
+/* The caret and the expanded detail row. The dossier that used to sit in a
+   panel of its own is now one row per seat, opened from the row it belongs
+   to. No transition: the rotation is a state, and a state that eases in is
+   a state you are not sure you set. */
+#cons-table .caret{display:inline-block;width:0;height:0;margin-right:5px;
+  border-top:3px solid transparent;border-bottom:3px solid transparent;
+  border-left:4px solid var(--ink-soft);}
+#cons-table .caret.open{transform:rotate(90deg);}
+#cons-table tr.consdet>td{background:#f7f1dd;border-color:#e0d3a8;padding:5px 9px 7px;}
+#cons-table tr.consdet .ostats{margin-bottom:4px;max-width:460px;}
+#cons-table tr.consdet .ostats span{background:transparent;border-color:#e0d3a8;}
+#cons-table tr.consdet .rulehead{color:#7a6428;border-color:#e0d3a8;}
 
 /* ---- the schematic: five band rows of chips ---- */
 .obands{padding:5px 7px 6px;}
 .oaxis{display:flex;align-items:center;gap:6px;margin:0 0 5px 118px;
-  font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#7c8474;}
+  font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#7c8474;}
 .oaxis i{flex:1 1 auto;height:1px;background:linear-gradient(90deg,#8a5a44,#6f8a5c);}
 .oband{display:flex;align-items:flex-start;gap:8px;padding:4px 0;
   border-top:1px solid #23281d;}
 .oband:first-of-type{border-top:0;}
 .obandlbl{width:110px;flex:0 0 110px;padding-top:3px;}
-.obandlbl b{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#aeb8a0;}
-.obandlbl i{display:block;font-style:normal;font-size:8.5px;color:#6d7566;font-family:var(--f-data);}
+.obandlbl b{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#aeb8a0;}
+.obandlbl i{display:block;font-style:normal;font-size:9.5px;color:#6d7566;font-family:var(--f-data);}
 .ochips{display:flex;flex-wrap:wrap;gap:3px;flex:1 1 auto;min-width:0;}
 .ochip{display:inline-flex;align-items:center;gap:4px;position:relative;
   padding:2px 6px 4px;border:1px solid #2f3529;background:#1a1f16;
-  color:#d7dccb;font:inherit;font-size:10.5px;cursor:pointer;text-align:left;}
+  color:#d7dccb;font:inherit;font-size:11.5px;cursor:pointer;text-align:left;}
 .ochip:hover{border-color:#6d7566;background:#212719;}
 .ochip.on{border-color:var(--alert-lt,#c9a227);background:#272d1d;}
 /* .plate svg is width:100% for the full-bleed diagrams; a chip glyph is a
    13px icon and must win that. */
 .plate .oglyph,.okey .oglyph{display:block;flex:0 0 13px;width:13px;height:13px;}
-.oname{white-space:nowrap;}
-.oseats{font-family:var(--f-data);font-size:9px;color:#8d9683;}
+.oname{font-family:var(--f-read);white-space:nowrap;}
+.oseats{font-family:var(--f-data);font-size:10px;color:#8d9683;}
 .otier{position:absolute;top:2px;right:2px;width:4px;height:4px;background:#c07a5a;}
 .obar{position:absolute;left:0;bottom:0;width:100%;height:2px;}
 .oearth{margin-top:5px;padding-top:4px;border-top:1px solid #2f3529;
-  font-size:8.5px;letter-spacing:.09em;color:#6d7566;text-align:center;}
+  font-size:9.5px;letter-spacing:.09em;color:#6d7566;text-align:center;}
 .okey .obar.demo{position:static;width:18px;height:3px;}
 .okey .otier.demo{position:static;width:6px;height:6px;}
 
@@ -188,8 +251,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .ostats{display:flex;flex-wrap:wrap;gap:1px;margin-bottom:5px;}
 .ostats span{flex:1 1 auto;min-width:86px;background:var(--field);
   border:1px solid var(--chrome-dk);padding:3px 5px;}
-.ostats b{display:block;font-family:var(--f-data);font-size:13px;line-height:1.15;}
-.ostats i{display:block;font-style:normal;font-size:8.5px;letter-spacing:.06em;
+.ostats b{display:block;font-family:var(--f-data);font-size:13.5px;line-height:1.15;}
+.ostats i{display:block;font-style:normal;font-size:9.5px;letter-spacing:.06em;
   text-transform:uppercase;color:var(--ink-soft);}
 
 .g-disp{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);}
@@ -204,7 +267,7 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 }
 .panel > h2{
   margin:0;background:var(--bar);color:var(--bar-txt);
-  font-size:10px;font-weight:bold;letter-spacing:.11em;text-transform:uppercase;
+  font-size:11px;font-weight:bold;letter-spacing:.11em;text-transform:uppercase;
   padding:2px 6px;display:flex;justify-content:space-between;gap:8px;
 }
 .panel > h2 em{font-style:normal;font-weight:normal;opacity:.65;font-family:var(--f-data);letter-spacing:0;text-transform:none;}
@@ -212,39 +275,38 @@ button{font-family:inherit;font-size:inherit;color:inherit;}
 .pbody.flush{padding:0;}
 
 /* ---------- tables ---------- */
-table{border-collapse:collapse;width:100%;font-size:11px;}
+table{border-collapse:collapse;width:100%;font-size:12px;}
 th{
-  text-align:left;font-weight:bold;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  text-align:left;font-weight:bold;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
   padding:2px 4px;background:var(--chrome-dk);border:1px solid var(--chrome-dkr);color:var(--ink);
   white-space:nowrap;
 }
 td{padding:2px 4px;border:1px solid var(--chrome-dk);background:var(--field);vertical-align:top;}
-td.n,th.n{text-align:right;font-family:var(--f-data);font-size:10px;}
+td.n,th.n{text-align:right;font-family:var(--f-data);font-size:11px;}
 /* ---------- selection, and the three things it used to mean ----------
 
    .sel MEANS ONE THING: this row is the one you picked, and clicking a row
-   in this table is what picked it. Three tables qualify - #gov-bills,
-   #orbit-table and #pp-list - and the rule is global because .sel appears
-   nowhere else. It is a solid inverted block: unmistakable at a glance, and
-   impossible to confuse with the 1px dotted rectangle that means focus.
+   in this table is what picked it. Four tables qualify - #gov-bills,
+   #orbit-table, #pp-list and #cons-table - and the rule is global because
+   .sel appears nowhere else.
 
-   NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection you
-   are not sure you made. The click lands, the block is there.
+   IT IS A GOLD TINT, NOT AN INVERTED BLOCK. The block was the first
+   selection mark, and it swallowed the member text and office badges the
+   seat list carries, so that list was given a gold tint instead. The tint
+   is now the one selection mark everywhere: a splash of colour the dark
+   terminal chrome has nowhere else, and one that lets every row keep its
+   own ink. The block also shared its colour with the title bar, so a
+   selected row read as chrome rather than as a choice.
 
-   The other three states below used to borrow .sel, which is how a row that
-   was merely disloyal came to look identical to a row you had chosen. They
-   differ from each other in FORM and not only in hue - a block, a gutter, a
-   hatch, a ghost - so they stay legible next to each other and to anyone who
-   reads the colours differently. */
-tr.sel td{background:var(--bar);color:var(--bar-txt);border-color:var(--chrome-dkr);}
-tr.sel td b{font-weight:600;}
-/* everything a row can carry has to survive the inversion. --alert and --ok
-   are chosen against a paper field and go nearly black on the bar. */
-tr.sel td .note,tr.sel td .sub,tr.sel td i.sub{color:var(--chrome);opacity:1;}
-tr.sel td .flag{color:var(--bar-txt);border-color:var(--chrome-dk);}
-tr.sel td .flag.good{color:#9fc48f;border-color:#9fc48f;}
-tr.sel td .flag.bad{color:#e0907f;border-color:#e0907f;}
-tr.sel td .hn,tr.sel td .det{color:var(--chrome);}
+   NO TRANSITION ON ANY OF THIS. A selection that fades in is a selection
+   you are not sure you made. The click lands, the tint is there.
+
+   The other three states below differ from it in texture and hue: a rose
+   tint with a red gutter, a green hatch, a grey ghost. They used to borrow
+   .sel, which is how a row that was merely disloyal came to look identical
+   to a row you had chosen. */
+tr.sel td{background:#f2e4b3;color:var(--ink);border-color:#d8c07a;}
+tr.sel td:first-child{box-shadow:inset 3px 0 0 #c9a227;}
 
 /* A GUTTER: something is wrong with this row. #gov-currents, loyalty under 20. */
 tr.warn td{background:#efe0da;}
@@ -265,47 +327,47 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .swatch{display:inline-block;width:9px;height:9px;vertical-align:-1px;margin-right:4px;border:1px solid rgba(0,0,0,.45);}
 
 /* ---------- small parts ---------- */
-.kv{display:grid;grid-template-columns:auto 1fr;gap:1px 8px;font-size:11px;}
-.kv dt{color:var(--ink-soft);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
-.kv dd{margin:0;font-family:var(--f-data);font-size:11px;}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:1px 8px;font-size:12px;}
+.kv dt{color:var(--ink-soft);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px;}
+.kv dd{margin:0;font-family:var(--f-data);font-size:12px;}
 .meter{height:9px;background:var(--field);border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);position:relative;}
 .meter i{display:block;height:100%;background:var(--rule);}
 .meter.warn i{background:var(--alert);}
 .meter.good i{background:var(--ok);}
 .meterrow{display:grid;grid-template-columns:88px 1fr 34px;gap:5px;align-items:center;margin-bottom:3px;}
-.meterrow label{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);}
-.meterrow output{font-family:var(--f-data);font-size:10px;text-align:right;}
+.meterrow label{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);}
+.meterrow output{font-family:var(--f-data);font-size:11px;text-align:right;}
 
 .btn{
   background:var(--chrome);cursor:pointer;
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
-  padding:2px 9px;font-size:11px;
+  padding:2px 9px;font-size:12px;
 }
 .btn:active{border-top-color:var(--chrome-dkr);border-left-color:var(--chrome-dkr);border-bottom-color:var(--chrome-lt);border-right-color:var(--chrome-lt);}
 .btn[disabled]{color:var(--chrome-dkr);cursor:default;}
 .btnrow{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 
-.note{font-size:10px;color:var(--ink-soft);line-height:1.35;}
-.rulehead{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:1px;margin:6px 0 4px;}
+.note{font-family:var(--f-read);font-size:12px;color:var(--ink-soft);line-height:1.4;}
+.rulehead{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:1px;margin:6px 0 4px;}
 .rulehead:first-child{margin-top:0;}
-.flag{font-family:var(--f-data);font-size:9px;padding:0 3px;border:1px solid var(--rule);}
+.flag{font-family:var(--f-data);font-size:10px;padding:0 3px;border:1px solid var(--rule);}
 .flag.bad{color:var(--alert);border-color:var(--alert);}
 .flag.good{color:var(--ok);border-color:var(--ok);}
 
 /* ---------- dual majority ---------- */
 .dm{display:grid;grid-template-columns:74px 1fr;gap:4px 6px;align-items:center;margin-bottom:4px;}
-.dm b{font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);}
+.dm b{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:normal;color:var(--ink-soft);}
 .dmbar{height:14px;position:relative;background:var(--field);
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);}
 .dmbar .yes{position:absolute;left:0;top:0;bottom:0;background:var(--ok);}
 .dmbar .thr{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--alert);}
 .dmbar .thr::after{content:"";position:absolute;top:-3px;left:-3px;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid var(--alert);}
-.dmbar span.lbl{position:absolute;right:3px;top:1px;font-family:var(--f-data);font-size:9px;color:var(--ink);}
+.dmbar span.lbl{position:absolute;right:3px;top:1px;font-family:var(--f-data);font-size:10px;color:var(--ink);}
 
 /* ---------- chamber ---------- */
-.legend{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:10px;padding:4px 5px;border-top:1px solid var(--chrome-dk);}
+.legend{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:11px;padding:4px 5px;border-top:1px solid var(--chrome-dk);}
 
 /* --- the chamber (Westminster) --- */
 /* 1:1, and only ever scaled DOWN. See drawChamber. */
@@ -313,7 +375,7 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .chlab{font-family:var(--f-ui);font-size:9px;letter-spacing:.16em;fill:var(--ink-soft);
   text-transform:uppercase;}
 .chlab.sub{font-size:8px;letter-spacing:.1em;fill:var(--chrome-dkr);text-transform:none;}
-.chtally{display:flex;flex-wrap:wrap;gap:2px 14px;font-family:var(--f-ui);font-size:10px;
+.chtally{display:flex;flex-wrap:wrap;gap:2px 14px;font-family:var(--f-ui);font-size:11px;
   letter-spacing:.06em;padding:5px 6px;border-top:1px solid var(--chrome-dk);
   background:var(--chrome-lt);}
 .chtally .ct{white-space:nowrap;text-transform:uppercase;color:var(--ink-soft);}
@@ -324,20 +386,20 @@ tr.vacant td{background:var(--chrome);color:var(--ink-soft);}
 .chtally .gov::before{background:var(--ok);}
 .chtally .opp::before{background:var(--alert);}
 .chtally .cross::before{background:var(--chrome-dkr);}
-.legend .ingov{font-style:normal;font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+.legend .ingov{font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ok);border:1px solid var(--ok);padding:0 3px;margin-left:3px;}
 tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .legend span{white-space:nowrap;}
-.seatkey{display:flex;gap:12px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:0 5px 4px;}
+.seatkey{display:flex;gap:12px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);padding:0 5px 4px;}
 .seatkey b{font-weight:normal;}
 
 /* ---------- ORBIT: the technical drawing ---------- */
 .plate{background:#12150f;padding:0;overflow:hidden;}
 .plate svg{display:block;width:100%;height:auto;}
-.tick{font-family:var(--f-data);font-size:7px;fill:#7f8a72;}
+.tick{font-family:var(--f-data);font-size:8px;fill:#7f8a72;}
 .bandlbl{font-family:var(--f-ui);font-size:8.5px;letter-spacing:.16em;fill:#93a184;text-transform:uppercase;}
-.stlbl{font-family:var(--f-data);font-size:7.5px;fill:#d6dcc8;}
-.stsub{font-family:var(--f-data);font-size:6px;fill:#818d72;}
+.stlbl{font-family:var(--f-data);font-size:8.5px;fill:#d6dcc8;}
+.stsub{font-family:var(--f-data);font-size:7px;fill:#818d72;}
 .gridln{stroke:#2b3226;stroke-width:1;}
 .gridln.hard{stroke:#3f4a37;}
 .tether{stroke:#c9a227;stroke-width:1;stroke-dasharray:3 2;}
@@ -354,34 +416,34 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   margin:0;font-family:var(--f-doc);font-size:27px;letter-spacing:.22em;
   text-transform:uppercase;font-weight:normal;line-height:1;
 }
-.masthead .sub{font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-family:var(--f-ui);color:#5a5548;text-align:right;line-height:1.5;}
+.masthead .sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-family:var(--f-ui);color:#5a5548;text-align:right;line-height:1.5;}
 .newsbody{padding:8px 10px 10px;column-count:2;column-gap:14px;column-rule:1px solid #cfc9b8;}
 .story{break-inside:avoid;margin-bottom:11px;}
-.story .kicker{font-family:var(--f-ui);font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:#8a3222;margin-bottom:2px;}
+.story .kicker{font-family:var(--f-ui);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:#8a3222;margin-bottom:2px;}
 .story h4{margin:0 0 3px;font-size:16px;line-height:1.12;font-weight:normal;}
 .story h4.lead{font-size:21px;line-height:1.05;}
-.story p{margin:0 0 4px;font-size:11.5px;line-height:1.42;text-align:justify;hyphens:auto;}
-.story .byline{font-family:var(--f-ui);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:#6a6355;margin-bottom:3px;}
+.story p{margin:0 0 4px;font-size:12.5px;line-height:1.42;text-align:justify;hyphens:auto;}
+.story .byline{font-family:var(--f-ui);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6a6355;margin-bottom:3px;}
 .newsrule{border-top:1px solid #cfc9b8;margin:0 0 8px;}
-.pullquote{font-size:13px;font-style:italic;border-left:2px solid #8a3222;padding-left:7px;margin:5px 0;line-height:1.3;}
+.pullquote{font-size:13.5px;font-style:italic;border-left:2px solid #8a3222;padding-left:7px;margin:5px 0;line-height:1.3;}
 
 /* ---------- DISPATCH: feed ---------- */
 .feed{background:#e8e9e2;padding:0;}
 .post{border-bottom:1px solid var(--chrome-dk);padding:5px 6px;background:var(--field);}
 .post:nth-child(even){background:#ecede5;}
 .post .hd{display:flex;gap:5px;align-items:baseline;margin-bottom:2px;flex-wrap:wrap;}
-.post .hd b{font-size:11px;}
-.post .hd .handle{font-family:var(--f-data);font-size:9px;color:var(--ink-soft);}
-.post .hd time{font-family:var(--f-data);font-size:9px;color:var(--ink-soft);margin-left:auto;}
-.post p{margin:0;font-size:11.5px;line-height:1.35;}
-.att{font-family:var(--f-data);font-size:8px;padding:0 3px;border:1px solid;letter-spacing:.04em;}
+.post .hd b{font-size:12px;}
+.post .hd .handle{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);}
+.post .hd time{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);margin-left:auto;}
+.post p{margin:0;font-family:var(--f-read);font-size:12.5px;line-height:1.35;}
+.att{font-family:var(--f-data);font-size:9px;padding:0 3px;border:1px solid;letter-spacing:.04em;}
 .att.y{color:var(--ok);border-color:var(--ok);}
 .att.n{color:var(--alert);border-color:var(--alert);background:#f3e2de;}
 .att.c{color:#7a5c00;border-color:#7a5c00;background:#f4eddb;}
-.post .meta{font-family:var(--f-data);font-size:9px;color:var(--ink-soft);margin-top:3px;}
+.post .meta{font-family:var(--f-data);font-size:10px;color:var(--ink-soft);margin-top:3px;}
 
 /* ---------- ticker ---------- */
-.ticker{background:var(--bar);color:var(--bar-txt);overflow:hidden;white-space:nowrap;padding:2px 0;font-family:var(--f-data);font-size:10px;}
+.ticker{background:var(--bar);color:var(--bar-txt);overflow:hidden;white-space:nowrap;padding:2px 0;font-family:var(--f-data);font-size:11px;}
 .ticker div{display:inline-block;padding-left:100%;animation:tick 46s linear infinite;}
 .ticker b{color:#d9c07a;font-weight:normal;}
 @keyframes tick{from{transform:translateX(0);}to{transform:translateX(-100%);}}
@@ -391,50 +453,50 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
 .letterhead{display:flex;gap:14px;align-items:flex-start;border-bottom:1px solid #17140e;padding-bottom:8px;margin-bottom:3px;}
 .crest{flex:0 0 auto;}
 .letterhead .lh-txt h3{margin:0;font-size:15px;letter-spacing:.3em;text-transform:uppercase;font-weight:normal;}
-.letterhead .lh-txt p{margin:2px 0 0;font-size:9.5px;letter-spacing:.19em;text-transform:uppercase;font-family:var(--f-ui);color:#4e4838;}
-.filebar{display:flex;justify-content:space-between;font-family:var(--f-data);font-size:9px;color:#4e4838;border-bottom:1px solid #17140e;padding:3px 0 6px;margin-bottom:14px;}
-.classif{text-align:center;font-family:var(--f-ui);font-size:10px;letter-spacing:.34em;text-transform:uppercase;border:1px solid #8a3222;color:#8a3222;padding:2px;margin-bottom:14px;}
-.distrib{font-family:var(--f-data);font-size:10px;line-height:1.6;margin-bottom:14px;}
+.letterhead .lh-txt p{margin:2px 0 0;font-size:10.5px;letter-spacing:.19em;text-transform:uppercase;font-family:var(--f-ui);color:#4e4838;}
+.filebar{display:flex;justify-content:space-between;font-family:var(--f-data);font-size:10px;color:#4e4838;border-bottom:1px solid #17140e;padding:3px 0 6px;margin-bottom:14px;}
+.classif{text-align:center;font-family:var(--f-ui);font-size:11px;letter-spacing:.34em;text-transform:uppercase;border:1px solid #8a3222;color:#8a3222;padding:2px;margin-bottom:14px;}
+.distrib{font-family:var(--f-data);font-size:11px;line-height:1.6;margin-bottom:14px;}
 .distrib .row{display:grid;grid-template-columns:74px 1fr;gap:6px;}
 .distrib .row span:first-child{color:#4e4838;letter-spacing:.09em;}
 .distrib s{color:#8a3222;text-decoration-thickness:1px;}
-.paper h5{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;font-weight:normal;border-bottom:1px solid #b7ae95;padding-bottom:2px;}
-.paper p{font-size:13px;line-height:1.55;margin:0 0 9px;}
-.paper ol{font-size:13px;line-height:1.55;padding-left:22px;margin:0 0 9px;}
+.paper h5{font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;font-weight:normal;border-bottom:1px solid #b7ae95;padding-bottom:2px;}
+.paper p{font-size:13.5px;line-height:1.55;margin:0 0 9px;}
+.paper ol{font-size:13.5px;line-height:1.55;padding-left:22px;margin:0 0 9px;}
 .paper li{margin-bottom:5px;}
 .sigblock{margin-top:26px;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;}
 .sigline{flex:0 0 250px;}
 .sigline .rule{border-bottom:1px solid #17140e;height:52px;position:relative;}
 .sigline svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
-.sigline .cap{font-family:var(--f-ui);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#4e4838;padding-top:3px;}
+.sigline .cap{font-family:var(--f-ui);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#4e4838;padding-top:3px;}
 #sigpath,.sigpath{fill:none;stroke:#1b2a5c;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
 .sig-armed #sigpath,.sig-armed .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
 .sig-draw #sigpath,.sig-draw .sigpath{stroke-dasharray:var(--len);stroke-dashoffset:0;transition:stroke-dashoffset 1.9s cubic-bezier(.55,.06,.3,1);}
 .stamp{
   border:2px solid #8a3222;color:#8a3222;padding:5px 12px;
-  font-family:var(--f-ui);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  font-family:var(--f-ui);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
   transform:rotate(-6deg);opacity:0;transition:opacity .28s .95s;text-align:center;line-height:1.35;
 }
 .sig-draw .stamp{opacity:.88;}
-.stamp small{display:block;font-size:8px;letter-spacing:.11em;}
+.stamp small{display:block;font-size:9px;letter-spacing:.11em;}
 
 /* ---------- election ---------- */
 .callsheet{max-height:474px;overflow:auto;}
-.callsheet td{font-size:10.5px;}
-.callsheet tr td.res{font-family:var(--f-data);font-size:10px;font-weight:bold;}
+.callsheet td{font-size:11.5px;}
+.callsheet tr td.res{font-family:var(--f-data);font-size:11px;font-weight:bold;}
 .callsheet tr.pending td{color:var(--chrome-dkr);}
 .callsheet tr.flash td{background:#fff6cf;}
 .tally{display:flex;height:26px;border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);background:var(--field);}
 .tally i{display:block;height:100%;transition:width .35s ease;}
 .tallywrap{position:relative;}
 .majline{position:absolute;top:-4px;bottom:-4px;left:50%;width:1px;background:var(--ink);}
-.majline::after{content:"MAJORITY 141";position:absolute;top:-11px;left:3px;font-family:var(--f-ui);font-size:8px;letter-spacing:.1em;white-space:nowrap;}
+.majline::after{content:"MAJORITY 141";position:absolute;top:-11px;left:3px;font-family:var(--f-ui);font-size:9px;letter-spacing:.1em;white-space:nowrap;}
 .bigcount{font-family:var(--f-data);font-size:30px;line-height:1;}
-.bigcount small{font-size:11px;color:var(--ink-soft);}
-.decl{border:1px solid var(--rule);background:var(--field);padding:5px 6px;margin-bottom:4px;font-size:11px;}
-.decl b{font-size:12px;}
-.decl .sub{font-family:var(--f-data);font-size:9.5px;color:var(--ink-soft);}
-.waiting{background:#f0e6c8;border:1px solid #a08b45;padding:5px 6px;font-size:11px;line-height:1.4;}
+.bigcount small{font-size:12px;color:var(--ink-soft);}
+.decl{border:1px solid var(--rule);background:var(--field);padding:5px 6px;margin-bottom:4px;font-size:12px;}
+.decl b{font-size:12.5px;}
+.decl .sub{font-family:var(--f-data);font-size:10.5px;color:var(--ink-soft);}
+.waiting{background:#f0e6c8;border:1px solid #a08b45;padding:5px 6px;font-size:12px;line-height:1.4;}
 .waiting b{letter-spacing:.06em;}
 
 @media (prefers-reduced-motion:reduce){
@@ -448,13 +510,8 @@ tr.govrow td:first-child{box-shadow:inset 2px 0 0 var(--ok);}
   .newsbody{column-count:1;}
 }
 
-/* ---------- images: dithered, palette-indexed, never smoothed ---------- */
-img.dith{
-  image-rendering:pixelated;
-  image-rendering:-moz-crisp-edges;
-  image-rendering:crisp-edges;
-  display:block;
-}
+/* ---------- images: photographic plates, not machine scans ---------- */
+img.dith{display:block;}
 /* registry portrait — an ID photo on a government system */
 .portrait{
   float:left;margin:0 8px 4px 0;width:96px;
@@ -468,34 +525,36 @@ img.dith{
   object-fit:cover;object-position:center top;
 }
 .portrait .cap{
-  font-family:var(--f-data);font-size:8px;color:var(--ink-soft);
+  font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
   padding-top:2px;text-align:center;letter-spacing:.02em;
 }
-/* event plate — a captioned press or broadcast still */
-.plate-img{margin:0 0 8px;background:#12150f;}
+/* event plate — a printed photograph, not a terminal scan: a paper mount,
+   the image inset with a hairline, and a serif caption under a rule. */
+.plate-img{margin:0 0 10px;background:#efeae0;border:1px solid #c9c2b2;padding:8px;}
 /* A plate is a BAND, never whatever shape the source happens to be.
    aspect-ratio sets it; max-height and object-fit are the guards for
    old browsers and for images that arrive the wrong shape anyway. */
 .plate-img img{
   display:block;width:100%;
-  aspect-ratio:12/5;max-height:300px;
+  aspect-ratio:12/5;max-height:320px;
   object-fit:cover;object-position:center;
+  border:1px solid #b7ae95;
 }
 .plate-img .cap{
-  font-family:var(--f-ui);font-size:9px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--bar-txt);background:var(--bar);padding:2px 6px;
+  font-family:var(--f-doc);font-size:11.5px;line-height:1.35;color:#4e4838;
+  border-top:1px solid #c9c2b2;margin-top:6px;padding-top:4px;
   display:flex;justify-content:space-between;gap:10px;
 }
-.plate-img .cap em{font-style:normal;opacity:.6;font-family:var(--f-data);letter-spacing:0;text-transform:none;}
+.plate-img .cap em{font-style:normal;opacity:.7;font-family:var(--f-data);font-size:10px;}
 
 /* ---------- glossary: first use gets a footnote, not a wiki ---------- */
 .gl{border-bottom:1px dotted var(--rule);cursor:help;}
 .glbox{
   display:block;margin:4px 0 6px;padding:4px 7px;
   background:var(--field);border-left:3px solid var(--rule);
-  font-size:11px;line-height:1.4;
+  font-size:12px;line-height:1.4;
 }
-.glbox b{font-size:10px;letter-spacing:.09em;text-transform:uppercase;}
+.glbox b{font-size:11px;letter-spacing:.09em;text-transform:uppercase;}
 .glbox em{display:block;font-style:italic;color:var(--ink-soft);margin-top:2px;}
 
 /* =============================================================
@@ -513,20 +572,20 @@ img.dith{
   margin:0;font-family:var(--f-doc);font-size:19px;font-weight:normal;
   letter-spacing:.04em;color:#1b1d19;line-height:1.05;
 }
-.cx-brand p{margin:1px 0 0;font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:#6a6d64;}
+.cx-brand p{margin:1px 0 0;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#6a6d64;}
 .cx-search{margin:0 8px 10px;display:flex;gap:3px;}
 .cx-search input{
-  flex:1;min-width:0;font-family:var(--f-ui);font-size:11px;padding:2px 4px;
+  flex:1;min-width:0;font-family:var(--f-ui);font-size:12px;padding:2px 4px;
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
   background:#fff;
 }
 .cx-navcat{
-  font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:#6a6d64;
+  font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#6a6d64;
   padding:8px 10px 2px;border-bottom:1px solid #dcdfd6;margin-bottom:2px;
 }
 .cx-navlink{
-  display:block;padding:1px 10px 1px 14px;font-size:11.5px;color:#2b4a7a;cursor:pointer;
+  display:block;padding:1px 10px 1px 14px;font-size:12.5px;color:#2b4a7a;cursor:pointer;
   text-decoration:none;line-height:1.35;
 }
 .cx-navlink:hover{text-decoration:underline;background:#e8e9e2;}
@@ -538,21 +597,21 @@ img.dith{
   font-family:var(--f-doc);font-size:27px;font-weight:normal;line-height:1.1;
   margin:0 0 1px;border-bottom:1px solid #a6a99e;padding-bottom:4px;
 }
-.cx-from{font-size:10px;color:#6a6d64;font-family:var(--f-ui);letter-spacing:.05em;margin-bottom:12px;}
+.cx-from{font-size:11px;color:#6a6d64;font-family:var(--f-ui);letter-spacing:.05em;margin-bottom:12px;}
 #cx-body h3{
   font-family:var(--f-doc);font-size:17px;font-weight:normal;
   border-bottom:1px solid #cfd2c8;padding-bottom:2px;margin:18px 0 7px;
 }
-#cx-body p{font-size:13px;line-height:1.62;margin:0 0 11px;max-width:62ch;}
-.cx-lede p{font-size:13.5px;}
-.cx-lede p:first-child::first-letter{font-size:13.5px;}
+#cx-body p{font-size:13.5px;line-height:1.62;margin:0 0 11px;max-width:62ch;}
+.cx-lede p{font-size:14px;}
+.cx-lede p:first-child::first-letter{font-size:14px;}
 .cx-link{color:#2b4a7a;cursor:pointer;text-decoration:none;}
 .cx-link:hover{text-decoration:underline;}
 .cx-red{color:#8a2222;}
 
 .cx-banner{
   border:1px solid #c9c2a8;background:#fbf7e6;padding:5px 9px;margin:0 0 10px;
-  font-family:var(--f-ui);font-size:11px;line-height:1.4;border-left-width:4px;
+  font-family:var(--f-ui);font-size:12px;line-height:1.4;border-left-width:4px;
 }
 .cx-banner.cx-warn{border-left-color:#a8791f;}
 .cx-banner.cx-lock{border-left-color:#4a5c40;background:#f1f4ea;border-color:#c2cbb6;}
@@ -566,33 +625,44 @@ img.dith{
   margin:0;padding:4px 7px;background:#e0e4d6;border-bottom:1px solid #c3c6bd;
   font-size:11.5px;letter-spacing:.05em;text-align:center;
 }
+/* the party's own mark, where it has one, at the head of its infobox. The
+   logos are transparent PNGs, so they sit on a light grey, the way an
+   infobox logo does. */
+.cx-infobox .cx-logo{display:block;width:100%;height:auto;background:#f8f9fa;
+  border-bottom:1px solid #c3c6bd;}
 .cx-infobox table{width:100%;border-collapse:collapse;}
 .cx-infobox th{
-  text-align:left;font-size:9px;letter-spacing:.07em;text-transform:uppercase;
+  text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
   color:#4d5049;background:transparent;border:none;border-bottom:1px solid #e4e5de;
   padding:3px 7px;width:44%;vertical-align:top;font-weight:normal;
 }
 .cx-infobox td{
-  font-family:var(--f-data);font-size:11px;background:transparent;border:none;
+  font-family:var(--f-data);font-size:12px;background:transparent;border:none;
   border-bottom:1px solid #e4e5de;padding:3px 7px;
+}
+/* a section heading inside the wikibox: "Offices held" */
+.cx-infobox .cx-infohead th{
+  text-align:center;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:#3c4038;font-weight:bold;background:#e8ebe0;width:auto;
+  border-top:1px solid #c3c6bd;border-bottom:1px solid #c3c6bd;padding:3px 7px;
 }
 
 .cx-toc{
   display:inline-block;border:1px solid #c3c6bd;background:#f6f6f2;
   padding:5px 14px 5px 8px;margin:0 0 12px;font-family:var(--f-ui);
 }
-.cx-toc b{font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
+.cx-toc b{font-size:11px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:2px;}
 .cx-toc ol{margin:0;padding-left:20px;}
-.cx-toc li{font-size:11.5px;line-height:1.5;}
+.cx-toc li{font-size:12.5px;line-height:1.5;}
 .cx-toc a{color:#2b4a7a;cursor:pointer;}
 .cx-toc a:hover{text-decoration:underline;}
 
-.cx-see{font-size:13px;line-height:1.55;margin:0 0 11px;padding-left:20px;}
+.cx-see{font-size:13.5px;line-height:1.55;margin:0 0 11px;padding-left:20px;}
 .cx-foot{
   border-top:1px solid #cfd2c8;margin-top:22px;padding-top:6px;
-  font-family:var(--f-ui);font-size:10px;color:#6a6d64;line-height:1.5;
+  font-family:var(--f-ui);font-size:11px;color:#6a6d64;line-height:1.5;
 }
-.cx-att{font-family:var(--f-data);font-size:8px;padding:0 3px;border:1px solid;}
+.cx-att{font-family:var(--f-data);font-size:9px;padding:0 3px;border:1px solid;}
 .cx-att.y{color:var(--ok);border-color:var(--ok);}
 .cx-att.n{color:var(--alert);border-color:var(--alert);background:#f3e2de;}
 
@@ -602,12 +672,14 @@ img.dith{
   .cx-infobox{float:none;width:auto;margin:0 0 12px;}
 }
 
-/* party logos, where a party has one */
+/* party logos, where a party has one. The NPP's is a landscape wordmark, so
+   the mark is height-fixed and width-capped rather than square. */
 .plogo{
-  width:11px;height:11px;image-rendering:pixelated;image-rendering:crisp-edges;
+  height:11px;width:auto;max-width:22px;object-fit:contain;
   display:inline-block;vertical-align:-1px;margin-right:4px;
-  border:1px solid rgba(0,0,0,.45);
 }
+/* The constituency dossier has room for the wordmark at reading size. */
+.plogo.lg{height:24px;max-width:80px;vertical-align:middle;margin-right:6px;}
 
 /* ---------- orbital chart ---------- */
 #orbit-chart svg{display:block;width:100%;height:auto;}
@@ -622,9 +694,9 @@ img.dith{
   display:flex;flex-direction:column;gap:2px;
   border-top:1px solid var(--chrome-dk);background:var(--chrome);
 }
-.okeyrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:10px;}
+.okeyrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;}
 .okeyrow > b{
-  font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
   font-weight:normal;min-width:74px;
 }
 .okey{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
@@ -632,7 +704,7 @@ img.dith{
 .oramp{display:inline-flex;}
 .oramp i{display:inline-block;width:22px;height:11px;border:1px solid var(--chrome-dkr);border-right:none;}
 .oramp i:last-child{border-right:1px solid var(--chrome-dkr);}
-.okeyn{font-size:9px;color:var(--ink-soft);font-style:italic;}
+.okeyn{font-size:10px;color:var(--ink-soft);font-style:italic;}
 
 /* ---------- coalition capital and the whip ---------- */
 .flag.good{color:var(--ok);border-color:var(--ok);}
@@ -645,24 +717,35 @@ img.dith{
 .slotbar i.spent{background:var(--chrome-dk);}
 .whiptab td{padding:1px 4px;}
 .whiptab td:first-child{white-space:nowrap;}
-.whipslide{width:100%;min-width:90px;accent-color:var(--rule);height:14px;}
+/* The whip is one block per whippable seat. The number of blocks is what
+   can be moved; the filled ones are what is committed. Click a block to
+   commit up to it, click the last committed block to release it. */
+.whipbar{
+  display:flex;gap:1px;height:14px;min-width:80px;padding:1px;cursor:pointer;
+  background:var(--chrome-lt);
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}
+.whipbar i{flex:1 1 0;min-width:2px;background:var(--field);}
+.whipbar i.on{background:var(--ok);}
+.whipbar i:not(.on):hover{background:var(--chrome-dk);}
 .whipcost{
   background:#f4eddb;border-left:3px solid #8a6d22;padding:4px 7px;margin-top:5px;
-  font-size:11px;line-height:1.45;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
+  font-size:12px;line-height:1.45;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;
 }
 .whipcost .od{color:var(--alert);font-weight:bold;}
 .whipcost .ed-x{margin-left:auto;}
-.wh{color:var(--ok);font-size:9px;}
+.wh{color:var(--ok);font-size:10px;}
 
 /* ---------- scarcity prices ---------- */
 .prow{display:grid;grid-template-columns:1fr auto 54px;gap:6px;align-items:center;
   padding:2px 0;border-bottom:1px solid var(--chrome-dk);}
 .prow:last-of-type{border-bottom:none;}
-.plab{font-size:10.5px;line-height:1.2;}
-.plab em{display:block;font-style:normal;font-size:8.5px;color:var(--ink-soft);}
+.plab{font-size:11.5px;line-height:1.2;}
+.plab em{display:block;font-style:normal;font-size:9.5px;color:var(--ink-soft);}
 .sparkline{background:var(--field);border:1px solid var(--chrome-dk);display:block;}
 .pval{font-family:var(--f-data);font-size:14px;text-align:right;line-height:1;}
-.pval span{display:block;font-size:9px;color:var(--ink-soft);}
+.pval span{display:block;font-size:10px;color:var(--ink-soft);}
 .pval.up{color:var(--alert);}
 .pval.up span{color:var(--alert);}
 .pval.down{color:var(--ok);}
@@ -684,20 +767,20 @@ img.dith{
 #pp-doc .paper{min-height:0;}
 .madestamp{
   border:2px solid #4e4838;color:#4e4838;padding:5px 12px;
-  font-family:var(--f-ui);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  font-family:var(--f-ui);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
   text-align:center;line-height:1.35;
 }
-.madestamp small{display:block;font-size:8px;letter-spacing:.11em;}
+.madestamp small{display:block;font-size:9px;letter-spacing:.11em;}
 /* the ceremony fires once and stays drawn */
 .paper.sig-done #sigpath,.paper.sig-done .sigpath{stroke-dasharray:none;stroke-dashoffset:0;}
 
 /* The sitting screen is where the game is actually read and played, so its
    type is sized for reading rather than for a control panel. */
-#sitting-body .rulehead{font-size:10px;}
-#s-sit .panel > h2{font-size:11px;}
+#sitting-body .rulehead{font-size:11px;}
+#s-sit .panel > h2{font-size:12px;}
 .ed-none{}
 
-.signbtn{font-size:12px;padding:5px 14px;}
+.signbtn{font-size:12.5px;padding:5px 14px;}
 .sigblock .rule svg{position:absolute;left:4px;bottom:1px;overflow:visible;}
 
 
@@ -709,12 +792,12 @@ img.dith{
 #titlebar .tbgroup{display:flex;align-items:center;gap:6px;margin-left:auto;position:relative;}
 #titlebar .tbslot{font-family:var(--f-ui);text-transform:none;letter-spacing:.03em;
   opacity:.72;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.tbbtn{font-family:var(--f-ui);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+.tbbtn{font-family:var(--f-ui);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--bar-txt);background:transparent;border:1px solid rgba(233,234,226,.34);
   padding:2px 8px;cursor:pointer;line-height:1.5;}
 .tbbtn:hover{background:rgba(233,234,226,.13);border-color:rgba(233,234,226,.62);}
 .tbbtn:active{background:rgba(233,234,226,.22);}
-#tb-flash{font-family:var(--f-ui);text-transform:none;letter-spacing:.03em;font-size:10px;
+#tb-flash{font-family:var(--f-ui);text-transform:none;letter-spacing:.03em;font-size:11px;
   color:var(--bar-txt);opacity:0;transition:opacity .2s;}
 #tb-flash.on{opacity:.85;}
 
@@ -724,13 +807,13 @@ img.dith{
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
   box-shadow:3px 4px 0 rgba(27,29,25,.22);padding:8px;}
 #tb-optpanel.on{display:block;}
-.opt-title{font-family:var(--f-ui);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+.opt-title{font-family:var(--f-ui);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--ink-soft);border-bottom:1px solid var(--chrome-dk);padding-bottom:4px;margin-bottom:6px;}
-.opt{display:flex;gap:7px;align-items:flex-start;padding:4px 2px;cursor:pointer;font-size:11px;}
+.opt{display:flex;gap:7px;align-items:flex-start;padding:4px 2px;cursor:pointer;font-size:12px;}
 .opt input{margin:2px 0 0 0;flex:0 0 auto;}
 .opt span{display:block;}
-.opt b{display:block;font-weight:600;font-size:11px;}
-.opt i{display:block;font-style:normal;font-size:10px;color:var(--ink-soft);line-height:1.35;}
+.opt b{display:block;font-weight:600;font-size:12px;}
+.opt i{display:block;font-style:normal;font-family:var(--f-read);font-size:11px;color:var(--ink-soft);line-height:1.35;}
 .opt-sep{height:1px;background:var(--chrome-dk);margin:7px 0;}
 
 /* --- the main menu --- */
@@ -748,7 +831,7 @@ body.menu-on{background:var(--chrome);}
 .menu-tag{display:inline-block;margin-top:14px;background:var(--bar);color:var(--bar-txt);
   font-family:var(--f-ui);font-size:14px;letter-spacing:.02em;padding:4px 12px;}
 .menu-body{margin-top:52px;}
-.menu-sub{font-family:var(--f-ui);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+.menu-sub{font-family:var(--f-ui);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
   color:var(--ink-soft);margin-bottom:10px;}
 .menu-btns{display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
 .menu-btns.row{flex-direction:row;margin-top:16px;}
@@ -759,7 +842,7 @@ body.menu-on{background:var(--chrome);}
 .mbtn:active{box-shadow:1px 1px 0 rgba(27,29,25,.16);transform:translate(1px,2px);}
 .mbtn.off,.mbtn:disabled{opacity:.42;cursor:default;box-shadow:none;}
 .mbtn.off:hover,.mbtn:disabled:hover{background:var(--chrome-lt);}
-.mbtn.sm{font-size:12px;width:auto;padding:4px 11px;box-shadow:1px 2px 0 rgba(27,29,25,.16);}
+.mbtn.sm{font-size:12.5px;width:auto;padding:4px 11px;box-shadow:1px 2px 0 rgba(27,29,25,.16);}
 .mbtn.wide{width:100%;margin-top:5px;}
 .mbtn.danger{color:var(--alert);border-color:var(--alert);}
 
@@ -771,12 +854,12 @@ body.menu-on{background:var(--chrome);}
 .sl-b{flex:1 1 auto;min-width:0;}
 .sl-name{font-family:var(--f-ui);font-size:15px;}
 .slot.empty .sl-name{color:var(--ink-soft);}
-.sl-meta{font-family:var(--f-ui);font-size:10.5px;color:var(--ink-soft);letter-spacing:.02em;}
+.sl-meta{font-family:var(--f-ui);font-size:11.5px;color:var(--ink-soft);letter-spacing:.02em;}
 .sl-a{display:flex;gap:6px;flex:0 0 auto;}
 .menu-text{max-width:600px;font-family:var(--f-doc);font-size:14px;line-height:1.55;}
 .menu-text p{margin:0 0 10px;}
-.menu-text .dim{color:var(--ink-soft);font-size:13px;}
-.menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:11px;
+.menu-text .dim{color:var(--ink-soft);font-size:13.5px;}
+.menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
   color:var(--alert);border-left:2px solid var(--alert);padding-left:9px;line-height:1.45;}
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
@@ -792,7 +875,7 @@ body.no-motion *{animation:none !important;}
 
 
 /* --- constituency and functional listings --- */
-i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
+i.sub{display:block;font-style:normal;font-size:10.5px;line-height:1.3;
   color:var(--ink-soft);letter-spacing:.02em;font-weight:400;}
 #orbit-table td b{font-weight:600;}
 .conslist{width:100%;border-collapse:collapse;margin:2px 0 6px;}
@@ -800,11 +883,11 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 .conslist td:last-child{text-align:right;white-space:nowrap;width:1%;}
 .conslist tr:last-child td{border-bottom:0;}
 .hcell{white-space:nowrap;}
-.hn{font-family:var(--f-data);font-size:10px;margin:0 5px 0 1px;color:var(--ink-soft);}
+.hn{font-family:var(--f-data);font-size:11px;margin:0 5px 0 1px;color:var(--ink-soft);}
 .hn.vac{color:#c07a5a;letter-spacing:.04em;text-transform:uppercase;}
 #func-table td{vertical-align:top;}
-.note.dim{color:var(--ink-soft);font-size:10px;line-height:1.4;margin-top:2px;}
-.note code{font-family:var(--f-data);font-size:10px;}
+.note.dim{color:var(--ink-soft);font-size:11px;line-height:1.4;margin-top:2px;}
+.note code{font-family:var(--f-data);font-size:11px;}
 
 /* No height cap. Squashing a 1.68:1 chart into a fixed 400px letterboxed it
    into a small centred picture with dead space either side. The chart's own
@@ -815,7 +898,7 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 /* --- bill lifecycle track (Papers) --- */
 .track{margin:10px 0 14px;}
 .stagetrack{list-style:none;display:flex;flex-wrap:wrap;gap:0;margin:0;padding:0;
-  font-family:var(--f-ui);font-size:9px;letter-spacing:.06em;text-transform:uppercase;}
+  font-family:var(--f-ui);font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
 .stagetrack li{position:relative;flex:1 1 0;min-width:58px;text-align:center;
   padding-top:13px;color:#8a8574;}
 .stagetrack li i{position:absolute;top:3px;left:50%;width:7px;height:7px;margin-left:-3.5px;
@@ -832,7 +915,7 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 .stagetrack li.here i{background:#1b2a5c;border-color:#1b2a5c;width:9px;height:9px;
   margin-left:-4.5px;top:2px;}
 .stagetrack li.here::before{background:#8f8974;}
-.stagetrack li span em{display:block;font-style:normal;font-size:7.5px;letter-spacing:.1em;
+.stagetrack li span em{display:block;font-style:normal;font-size:8.5px;letter-spacing:.1em;
   color:#8c3a32;text-transform:uppercase;}
 .stagetrack li.term i{border-radius:0;}
 .stagetrack li.term.good i{background:#3d5c33;border-color:#3d5c33;}
@@ -841,7 +924,7 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 .stagetrack li.term.good{color:#3d5c33;font-weight:700;}
 .stagetrack li.term.bad{color:#8c3a32;font-weight:700;}
 .stagetrack li.term.warn{color:#8a6d24;font-weight:700;}
-.trknote{font-family:var(--f-doc);font-size:11.5px;line-height:1.45;color:#4e4838;
+.trknote{font-family:var(--f-doc);font-size:12.5px;line-height:1.45;color:#4e4838;
   margin-top:8px;padding-left:9px;border-left:2px solid #cfc8b3;}
 .trknote.good{border-left-color:#3d5c33;}
 .trknote.bad{border-left-color:#8c3a32;}
@@ -887,9 +970,12 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
    every ::-webkit-scrollbar rule for it is dropped and you get the default
    rounded overlay bar back. So the standard two-colour fallback is fenced
    off behind a query for engines that have no pseudo-elements to lose,
-   which today means Gecko. */
+   which today means Gecko. Gecko cannot bevel a scrollbar either, so the
+   era's wide bar would read as a plain browser strip; the closest match is
+   the panel's own values — a track that disappears into the panel and a
+   darker thumb — which is what the orbit seat list shows. */
 @supports not selector(::-webkit-scrollbar){
-  *{scrollbar-color:var(--chrome) var(--chrome-lt);scrollbar-width:auto;}
+  *{scrollbar-color:var(--chrome-dk) var(--chrome);scrollbar-width:auto;}
 }
 ::-webkit-scrollbar{width:16px;height:16px;background:var(--chrome-lt);}
 ::-webkit-scrollbar-track{
@@ -966,7 +1052,7 @@ i.sub{display:block;font-style:normal;font-size:9.5px;line-height:1.3;
 
 /* --- volume sliders in the options panel --- */
 .optlvl{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;
-  padding:3px 2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 2px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--ink-soft);}
 .optlvl input[type=range]{width:100%;height:14px;accent-color:var(--rule);margin:0;}
 
@@ -999,10 +1085,10 @@ body.busy, body.busy *{cursor:progress;}
    has not slowed down, it has stopped, and it says why */
 .wait-seg i.stall{background:var(--alert);}
 .wait-step{
-  font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
+  font-family:var(--f-data);font-size:11px;color:var(--ink-soft);
   min-height:13px;margin-bottom:6px;
 }
-.wait-skip{margin-top:7px;font-size:9px;letter-spacing:.06em;text-transform:uppercase;}
+.wait-skip{margin-top:7px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;}
 .wait-verdict{
   margin-top:6px;padding:3px 5px;font-family:var(--f-disp);font-size:15px;
   min-height:20px;border-top:1px solid var(--chrome-dk);
@@ -1010,14 +1096,38 @@ body.busy, body.busy *{cursor:progress;}
 .wait-verdict.ok{color:var(--ok);}
 .wait-verdict.bad{color:var(--alert);}
 
+/* ---------- the terminal asking a question ----------
+
+   js/dialog.js. The browser's alert/confirm/prompt are chrome the
+   fiction cannot reach; these are the same three things in the
+   terminal's own panel and button furniture. One step darker than the
+   thinking dialog, and above it, because a question interrupts work
+   rather than being part of it. */
+.dlg-back{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(27,29,25,.55);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.dlg-dlg{width:min(430px,100%);max-height:88vh;overflow:auto;}
+.dlg-dlg:focus-visible{outline:1px dotted var(--bar-txt);outline-offset:2px;}
+.dlg-msg{font-family:var(--f-read);font-size:13px;line-height:1.5;margin:2px 0 11px;}
+.dlg-in{
+  width:100%;box-sizing:border-box;font-family:var(--f-ui);font-size:13.5px;color:var(--ink);
+  background:var(--field);padding:4px 6px;margin-bottom:11px;
+  border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
+}
+.dlg-btns{display:flex;gap:6px;justify-content:flex-end;}
+.dlg-btns .mbtn{width:auto;max-width:none;}
+
 /* BOTH MAJORITIES ON SCREEN THROUGHOUT (bible 4.6.7). The functional
    column is never collapsed away, even on a simple-majority bill, so the
    second test is a thing the player knows exists before it kills a bill. */
-.divtally td i{font-style:normal;color:var(--ink-soft);font-size:9px;}
-.divtally tfoot th{background:var(--chrome-lt);font-family:var(--f-data);font-size:10px;
+.divtally td i{font-style:normal;color:var(--ink-soft);font-size:10px;}
+.divtally tfoot th{background:var(--chrome-lt);font-family:var(--f-data);font-size:11px;
   text-transform:none;letter-spacing:0;}
 .divtally tfoot th.ok{color:var(--ok);}
-.divtally tbody td{padding:1px 4px;font-size:10.5px;}
+.divtally tbody td{padding:1px 4px;font-size:11.5px;}
 
 /* Text still arriving. The block holds the height it will end up with -
    js/stream.js measures it before emptying it - so nothing below moves
@@ -1029,7 +1139,7 @@ body.busy, body.busy *{cursor:progress;}
 
 /* the speed picker, in the terminal's own chrome rather than the OS's */
 .optlvl select{
-  width:100%;font-family:var(--f-ui);font-size:11px;color:var(--ink);
+  width:100%;font-family:var(--f-ui);font-size:12px;color:var(--ink);
   background:var(--field);padding:1px 3px;
   border-top:1px solid var(--chrome-dkr);border-left:1px solid var(--chrome-dkr);
   border-bottom:1px solid var(--chrome-lt);border-right:1px solid var(--chrome-lt);
@@ -1048,19 +1158,37 @@ th[data-tip],.plab[data-tip],.meterrow label[data-tip]{
   position:fixed;z-index:300;max-width:264px;
   background:var(--chrome-lt);color:var(--ink);padding:5px 7px;
   border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
-  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  border-bottom:1px solid var(--chrome-dk);border-right:1px solid var(--chrome-dk);
   box-shadow:2px 2px 0 rgba(27,29,25,.28);
   pointer-events:none;   /* it can never be hovered, so it can never trap */
 }
+/* A card carrying a member table needs the width for a full office title in
+   its last column; the cap only lifts, so a short card still sizes to its
+   content. js/tips.js adds .wide when data-tip-members is present. */
+#tipcard.wide{max-width:360px;}
 #tipcard b{
-  display:block;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--ink-soft);margin-bottom:2px;
 }
-#tipcard span{display:block;font-size:11px;line-height:1.45;}
+#tipcard span{display:block;font-family:var(--f-read);font-size:12px;line-height:1.45;}
 #tipcard i{
   display:block;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
-  font-style:normal;font-family:var(--f-data);font-size:9px;color:var(--ink-soft);
+  font-style:normal;font-family:var(--f-data);font-size:10px;color:var(--ink-soft);
 }
+/* The member list under a data-driven card, last on the card: party mark and
+   short name in one column, the member in the other. */
+#tipcard table.tipmem{
+  width:100%;margin-top:4px;padding-top:3px;border-top:1px solid var(--chrome-dk);
+  border-collapse:collapse;font-family:var(--f-data);font-size:10px;line-height:1.5;
+}
+#tipcard table.tipmem td{padding:1px 5px;vertical-align:top;}
+/* The ref and party columns are shrink-to-fit and centred: they hold a
+   token, not a sentence, so the width belongs to the member column, which
+   carries the name and the whole office. */
+#tipcard table.tipmem td:first-child{width:1%;white-space:nowrap;text-align:center;color:var(--ink-soft);}
+#tipcard table.tipmem td:nth-child(2){width:1%;white-space:nowrap;text-align:center;color:var(--ink-soft);}
+#tipcard table.tipmem .swatch{width:6px;height:6px;margin:0 3px 0 0;vertical-align:-1px;}
+#tipcard table.tipmem .office{font-style:normal;letter-spacing:.04em;color:var(--ink-soft);}
 
 /* Explain mode: ? puts every annotated readout into the tab order, and
    says so, because a tab stop you cannot see is a tab stop you fall into.

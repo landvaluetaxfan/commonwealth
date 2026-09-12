@@ -53,7 +53,7 @@ const FILES = ["content/setup.js","content/parties.js","content/stations.js","co
   "content/cabinet.js","content/instruments.js","content/minutes.js","content/functional.js",
   "content/labour.js","content/names.js","content/characters.js","content/bills.js",
   "content/glossary.js","content/events.js","content/encyclopedia.js","content/artifacts.js","content/index.js",
-  "js/audio.js","js/focus.js","js/stream.js","js/wait.js","js/tips.js","js/artifacts.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
+  "js/audio.js","js/focus.js","js/stream.js","js/wait.js","js/dialog.js","js/tips.js","js/artifacts.js","js/engine.js","js/orbitchart.js","js/papers.js","js/encyclopedia.js",
   "js/ui.js","js/shell.js"];
 FILES.forEach(f => {
   const p = path.join(root, f);
@@ -62,6 +62,16 @@ FILES.forEach(f => {
   s.textContent = fs.readFileSync(p, "utf8");
   w.document.body.appendChild(s);
 });
+
+/* The terminal draws its own dialogs now (js/dialog.js), so the shell and
+   the editor answer through Dialog's callbacks rather than the window's.
+   Answering them the moment they open is what keeps the menu booting into
+   a game without a click. */
+w.eval(`
+  Dialog.confirm = function (m, o, cb) { (typeof o === "function" ? o : cb)(true); };
+  Dialog.prompt  = function (m, o, cb) { (typeof o === "function" ? o : cb)("Test ministry"); };
+  Dialog.alert   = function (m, o, cb) { var f = typeof o === "function" ? o : cb; if (f) f(); };
+`);
 
 let fail = 0;
 const ok = (label, cond, extra) => {

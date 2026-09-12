@@ -4,6 +4,141 @@ A text-based narrative political thriller with real electoral mechanics, set in 
 federated republic of orbital habitats. No build step, no framework, no bundler.
 Open `index.html` in a browser to play, `editor.html` to author.
 
+## HANDOFF — opencode, 11 Sep 2026 (dialogs, Concordance offices, chamber)
+
+opencode worked on `main` at the author's direction and touched files outside its
+usual lane. **Read this before editing `js/` or `content/encyclopedia.js`.** The
+two features are in `git log` as *"Replace the browser's dialogs with the
+terminal's own"* and *"Derive Concordance offices and party leaders from the
+cabinet"*, both pushed.
+
+**Native dialogs are gone.** New `js/dialog.js` draws `alert`/`confirm`/`prompt`
+in the terminal's own chrome and answers through callbacks, not promises:
+
+```
+Dialog.alert(msg, opts?, done?)        done()
+Dialog.confirm(msg, opts?, answer?)    answer(true|false)
+Dialog.prompt(msg, opts?, answer?)     answer(string|null)
+```
+
+Every call site in `js/shell.js`, `js/ui.js` and `js/editor.js` now uses it; the
+host is `#dlgdlg` and the CSS is `.dlg-*` in `terminal.css`. **The test harnesses
+answer it through the same callbacks** (`tools/harness.js`, `tools/edtest.js`
+override `Dialog.confirm/prompt/alert`), so if you change the signature you must
+change those too or `npm run ui`/`ux`/`editor` stop booting. A dev-only check for
+the module itself was left in `%TEMP%\opencode\dlgtest.js`, not in the repo.
+
+**The Concordance derives offices now.** `js/encyclopedia.js` reads who holds
+what from `C.cabinet` and `C.parties[].leader` (`officesOf`/`mainOffice`/
+`officeLine`) instead of trusting a typed `role`. Person articles gained a
+wikibox (Party / Seat / **Offices held**); the lede follows the office. Party
+articles gained Leader + Leader's office + a Leadership section. Infobox rows
+support a section header as `["", "Offices held", "head"]`. `js/refs.js`
+`characterRefs` now follows `cabinet[].holder` and `parties[].leader`, so a
+rename reaches both.
+
+**New content fields to know about:** `parties[].leader` (a character id; `null`
+for `ind`) and `cabinet[].title` (the *minister's* title, e.g. "Treasurer" or
+"Leader of the House", distinct from the ministry `name`). The editor does not
+expose either yet but serialises them unchanged.
+
+**Content corrections made in the same pass:** Marin is Minister for Persons and
+Continuity again (Abadi keeps `fc_medicine`, backbench); Anselm Ring's
+composition was rebalanced so the population-weighted composition is the bible's
+64/28/4/4; and stale facts in `content/encyclopedia.js` were fixed (station
+count, functional-electorate range, the full cabinet ministry list, "two
+Democratic Centre Ministers", a doubled "the").
+
+**Two inconsistencies left open, both content, both flagged here:**
+
+- `content/labour.js` `embodied` values weight to **~68%** of jobs; bible §6.10
+  says **46%**. The encyclopedia article follows the bible, so the labour table
+  is the outlier.
+- Station populations sum to **7,006,000**; `labour.js totals.population` is
+  **6,863,000**. 143,000 apart.
+
+**Also landed since that handoff:** row selection is now the gold tint in every
+table (`.sel` was the dark inverted block; the `#cons-table` override is gone and
+`tools/uxtest.js` was updated to match); a member-table tooltip widens to 360px
+(`#tipcard.wide`) so a full office title fits on one line; and three Liberal
+functional-seat MPs now hold shadow briefs — Quintana/Substrate, Ijaz/Transit,
+Estévez/Anchors — with Otrione, Caillet and Nadeau backbenched. `js/ui.js` gained
+`officeText()` for the full office in the functional tooltip.
+
+**More since:** Gecko gets a drawn scrollbar (`decorateScrollers()` in `js/ui.js`
+wraps `.p-cons`/`.p-doss` bodies in `.sbwrap` and appends `.sbar`; WebKit/Blink
+keep their native bar — the check is `CSS.supports("selector(::-webkit-scrollbar)")`);
+the whip's `MOVE` column is a segmented `.whipbar` (one block per whippable seat),
+not a range input; and the orbit tab dropped the `p-cond` panel — the constituency
+dossier is now an expandable `.consdet` row inside `#cons-table` (`consOpen` state,
+`constituencyDetail()`), with `p-doss` spanning the full right column. Next up,
+per the author: constituency prose (description, voting tendencies) in the expanded
+row, then a capital designation.
+
+**The capital is in:** `content/stations.js` has `winter_garden` (The Winter
+Garden, ring band, 80k, one seat) and `content/constituencies.js` has
+`capital_territory` (Capital Territory, `at_large`, `nonVoting: true`). The engine
+reads `nonVoting`: `seedRoll`/`reconcile` carry the flag into the roll, and
+`syncRoll`, `partyDistrict`, `vacantSeats`, `tierCheck`, `apportionment` and
+`generalElection` all skip it, so the seat has a member and a page but sits outside
+the 140-seat tier, the 280 chamber and every division. `test.js` was updated
+(141 constituencies, 140 voting; station seats 141) and the `commonwealth` article's
+station count moved to thirty. One fiction wrinkle left: the capital's electorate
+(49,200) is excluded from the district-roll sum in `test.js`, so its adults are not
+inside the bible's 4,149,803 and the districts were not rebalanced.
+
+**Do not commit** the untracked root duplicates (`events.js`, `glossary.js`,
+`lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`, `js/codex.js`)
+or the `tools/dither.sh` mode change — they are pre-existing and left alone.
+
+## OPEN HANDOFF — a divergent branch must be reconciled (10 Sep 2026)
+
+A second agent (opencode) worked from a **stale clone** and committed a line of
+work that is **not on this branch**. It is pushed and waiting:
+
+`git fetch origin opencode/party-rename-and-economy`
+
+Built on the old base `49344d6` (before the UI pass and `STATE_VERSION 6`), it
+contains:
+
+- **Five signed axes** (`economic · authority · personhood · sovereignty · trade`)
+  replacing the four categorical ones, with agreement as distance.
+- **§7.10 the productive economy**: `economy.participation/trade/private`, the
+  `economy` effect verb, `economyAbove/Below`, state v5.
+- **Renamed parties**, and the old `gb` split in two.
+- `ROADMAP.md`, `AUTHORING_FORMAT.md`, `drafts/`, and bible **Part XVII**.
+
+The branch is **ahead 1, behind 38**. Its engine half (axes, economy, migration)
+was written against v5 and conflicts with the current v6 engine — **Claude owns
+that rebase.**
+
+**The party rename IS landed on `main`.** It was landed once (`1b6c3b5`), reverted
+(`55aa28a`) because adding the 12th party `ind` **crashed the chamber, orbit and
+Concordance on existing saves**, and re-landed with the hole closed:
+`Engine.reconcile()` now backfills parties and currents from content, exactly as
+it already did for stations, and `test.js` asserts it. The six district seats
+moved to `ind` in `content/constituencies.js`, and `ind:"against"` holds the
+divergence forecast at 128.
+
+When rebasing the branch, **keep only the engine work** (five axes, §7.10
+economy, migration, roadmap/docs) and **drop the rename and the split** — they
+are already here. The table is a record:
+
+| id | name | short |
+|---|---|---|
+| cu | Party of Socialists and Democrats | PSD |
+| cl | Liberal Party | LIB |
+| psa | New Progressive Party | NPP |
+| sc | Home Rule | HR |
+| hul | Association of Engineers and Systems | AES |
+| rv | Democratic Centre | DEC |
+| fh | Party of Property Owners | PPO |
+| gb | Alliance of Business and Government | ABG |
+| des | One-G | ONE |
+| geo | Single Tax Party | STP |
+| upl | Common Kind | CMK |
+| ind | Independents | IND |
+
 ## Finding things without reading everything
 
 `bible.md` is ~1,700 lines and `textbook.md` ~750. Reading either in full to

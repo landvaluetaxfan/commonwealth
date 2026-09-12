@@ -7,26 +7,109 @@ const UI = (function () {
   "use strict";
 
   let st, C, currentEvent = null, lastResult = null, cxCurrent = "perigee_charter";
+  /* The seat whose detail row is open in the orbit list, and the station it
+     was opened under. A station change resets the open row to the selected
+     seat; the player can close it by clicking it again. */
+  let consOpen = null, consOpenAt = null;
 
   const $ = s => document.querySelector(s);
   const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
   const sw = col => `<i class="swatch" style="background:${col}"></i>`;
-  /* a party mark: its logo if one exists, otherwise the colour swatch */
-  const mark = id => {
+  /* The party mark in the lists and panels: the colour block. The logo is
+     reserved for the places with room for it, the constituency dossier and
+     the Concordance, through logoMark(). */
+  const mark = id => sw(pc(id));
+  const logoMark = (id, cls) => {
     const p = C.partyById[id];
-    if (p && p.logo) return `<img class="dith plogo" src="img/logos/${p.logo}" alt=""` +
+    const file = p && (p.wordmark || p.logo);
+    if (!file) return sw(pc(id));
+    return `<img class="dith plogo${cls ? " " + cls : ""}" src="img/logos/${file}" alt=""` +
       ` onerror="this.replaceWith(Object.assign(document.createElement('i'),` +
       `{className:'swatch',style:'background:${p.colour}'}))">`;
-    return sw(pc(id));
   };
   const pc = id => (C.partyById[id] || {}).colour || "var(--chrome-dk)";
   const pn = id => (C.partyById[id] || {}).name || id;
+  const ps = id => (C.partyById[id] || {}).short || id;
+
+  /* Office badges. An office is a one-word mark on the seat table, not a job
+     title — `role` carries the title. The key belongs to content; the label
+     and the class are presentation's, which is why this map lives here and not
+     in the engine. The Speaker is not in it: the Chair is a property of the
+     seat (`speaker:true`), because it belongs to the House, not the person. */
+  const OFFICE = {
+    pm:         ["PM", "pm"],
+    deputy:     ["Deputy PM", "dep"],
+    minister:   ["Minister", "min"],
+    opposition: ["Opposition Leader", "opp"],
+    shadow:     ["Shadow", "shadow"],
+    leader:     ["Leader", "leader"],
+    whip:       ["Whip", "whip"]
+  };
 
   /* Autosave. Shell owns slots; if it is not loaded (the editor, a test
      harness) this is a no-op rather than an error. */
   const saved = () => { if (typeof Shell !== "undefined") Shell.autosave(); };
 
   let wired = false;
+
+  /* ---------- the terminal's own scrollbar ----------
+
+     Firefox cannot bevel a scrollbar, and on some systems its bar is an
+     overlay that runs under the rightmost column. On an engine with no
+     ::-webkit-scrollbar to style, the panels that scroll get a drawn bar in
+     the terminal's own chrome: the native one is hidden and the track takes
+     a column of its own, so nothing is ever covered. Engines that can bevel
+     keep their native bar, which already matches. The track only lifts when
+     the body actually overflows. */
+  function decorateScrollers() {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+    let bevel = false;
+    try { bevel = !!(window.CSS && CSS.supports && CSS.supports("selector(::-webkit-scrollbar)")); }
+    catch (e) { bevel = false; }
+    if (bevel) return;
+    document.querySelectorAll(".p-cons>.pbody, .p-doss>.pbody").forEach(box => {
+      if (box._sb) return;
+      box._sb = true;
+      const wrap = document.createElement("div");
+      wrap.className = "sbwrap";
+      box.parentNode.insertBefore(wrap, box);
+      wrap.appendChild(box);
+      const track = document.createElement("div");
+      track.className = "sbar";
+      const thumb = document.createElement("i");
+      thumb.className = "sbar-thumb";
+      track.appendChild(thumb);
+      wrap.appendChild(track);
+      const sync = () => {
+        const over = box.scrollHeight - box.clientHeight;
+        if (over <= 1) { track.style.display = "none"; return; }
+        track.style.display = "";
+        const th = Math.max(26, Math.round(box.clientHeight * box.clientHeight / box.scrollHeight));
+        thumb.style.height = th + "px";
+        thumb.style.top = Math.round((box.scrollTop / over) * (box.clientHeight - th)) + "px";
+      };
+      box.addEventListener("scroll", sync, { passive: true });
+      if (typeof ResizeObserver !== "undefined") {
+        const ro = new ResizeObserver(sync);
+        ro.observe(box);
+        if (box.firstElementChild) ro.observe(box.firstElementChild);
+      }
+      thumb.addEventListener("pointerdown", e => {
+        e.preventDefault();
+        const y0 = e.clientY, top0 = box.scrollTop;
+        const range = box.scrollHeight - box.clientHeight;
+        const travel = box.clientHeight - thumb.offsetHeight;
+        const move = ev => { box.scrollTop = top0 + (ev.clientY - y0) * range / (travel || 1); };
+        const up = () => {
+          document.removeEventListener("pointermove", move);
+          document.removeEventListener("pointerup", up);
+        };
+        document.addEventListener("pointermove", move);
+        document.addEventListener("pointerup", up);
+      });
+      sync();
+    });
+  }
 
   function boot(state, content) {
     st = state; C = content;
@@ -85,12 +168,26 @@ const UI = (function () {
       fallback: () => (C.stations[0] || {}).id,
       activate: id => pickStation(id)
     });
+    /* The seat list is a region too: it selects, and the dossier beside the
+       schematic shows the one highlighted. A key left over from another
+       station falls back to the first seat of this one. */
+    Focus.region("cons-table", {
+      rows: "tr[data-cons]",
+      key: tr => tr.dataset.cons,
+      fallback: () => {
+        const sid = Focus.selected("orbit-table");
+        const mine = (C.constituencies || []).filter(k => k.station === sid);
+        return (mine[0] || {}).id;
+      },
+      activate: id => pickConstituency(id)
+    });
     Focus.wire();
     /* Both capture their own skip listeners; both are no-ops without a
        document. Neither is ever called from a draw function. */
     if (typeof Stream !== "undefined") Stream.wire();
     if (typeof Wait !== "undefined") Wait.wire();
     if (typeof Tips !== "undefined") Tips.wire();
+    decorateScrollers();
 
     /* THE CONCORDANCE, in one function instead of four copies of it.
        Every way of getting to an article - a link in the body, a link in
@@ -298,8 +395,10 @@ const UI = (function () {
 
     let h = "<thead><tr><th>Party</th><th class='n' data-tip='seats'>Seats</th>" +
       "<th class='n' data-tip='loyalty'>Loy</th></tr></thead><tbody>";
+    /* Every coalition partner is governing, not just the Prime Minister's
+       party — the player's own row is still the one with no loyalty figure. */
     st.coalition.forEach(id => {
-      h += `<tr><td>${mark(id)}${pn(id)} ${id === st.playerParty ? "<span class='flag' data-tip='gov'>GOV</span>" : ""}</td>` +
+      h += `<tr><td>${mark(id)}${pn(id)} <span class="flag" data-tip="gov">GOV</span></td>` +
            `<td class="n">${Engine.partyTotal(st, id)}</td><td class="n">${id === st.playerParty ? "&mdash;" : st.parties[id].loyalty}</td></tr>`;
     });
     st.confidenceSupply.forEach(id => {
@@ -418,7 +517,7 @@ const UI = (function () {
     $("#gov-si").querySelectorAll("[data-make]").forEach(b => b.addEventListener("click", () => {
       const si = (C.instruments || []).find(x => x.id === b.dataset.make);
       const r = Engine.makeInstrument(st, C, b.dataset.make);
-      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); alert(r.reason); }
+      if (!r.ok) { cue("deny"); setStatus(r.reason, "transient"); Dialog.alert(r.reason, { title: "Order refused" }); }
       else {
         cue("stamp"); if (typeof Wait !== "undefined") Wait.brief(320);
         setStatus((si ? si.number : b.dataset.make) + " made \u2014 in force at once, and prayable",
@@ -428,24 +527,36 @@ const UI = (function () {
     }));
     $("#gov-si").querySelectorAll("[data-pray]").forEach(b => b.addEventListener("click", () => {
       const f = Engine.prayerForecast(st, C, b.dataset.pray);
-      if (!confirm(`Pray against this order?\n\nForecast ${f.aye} of ${f.total}, needs ${f.need}.\n` +
+      Dialog.confirm(
+        `Forecast ${f.aye} of ${f.total}, needs ${f.need}.\n\n` +
         (f.carries ? "The prayer would carry and the order would be annulled." :
-                     "The prayer would be defeated and the order would stand."))) return;
-      Engine.prayAgainst(st, C, b.dataset.pray);
-      cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
-      setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
-                (f.carries ? " carried \u2014 the order is annulled"
-                           : " defeated \u2014 the order stands"), "transient");
-      drawAll(); afterAction();
+                     "The prayer would be defeated and the order would stand."),
+        { title: "Pray against this order?", yes: "Pray", danger: true },
+        ok => {
+          if (!ok) return;
+          Engine.prayAgainst(st, C, b.dataset.pray);
+          cue(f.carries ? "aye" : "nay"); if (typeof Wait !== "undefined") Wait.brief(320);
+          setStatus("Prayer against " + b.dataset.pray.replace(/_/g, " ") +
+                    (f.carries ? " carried \u2014 the order is annulled"
+                               : " defeated \u2014 the order stands"), "transient");
+          drawAll(); afterAction();
+        });
     }));
 
     /* ---- cabinet ---- */
-    $("#gov-cabinet").innerHTML = (C.cabinet || []).map(p => {
+    /* The Prime Minister chairs it, so she heads the list — but she is not a
+       post: a post has an author for instruments and can fall vacant, and she
+       is neither appointable nor dismissable by the player. */
+    const pmCh = C.characterById[C.setup.pm];
+    const pmRow = pmCh ? `<tr class="pmrow"><td>Prime Minister</td>` +
+      `<td>${bare(pmCh.name)}</td>` +
+      `<td class="n">${mark(pmCh.party)}</td></tr>` : "";
+    $("#gov-cabinet").innerHTML = pmRow + (C.cabinet || []).map(p => {
       const s = st.cabinet[p.id];
       const ch = s.holder ? C.characterById[s.holder] : null;
       return `<tr class="${s.holder ? "" : "vacant"}">
         <td>${p.name}${p.senior ? " <span class='flag' data-tip='senior'>SENIOR</span>" : ""}</td>
-        <td>${s.holder ? (ch ? ch.name.replace(/^Rt\. Hon\. /, "") : s.holder.replace(/_/g," "))
+        <td>${s.holder ? (ch ? bare(ch.name) : s.holder.replace(/_/g," "))
                        : "<span class='flag bad' data-tip='vacant'>VACANT</span>"}</td>
         <td class="n">${s.party ? mark(s.party) : ""}</td></tr>`;
     }).join("");
@@ -497,10 +608,17 @@ const UI = (function () {
           `<td class="n">${r.functionalAye}${r.functionalWhipped ? `<span class="wh">+${r.functionalWhipped}</span>` : ""}</td><td class="n">${r.functionalSeats}</td></tr>`).join("") +
         `</tbody></table>`;
     });
-    det.querySelectorAll(".whipslide").forEach(sl => sl.addEventListener("input", () => {
-      Engine.setWhip(st, C, id, sl.dataset.wp, sl.dataset.wt, +sl.value);
-      drawBill(id); drawStatus();
-    }));
+    det.querySelectorAll(".whipbar").forEach(bar => {
+      const wp = bar.dataset.wp, wt = bar.dataset.wt;
+      [...bar.querySelectorAll("i")].forEach((cell, i) =>
+        cell.addEventListener("click", () => {
+          const cur = ((st.whips[id] || {})[wp] || {})[wt] || 0;
+          /* Click a block to commit up to it; click the last committed block
+             again to release it. */
+          Engine.setWhip(st, C, id, wp, wt, i + 1 === cur ? i : i + 1);
+          drawBill(id); drawStatus();
+        }));
+    });
     const clr = $("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
@@ -552,8 +670,11 @@ const UI = (function () {
           `<td>${tier === "functional" ? "func" : "elected"}</td>` +
           `<td class="n">${cur} / ${cap.max}</td>` +
           `<td class="n">${cap.costPerSeat}&thinsp;${cap.currency === "loyalty" ? "loy" : "cap"}</td>` +
-          `<td><input class="whipslide" type="range" min="0" max="${cap.max}" value="${cur}" ` +
-          `data-wp="${pid}" data-wt="${tier}"></td></tr>`;
+          `<td class="mv"><div class="whipbar" data-wp="${pid}" data-wt="${tier}" ` +
+            `title="${cur} of ${cap.max} whipped">` +
+            Array.from({ length: cap.max }, (_, i) =>
+              `<i${i < cur ? ' class="on"' : ""}></i>`).join("") +
+          `</div></td></tr>`;
       });
     });
 
@@ -750,6 +871,13 @@ const UI = (function () {
       .replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  /* A name is stored with its formal title. A table does not repeat the title —
+     every row is a member — but the Concordance keeps it, because that is the
+     one place a member sits beside the President, the press and the civilian. */
+  function bare(n) {
+    return String(n == null ? "" : n).replace(/^Rt\. Hon\. /, "").replace(/ MP$/, "");
+  }
+
   function bindGlossary(scope) {
     scope.querySelectorAll(".gl").forEach(n => {
       const show = () => {
@@ -928,6 +1056,11 @@ const UI = (function () {
        horizontal band and stacked the parties vertically, which reads as a
        bar chart lying on its side rather than as a chamber. */
     const ROWS = 5, CW = 9, RH = 10;
+    /* The crossbench at the Bar runs crosswise to the benches: five columns
+       wide and as many rows as forty functional seats need. It carries its
+       own metrics, because its label is centred on the columns rather than
+       on the chamber, and a shared constant would drift the two apart. */
+    const XCOLS = 5, XCW = 11, XRH = 10.5;
     const cols = n => Math.ceil(n / ROWS);
 
     function bench(seats, x0, yFront, dir) {
@@ -941,9 +1074,9 @@ const UI = (function () {
 
     /* The bench at the Bar sits crosswise, so it fills the other way. */
     function crossbench(seats, x0, yTop) {
-      let out = "", COLS = 5, CS = 11, RS = 10.5;
+      let out = "";
       seats.forEach((s, i) => {
-        out += glyph(x0 + (i % COLS) * CS, yTop + Math.floor(i / COLS) * RS, s);
+        out += glyph(x0 + (i % XCOLS) * XCW, yTop + Math.floor(i / XCOLS) * XRH, s);
       });
       return out;
     }
@@ -978,7 +1111,7 @@ const UI = (function () {
     const govCols = Math.max(1, cols(gov.length));
     const oppCols = Math.max(1, cols(opp.length));
     const benchW = Math.max(govCols, oppCols) * CW;
-    const crossRows = Math.max(1, Math.ceil(cross.length / 5));
+    const crossRows = Math.max(1, Math.ceil(cross.length / XCOLS));
 
     const X0 = 66;                                    // clear of the Chair
     /* THE FLOOR IS EMPTY. There was a table of the House with the mace on
@@ -995,10 +1128,14 @@ const UI = (function () {
     const CX = X0 + benchW / 2 - CW / 2;              // bench centre
 
     const crossX = X0 + benchW + 30;
-    const crossTop = FLOOR - ((crossRows - 1) * 10.5) / 2;
-    const crossBot = crossTop + (crossRows - 1) * 10.5;
+    const crossTop = FLOOR - ((crossRows - 1) * XRH) / 2;
+    const crossBot = crossTop + (crossRows - 1) * XRH;
+    /* The label is centred on the COLUMNS, not on crossX: the first column's
+       centre is crossX, so the middle of five columns is two spacings along.
+       Centring on crossX put both labels a column-width right of the bench. */
+    const crossCX = crossX + ((XCOLS - 1) * XCW) / 2;
 
-    const W = crossX + 5 * 11 + 14;
+    const W = crossX + XCOLS * XCW + 14;
     const H = Math.max(oppBot + 26, crossBot + 26) + 8;
     /* An inline <svg> with a viewBox and no width defaults to the width of
        its container, so shrinking the coordinate space only magnified the
@@ -1025,8 +1162,8 @@ const UI = (function () {
       crossbench(cross, crossX, crossTop) +
       label(CX, govTop - 12, "GOVERNMENT") +
       label(CX, oppBot + 22, "OPPOSITION") +
-      label(crossX + 30, crossTop - 14, "THE BENCH") +
-      label(crossX + 30, crossBot + 22, "functional tier", "sub");
+      label(crossCX, crossTop - 14, "THE BENCH") +
+      label(crossCX, crossBot + 22, "functional tier", "sub");
 
     const seatLine = (n, of) => `${n}<span class="of">/${of}</span>`;
     $("#chamber-tally").innerHTML =
@@ -1035,11 +1172,16 @@ const UI = (function () {
       `<span class="ct cross" data-tip="functional">Functional ${crossN}</span>` +
       `<span class="ct" data-tip="majority">Majority ${Engine.majority(st)}</span>` +
       (chairName ? `<span class="ct" data-tip="speaker">Speaker ${chairParty ? mark(chairParty) : ""}` +
-                   `${esc(chairName)}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
+                   `${esc(bare(chairName))}<i class="of"> ${esc(spkSeat.name)}</i></span>` : "");
 
-    $("#chamber-legend").innerHTML = C.parties.map(p =>
-      `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}` +
-      `${govIds.includes(p.id) ? ' <i class="ingov">gov</i>' : ""}</span>`).join("");
+    /* The legend names the two kinds of support — a partner in government and
+       a party that only sustains it — while the diagram keeps both on the
+       government side of the floor, which is where confidence and supply sits. */
+    $("#chamber-legend").innerHTML = C.parties.map(p => {
+      const tag = st.coalition.includes(p.id) ? ' <i class="ingov">GOV</i>'
+                : st.confidenceSupply.includes(p.id) ? ' <i class="ingov">C&amp;S</i>' : "";
+      return `<span>${mark(p.id)}${p.name} ${Engine.partyTotal(st, p.id)}${tag}</span>`;
+    }).join("");
 
     $("#comp-table").innerHTML =
       "<thead><tr><th>Party</th><th class='n' data-tip='district'>Dist</th>" +
@@ -1092,11 +1234,21 @@ const UI = (function () {
     drawSeats(selId);
   }
 
+  /* The seat list's activate. A player action: it may make a sound and write
+     the status line. Clicking the open seat again closes its detail row. */
+  function pickConstituency(id) {
+    consOpen = (consOpen === id) ? null : id;
+    drawSeats(Focus.selected("orbit-table"));
+    const k = C.constituencyById[id];
+    if (k) setStatus(k.name + " \u00b7 " + k.band + " band \u00b7 " +
+                     k.electorate.toLocaleString() + " electors", "transient");
+  }
+
   /* The orbit region's activate. A player action, not a redraw: it may
      make a sound and it may write the status line. drawOrbit(), which it
      calls, may do neither. */
   function pickStation(id) {
-    drawStation(id); drawSeats(id); drawOrbit();
+    drawOrbit();
     const s = st.stations[id];
     if (s) setStatus(s.name + " \u00b7 " + s.band + " band \u00b7 " + s.seats +
                      (s.seats === 1 ? " seat" : " seats"), "transient");
@@ -1129,6 +1281,8 @@ const UI = (function () {
        figures, a quarter of the height, and the ones that carry an argument
        (closure, apportionment) get the emphasis. */
     d.innerHTML =
+      (s.description ? `<div class="rulehead">Description</div>` +
+        `<div class="note">${esc(s.description)}</div>` : "") +
       `<div class="ostats">
         <span><b>${s.population.toLocaleString()}</b><i>population</i></span>
         <span><b>${s.seats}</b><i>seats</i></span>
@@ -1183,24 +1337,77 @@ const UI = (function () {
       return;
     }
     const ap = Engine.apportionment(C);
+    /* The highlighted seat, validated against this station: a key left over
+       from another station falls back to the first seat here. */
+    const stored = Focus.selected("cons-table");
+    const selCons = mine.some(k => k.id === stored) ? stored : mine[0].id;
+    Focus.seed("cons-table", selCons);
+    /* A new station opens on its selected seat; the player may then close it. */
+    if (consOpenAt !== sid) { consOpenAt = sid; consOpen = selCons; }
+    const openId = mine.some(k => k.id === consOpen) ? consOpen : null;
     $("#cons-table").innerHTML =
       "<thead><tr><th>Constituency and member</th><th class='n'>Electors</th>" +
-      "<th class='n' data-tip='ratio'>Ratio</th><th class='n' data-tip='held'>Held</th>" +
+      "<th class='n' data-tip='ratio'>Ratio</th><th class='held' data-tip='held'>Held</th>" +
       "</tr></thead><tbody>" +
       mine.map(k => {
         const r = Engine.seatsFor(st, k.id);
         const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
         const ch = (C.characters || []).find(c => c.seat === k.name);
-        return `<tr><td><b>${esc(k.name)}</b>` +
-          (k.speaker ? ` <i class="chair">Speaker</i>` : "") +
+        /* The Chair first — it is the seat's office — then the member's. */
+        const off = !r.vacant && ch && OFFICE[ch.office];
+        const badge = k.speaker
+          ? ` <i class="chair">Speaker</i>`
+          : off ? ` <i class="office o-${off[1]}">${off[0]}</i>` : "";
+        /* A station returning one constituency returns the whole station, so
+           the seat is at-large. The tag says so without the name doing it. */
+        const whole = k.at_large ? ` <i class="atlarge">At-large</i>` : "";
+        const nv = k.nonVoting ? ` <i class="nonvote">Non-voting</i>` : "";
+        const open = k.id === openId;
+        const row = `<tr data-cons="${k.id}"${k.id === selCons ? ' class="sel"' : ""}` +
+          ` style="cursor:pointer"><td><i class="caret${open ? " open" : ""}"></i>` +
+          `<b>${esc(k.name)}</b>${badge}${whole}${nv}` +
           `<i class="mp">${r.vacant
             ? `<span class="hn vac">vacant</span>`
-            : esc(ch ? ch.name : (k.member || "\u2014"))}` +
-            `${!r.vacant && ch && ch.role ? ` <span class="det">${esc(ch.role)}</span>` : ""}</i></td>` +
+            : esc(ch ? bare(ch.name) : (k.member ? bare(k.member) : "\u2014"))}` +
+            `${!r.vacant && ch && ch.role ? ` <span class="det">\u00b7 ${esc(ch.role)}</span>` : ""}</i></td>` +
           `<td class="n">${k.electorate.toLocaleString()}</td>` +
-          `<td class="n">${ap[k.id].toFixed(2)}</td>` +
-          `<td class="n">${held.map(pid => mark(pid)).join(" ")}</td></tr>`;
+          `<td class="n">${ap[k.id] != null ? ap[k.id].toFixed(2) : "&mdash;"}</td>` +
+          `<td class="held">${held.map(pid => `${sw(pc(pid))}<i class="hs">${esc(ps(pid))}</i>`).join(" ")}</td></tr>`;
+        return row + (open
+          ? `<tr class="consdet"><td colspan="4">${constituencyDetail(k)}</td></tr>` : "");
       }).join("") + "</tbody>";
+    $("#cons-table").querySelectorAll("tr[data-cons]").forEach(tr =>
+      tr.addEventListener("click", () => Focus.activate("cons-table", tr.dataset.cons)));
+  }
+
+  /* The detail that used to sit in its own panel, now expanded under the row
+     it belongs to. It reads the same state the row does. */
+  function constituencyDetail(k) {
+    const r = Engine.seatsFor(st, k.id);
+    const held = Object.keys(r.held).sort((a, b) => r.held[b] - r.held[a]);
+    const ch = (C.characters || []).find(c => c.seat === k.name);
+    const ap = Engine.apportionment(C);
+    return `<div class="ostats">
+        <span><b>${k.electorate.toLocaleString()}</b><i>electors</i></span>
+        <span><b>${ap[k.id] != null ? ap[k.id].toFixed(2) : "&mdash;"}</b><i>apportionment ratio</i></span>
+        <span><b>${k.nonVoting ? "0" : k.magnitude}</b><i>voting ${k.magnitude === 1 ? "seat" : "seats"}</i></span>
+      </div>` +
+      (k.nonVoting ? `<div class="rulehead">Status</div>` +
+        `<div class="note">A territory delegate: may speak, may not vote. The seat is outside the district tier, the chamber arithmetic and every division.</div>` : "") +
+      (k.description ? `<div class="rulehead">Description</div>` +
+        `<div class="note">${esc(k.description)}</div>` : "") +
+      (k.tendency ? `<div class="rulehead">Voting and tendencies</div>` +
+        `<div class="note">${esc(k.tendency)}</div>` : "") +
+      `<div class="rulehead">Member</div>
+      <div class="note">${r.vacant ? `<span class="hn vac">vacant</span>`
+        : esc(bare(ch ? ch.name : (k.member || "\u2014"))) +
+          (ch && ch.role ? ` \u00b7 ${esc(ch.role)}` : "")}</div>
+      <div class="rulehead">Held by</div>
+      <div class="note">${held.length
+        ? held.map(pid => `${logoMark(pid, "lg")}${esc(pn(pid))} ${r.held[pid]}`).join(", ")
+        : "&mdash;"}</div>
+      <div class="rulehead">Material interest</div>
+      <div class="note">${(k.material_interest || []).map(x => esc(x)).join(" \u00b7 ")}</div>`;
   }
 
   /* The functional tier in full. Every seat here is held by a named party,
@@ -1209,19 +1416,63 @@ const UI = (function () {
     const F = C.functional || [];
     if (!F.length || !$("#func-table")) return;
     const FR = { licensure:"licence", corporate:"companies", union_bloc:"union bloc", residual:"residual" };
+    /* Holdings come from the functional roll, never the authored `held`: the
+       roll is what instruments and elections move, and it is the only thing the
+       division arithmetic reads. The authored value is the fallback. */
+    const heldOf = f => (st.functional && st.functional[f.id] ? st.functional[f.id].held : f.held) || {};
+    /* The members of a functional constituency. Districts name everyone with a
+       `member` string; here it is `members`, and a character who sits for the
+       constituency replaces the member of the same name, so the styled name and
+       the office come through. */
+    const membersOf = f => {
+      const chars = (C.characters || []).filter(c => c.functional === f.id);
+      return (f.members || []).map(m => {
+        const ch = chars.find(c => c.name.replace(/ MP$/, "") === m.name);
+        return { r: m.ref || null, n: bare(ch ? ch.name : m.name), p: m.party,
+                 o: officeText(ch) };
+      });
+    };
+    /* The full office, not the badge. The member table has room for it now
+       that the ref and party columns are tight, so a minister is spelled out
+       and a backbencher shows nothing. */
+    const officeText = ch => {
+      if (!ch) return null;
+      if (ch.id === st.pm) return "Prime Minister";
+      const post = (C.cabinet || []).find(p => p.holder === ch.id);
+      if (post) return post.title || post.name;
+      return ch.role || (ch.office && OFFICE[ch.office] ? OFFICE[ch.office][0] : null);
+    };
+    /* The hover overview: what the seat returns, who is on its roll, who holds
+       it, and how it behaves — built from the data rather than restated. */
+    const overview = f => {
+      const h = heldOf(f);
+      const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
+      const roll = (f.electors || []).map(e => `${e.body} ${e.count.toLocaleString()}`).join("; ");
+      return `${f.seats} ${f.seats === 1 ? "seat" : "seats"} by ${FR[f.franchise] || f.franchise}. ` +
+        `${f.electorate.toLocaleString()} electors` + (roll ? `: ${roll}` : "") + ". " +
+        (held.length ? `Held by ${held.map(pid => `${ps(pid)} ${h[pid]}`).join(", ")}. ` : "") +
+        (f.description ? f.description + " " : "") +
+        (f.note || "");
+    };
     $("#func-table").innerHTML =
       "<thead><tr><th>Constituency</th><th class='n' data-tip='functional'>Seats</th>" +
       "<th data-tip='held'>Held by</th></tr></thead><tbody>" +
       F.map(f => {
-        const held = Object.keys(f.held || {}).sort((a, b) => f.held[b] - f.held[a]);
+        const h = heldOf(f);
+        const held = Object.keys(h).sort((a, b) => h[b] - h[a]);
         /* i.sub is display:block, so both halves stay inside ONE of them and
            take a span each; two i.sub would put the franchise and the
            electorate on separate lines. */
-        return `<tr><td><b>${f.name}</b><i class="sub">` +
+        const mem = membersOf(f);
+        return `<tr><td data-tip="functional" data-tip-title="${esc(f.name)}"` +
+          ` data-tip-body="${esc(overview(f))}"` +
+          (mem.length ? ` data-tip-members="${esc(JSON.stringify(mem))}"` : "") +
+          ` data-tip-go="functional_constituency">` +
+          `<b>${f.name}</b><i class="sub">` +
           `<span data-tip="franchise">${FR[f.franchise] || f.franchise}</span>` +
           ` &middot; <span data-tip="electors">${f.electorate.toLocaleString()} electors</span></i></td>` +
           `<td class="n">${f.seats}</td><td class="hcell">${held.length
-            ? held.map(pid => `${mark(pid)}<span class="hn">${f.held[pid]}</span>`).join(" ")
+            ? held.map(pid => `${mark(pid)}<span class="hn">${h[pid]}</span>`).join(" ")
             : "&mdash;"}</td></tr>`;
       }).join("") + "</tbody>";
 

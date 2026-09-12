@@ -147,6 +147,10 @@ const Refs = (function () {
     if (M.setup.pm === id) H("setup · pm", to => M.setup.pm = to);
     if (M.setup.president && M.setup.president.id === id)
       H("setup · president", to => M.setup.president.id = to);
+    /* A minister is named by the post, and a party leader by the party, so a
+       rename has to follow the office into both or the Concordance loses it. */
+    (M.cabinet || []).forEach(p => { if (p.holder === id) H(`cabinet ${p.id} · holder`, to => p.holder = to); });
+    (M.parties || []).forEach(p => { if (p.leader === id) H(`party ${p.id} · leader`, to => p.leader = to); });
     prose(M, "person_" + id, hits, "person_");
     return hits;
   }

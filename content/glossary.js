@@ -76,10 +76,6 @@ const GLOSSARY = [
     handle:"Closing the branch office and filing its paperwork.",
     introduced:"briefing_divergence" },
 
-  { term:"Guild Bench", cluster:"functional", gloss:"The bloc holding functional seats. Contests no district, cannot be voted out.",
-    handle:"Hereditary peers, if the peerage were a trade union.",
-    introduced:"gb_approach" },
-
   { term:"tier four", cluster:"cold", gloss:"The lowest band of the shed order. First to stop, last to be restored.",
     handle:"Bottom of the transplant list.",
     introduced:"halloran_signatures" },

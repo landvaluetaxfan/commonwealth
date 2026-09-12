@@ -63,6 +63,7 @@ const Editor = (function () {
       case "stations": return M.stations.map(s => [s.id, s.name]);
       case "bands": return SCHEMA.vocab.bands.map(v => [v, v]);
       case "bills": return M.bills.map(b => [b.id, b.title]);
+      case "functional": return (M.functional || []).map(f => [f.id, f.name]);
       case "events": return M.events.map(e => [e.id, e.title]);
       case "characters": return M.characters.map(c => [c.id, c.name]);
       case "archetypes": return [["", "— none —"]].concat(
@@ -373,10 +374,17 @@ const Editor = (function () {
       <label>Id ${txt_("id", c.id, "", 110)}<button class="btn ed-add" data-act="rename">rename…</button></label>
       <label class="ed-w">Name ${txt_("name", c.name, "", 300)}<button class="btn ed-add" data-act="roll-name">roll</button></label>
       <label class="ed-w">Role ${txt_("role", c.role, "", 240)}</label>
+      <label>Office <select class="ed-f" data-f="office"><option value="">— none —</option>${
+        ["pm","minister","opposition","shadow","leader","whip"].map(o =>
+          `<option value="${o}"${c.office === o ? " selected" : ""}>${o}</option>`).join("")
+      }</select></label>
       <label>Party <select class="ed-f" data-f="party"><option value="">— none —</option>${
         M.parties.map(p => `<option value="${p.id}"${c.party === p.id ? " selected" : ""}>${esc(p.name)}</option>`).join("")
       }</select></label>
       <label class="ed-w">Seat ${txt_("seat", c.seat || "", "", 240)}</label>
+      <label>Functional <select class="ed-f" data-f="functional"><option value="">— none —</option>${
+        (M.functional || []).map(f => `<option value="${f.id}"${c.functional === f.id ? " selected" : ""}>${esc(f.name)}</option>`).join("")
+      }</select></label>
       <label>Relationship ${num_("relationship", c.relationship)}</label>
       <label class="ed-w">Portrait ${txt_("portrait", c.portrait || "", "name.png", 180)}</label>
     </div>
@@ -693,6 +701,8 @@ const Editor = (function () {
       ["id","name","role","seat","note"].forEach(k => c[k] = g(k).value);
       c.party = g("party").value || null; c.relationship = +g("relationship").value;
       const po = g("portrait").value.trim(); if (po) c.portrait = po; else delete c.portrait;
+      const of = g("office").value; if (of) c.office = of; else delete c.office;
+      const fn = g("functional").value; if (fn) c.functional = fn; else delete c.functional;
       if (!c.seat) delete c.seat;
       sel.id = c.id;
     }
@@ -811,8 +821,9 @@ const Editor = (function () {
     IMG.canvas.toBlob(b => {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(b); a.download = name; a.click();
-      alert("Saved " + name + " to your downloads.\n\nMove it into " +
-            IMG_KINDS[IMG.kind].dir + "/ and reference it by filename.");
+      Dialog.alert("Saved " + name + " to your downloads.\n\nMove it into " +
+            IMG_KINDS[IMG.kind].dir + "/ and reference it by filename.",
+            { title: "Image saved" });
     });
   }
 
@@ -821,12 +832,21 @@ const Editor = (function () {
      ========================================================= */
 
   function rollName(entity) {
-    if (typeof Names === "undefined") { alert("content/names.js is not loaded."); return; }
+    if (typeof Names === "undefined") {
+      Dialog.alert("content/names.js is not loaded.", { title: "Names missing" });
+      return;
+    }
     snapshot("roll name");
     if (sel.tab === "characters") {
-      const earth = confirm("Earth-born?\n\nOK for an unblended family name — which everyone notices.\nCancel for an orbital-born blend.");
-      entity.name = Names.person({ earthborn: earth }) + " MP";
-    } else if (sel.tab === "stations") {
+      Dialog.confirm("Earth-born?\n\nOK for an unblended family name — which everyone notices.\nCancel for an orbital-born blend.",
+        { title: "Roll a name", yes: "Earth-born", no: "Orbital-born" },
+        earth => {
+          entity.name = Names.person({ earthborn: earth }) + " MP";
+          touch(); draw();
+        });
+      return;
+    }
+    if (sel.tab === "stations") {
       entity.name = Names.station();
     } else if (sel.tab === "bills") {
       entity.title = Names.bill();
@@ -856,23 +876,25 @@ const Editor = (function () {
       ? `\n\nNOT changed — these merely share the name:\n` +
         soft.slice(0, 6).map(s => "  · " + s).join("\n")
       : "";
-    const to = prompt(
+    Dialog.prompt(
       `Rename "${from}" to what?\n\n` +
       `${hits.length} reference${hits.length === 1 ? "" : "s"} will be updated:\n${preview}${softNote}`,
-      from);
-    if (!to || to === from) return;
-    const clean = to.trim();
-    if (!/^[a-z0-9_]+$/.test(clean) && kind !== "glossary") {
-      alert("Ids should be lowercase letters, numbers and underscores.");
-      return;
-    }
-    const taken = arrOf(kind).some(o => o !== entity && idOf(kind, o) === clean);
-    if (taken) { alert(`"${clean}" is already taken.`); return; }
-    snapshot("rename");
-    const n = Refs.rename(M, kind, from, clean, entity);
-    sel.id = clean;
-    touch(); draw();
-    setTimeout(() => alert(`Renamed. ${n} reference${n === 1 ? "" : "s"} updated.`), 20);
+      { title: `Rename "${from}"`, value: from, yes: "Rename" },
+      to => {
+        if (!to || to === from) return;
+        const clean = to.trim();
+        if (!/^[a-z0-9_]+$/.test(clean) && kind !== "glossary") {
+          Dialog.alert("Ids should be lowercase letters, numbers and underscores.", { title: "Invalid id" });
+          return;
+        }
+        const taken = arrOf(kind).some(o => o !== entity && idOf(kind, o) === clean);
+        if (taken) { Dialog.alert(`"${clean}" is already taken.`, { title: "Id taken" }); return; }
+        snapshot("rename");
+        const n = Refs.rename(M, kind, from, clean, entity);
+        sel.id = clean;
+        touch(); draw();
+        Dialog.alert(`Renamed. ${n} reference${n === 1 ? "" : "s"} updated.`, { title: "Renamed" });
+      });
   }
 
   /* =========================================================
@@ -989,6 +1011,47 @@ const Editor = (function () {
   }
 
   /* Fill-crop to the target box, never letterbox and never squash. */
+  /* THE GRADE. Replaces the palette dither: the plates are printed
+     photographs now, not machine scans, so the treatment is film rather than
+     a limited palette. Order matters — tone, then split colour, then grain,
+     then the vignette, so the grain survives the curve and the vignette sits
+     over everything. */
+  function tone(v, lift, roll) {
+    v = lift + v * (255 - lift) / 255;
+    if (v > roll) v = roll + (v - roll) * 0.5;
+    return v;
+  }
+  function gradeImage(cv) {
+    const cx = cv.getContext("2d");
+    const W = cv.width, H = cv.height;
+    const d = cx.getImageData(0, 0, W, H), p = d.data;
+    const SAT = 0.86, LIFT = 9, ROLL = 238, GRAIN = 5, VIG = 0.26;
+    const mx = W / 2, my = H / 2, maxR = Math.sqrt(mx * mx + my * my) || 1;
+    for (let i = 0; i < p.length; i += 4) {
+      let r = p[i], g = p[i + 1], b = p[i + 2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = r * SAT + lum * (1 - SAT);
+      g = g * SAT + lum * (1 - SAT);
+      b = b * SAT + lum * (1 - SAT);
+      r = tone(r, LIFT, ROLL); g = tone(g, LIFT, ROLL); b = tone(b, LIFT, ROLL);
+      /* split tone: warm highlights against cool shadows */
+      const l2 = (r + g + b) / 765;
+      const warm = l2 * l2, cool = (1 - l2) * (1 - l2);
+      r += 10 * warm - 6 * cool;
+      b += -8 * warm + 9 * cool;
+      /* grain, at final resolution */
+      const n = (Math.random() - 0.5) * GRAIN * 2;
+      r += n; g += n; b += n;
+      /* vignette */
+      const x = (i / 4) % W, y = ((i / 4) / W) | 0;
+      const dx = (x - mx) / maxR, dy = (y - my) / maxR;
+      const v = 1 - VIG * Math.pow(dx * dx + dy * dy, 1.1);
+      r *= v; g *= v; b *= v;
+      p[i] = r; p[i + 1] = g; p[i + 2] = b;
+    }
+    cx.putImageData(d, 0, 0);
+  }
+
   function processImage(img, kind, palette, dither) {
     const K = IMG_KINDS[kind];
     const W = K.w, H = Math.round(K.w * K.aspect[1] / K.aspect[0]);
@@ -999,16 +1062,7 @@ const Editor = (function () {
     const scale = Math.max(W / img.width, H / img.height);
     const dw = img.width * scale, dh = img.height * scale;
     cx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-    /* slight desaturation before quantising, as the CLI pipeline does */
-    const d0 = cx.getImageData(0, 0, W, H), p0 = d0.data;
-    for (let i = 0; i < p0.length; i += 4) {
-      const g = (p0[i] * 0.299 + p0[i+1] * 0.587 + p0[i+2] * 0.114);
-      p0[i] = p0[i] * 0.88 + g * 0.12;
-      p0[i+1] = p0[i+1] * 0.88 + g * 0.12;
-      p0[i+2] = p0[i+2] * 0.88 + g * 0.12;
-    }
-    cx.putImageData(d0, 0, 0);
-    ditherToPalette(cv, (PALETTE_HEX[palette] || PALETTE_HEX.registry).map(rgb), dither);
+    gradeImage(cv);
     return cv;
   }
 
@@ -1335,11 +1389,16 @@ const Editor = (function () {
     const d = loadDraft();
     if (d && d.model) {
       const when = new Date(d.at).toLocaleString();
-      if (confirm("A draft from " + when + " was found.\n\nRestore it?\n\n" +
-                  "Cancel loads the content files on disk instead.")) {
-        M = d.model;
-        stampDraft("restored draft from " + when);
-      } else { clearDraft(); }
+      Dialog.confirm("A draft from " + when + " was found.\n\nRestore it?\n\n" +
+                     "Cancel loads the content files on disk instead.",
+        { title: "Draft found", yes: "Restore", no: "Discard" },
+        restore => {
+          if (restore) {
+            M = d.model;
+            stampDraft("restored draft from " + when);
+          } else { clearDraft(); }
+          draw();
+        });
     }
     window.addEventListener("beforeunload", e => {
       if (!dirty) return;
@@ -1383,13 +1442,16 @@ const Editor = (function () {
       if (act === "eff-add") (cur.choices[+b.dataset.ci].effects ||= []).push({ scalar: { public_standing: 0 } });
       if (act === "eff-del") cur.choices[+b.dataset.ci].effects.splice(+b.dataset.ei, 1);
       if (act === "cond-add") {
-        const k = prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"));
-        if (k && SCHEMA.conditions[k]) {
-          cur.when ||= {};
-          const d = SCHEMA.conditions[k];
-          cur.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
-                      : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
-        }
+        Dialog.prompt("Condition:\n\n" + Object.keys(SCHEMA.conditions).join("\n"),
+          { title: "Add condition" }, k => {
+            if (k && SCHEMA.conditions[k]) {
+              cur.when ||= {};
+              const d = SCHEMA.conditions[k];
+              cur.when[k] = d.form === "int" ? 1 : d.form === "bool" ? true : d.form === "flagList" ? []
+                          : { [vocab(d.src)[0][0]]: d.vtype === "stage" ? "committee" : 0 };
+            }
+            draw();
+          });
       }
       if (act === "cond-del") delete cur.when[b.dataset.c];
       if (act === "sec-add") (cur.sections ||= []).push({ h: "", body: "" });
@@ -1401,7 +1463,7 @@ const Editor = (function () {
       if (act === "roll-name") rollName(cur);
       if (act === "arch-roll" || act === "arch-reroll") {
         const a = document.querySelector('#ed-form [data-f="archetype"]').value;
-        if (!a) { alert("Pick an archetype first."); }
+        if (!a) { Dialog.alert("Pick an archetype first.", { title: "No archetype" }); }
         else {
           if (act === "arch-reroll") { cur.dependency = ""; cur.grievance = ""; }
           rollStation(a, cur);
@@ -1424,19 +1486,23 @@ const Editor = (function () {
       arrOf(sel.tab).push(o); sel.id = idOf(sel.tab, o); draw();
     });
     document.getElementById("ed-del").addEventListener("click", () => {
-      if (!confirm("Delete this entry?")) return;
-      snapshot("delete");
-      if (sel.tab === "concordance")
-        M.encyclopedia.articles = M.encyclopedia.articles.filter(o => o.id !== sel.id);
-      else M[KIND[sel.tab].arr] = M[KIND[sel.tab].arr].filter(o => idOf(sel.tab, o) !== sel.id);
-      sel.id = null; draw();
+      Dialog.confirm("Delete this entry?",
+        { title: "Delete entry", yes: "Delete", danger: true }, ok => {
+          if (!ok) return;
+          snapshot("delete");
+          if (sel.tab === "concordance")
+            M.encyclopedia.articles = M.encyclopedia.articles.filter(o => o.id !== sel.id);
+          else M[KIND[sel.tab].arr] = M[KIND[sel.tab].arr].filter(o => idOf(sel.tab, o) !== sel.id);
+          sel.id = null; draw();
+        });
     });
     document.getElementById("ed-undo").addEventListener("click", undo);
     document.getElementById("ed-filter").addEventListener("input", draw);
     document.getElementById("ed-export").addEventListener("click", exportAll);
     document.getElementById("ed-discard").addEventListener("click", () => {
-      if (!confirm("Discard the draft and reload from the content files on disk?")) return;
-      clearDraft(); location.reload();
+      Dialog.confirm("Discard the draft and reload from the content files on disk?",
+        { title: "Discard draft", yes: "Discard", danger: true },
+        ok => { if (ok) { clearDraft(); location.reload(); } });
     });
     document.getElementById("ed-exportone").addEventListener("click", exportOne);
     document.getElementById("ed-previewbtn").addEventListener("click", preview);
