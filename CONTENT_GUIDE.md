@@ -123,6 +123,47 @@ a content pass does.
 
 ---
 
+## The register
+
+Three kinds of prose, three registers. They are not interchangeable, and the
+legibility of the game depends on keeping them apart.
+
+### Constituency descriptions
+
+Dry, data-first political analysis, of the kind a serious election desk writes.
+State the roll and the apportionment ratio, the interests, and one specific
+observation. No rhetorical closers, no aphorisms, and **no em dashes**: a comma
+or a semicolon does the work. Two fields per seat:
+
+- `description` — the district: its geography, economy and electorate. On a
+  station with many seats this is where the district's own character lives,
+  because the station description cannot reach it. On a one-seat station the
+  station description carries the place, so this field describes the *electorate*
+  instead. The rule: **the constituency describes whatever the station
+  description cannot reach.**
+- `tendency` — the read. Lead with the lean, not the party name: "left and
+  embodied-labour", "market-liberal", "left-leaning but restrictionist",
+  "confederalist", "property-rights", "engineering-first and restrictionist".
+  Then the roll and ratio, then the observation.
+
+### Station descriptions
+
+The place, at the scale of the station: what it is, how it lives, what it is
+for. A working station gets the plain kind; the capital gets the fantastical
+kind. `description` on a station, shown in the station dossier on the Orbit tab.
+
+### The Concordance
+
+Written like Wikipedia, because that is what it is pretending to be. Neutral
+tone; a lead that defines the subject in its first sentence; sections with
+sentence-case headings; an infobox on the right; a See-also list at the foot;
+third person, no address to the reader, no rhetorical flourish. The maintenance
+banners are the refraction (see the Concordance section below); the prose itself
+stays encyclopedic. Do not put the election-desk register or the event register
+into the Concordance.
+
+---
+
 ## Rules that keep this working
 
 1. The engine names nothing. No event id, party id, or station id appears in
