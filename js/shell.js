@@ -109,21 +109,15 @@ const Shell = (function () {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 
-  function menuShell(inner) {
+  function menuShell(inner, isRoot) {
     return `<div class="menu-stage">
       <div class="menu-plate">
         <div class="menu-title"><span class="w">Ways</span><span class="a">&amp;</span><span class="m">Means</span></div>
         <div class="menu-tagline">A Space Story About Politics and Governance.</div>
       </div>
-      <div class="menu-caption">
-        <b>International Earth-Orbital Elevator (IEOE)</b>
-        Your gateway to the Circumterrestrial Commonwealth. The Elevator connects Earth directly
-        to the Commonwealth's orbital hub at Anchorage, moving some 16 million tonnes of cargo and
-        4.2 million passengers a year, and handling approximately $420 billion in orbital trade.
-      </div>
     </div>
     <div class="menu-footer">
-      <div class="mf-text">
+      ${isRoot ? `<div class="mf-text">
         <h1>Life in Space Needs People to Run It.</h1>
         <p>Ways &amp; Means puts you in the position of Prime Minister Adriana Eireann Flash of the
         Circumterrestrial Commonwealth, a federation of orbital habitats bound together by trade,
@@ -134,7 +128,7 @@ const Shell = (function () {
         Commonwealth's most vital resources. Navigate interparty relations, your governmental
         coalition, parliament, and foreign affairs to keep this sophisticated nation and economy
         running.</p>
-      </div>
+      </div>` : ""}
       <div class="menu-body">${inner}</div>
       ${storageOK ? "" : `<div class="menu-warn">Browser storage is unavailable, so slots will not
         survive closing this tab. Use <b>Export to file</b> in Options to keep a game.</div>`}
@@ -158,12 +152,13 @@ const Shell = (function () {
     const m = document.getElementById("menu");
     m.classList.add("on");
     document.body.classList.add("menu-on");
-    m.innerHTML = menuShell(
+    const inner =
       view === "load"    ? slotList("load")
     : view === "new"     ? slotList("new")
     : view === "credits" ? credits()
     : view === "options" ? menuOptions()
-    : root());
+    : root();
+    m.innerHTML = menuShell(inner, !view);
     paintMenu();
     wireMenu(m, view);
   }

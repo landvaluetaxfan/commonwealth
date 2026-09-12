@@ -847,11 +847,6 @@ body.menu-on{background:#0b1826;}
 .menu-title .m{font-size:56px;letter-spacing:.04em;}
 .menu-tagline{font-family:var(--f-ui);font-size:14px;letter-spacing:.05em;
   color:#dfe2d6;margin-top:14px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
-/* the plate caption, over the darker cloud on the right */
-.menu-caption{position:absolute;z-index:2;right:48px;top:47%;width:330px;
-  font-family:var(--f-ui);font-size:11.5px;line-height:1.5;color:#eef0e8;
-  text-shadow:0 1px 6px rgba(0,0,0,.8);}
-.menu-caption b{display:block;font-size:12px;margin-bottom:4px;}
 
 /* the printed band, on the same stock as an instrument */
 .menu-footer{position:relative;flex:0 1 auto;overflow:auto;max-height:62vh;
@@ -914,7 +909,6 @@ body.menu-on{background:#0b1826;}
   .menu-footer p{font-size:12px;}
   .menu-footer .mf-gov{position:static;display:block;width:220px;margin-top:16px;}
   .menu-btns.two{flex-direction:column;}
-  .menu-caption{display:none;}
 }
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
@@ -1271,7 +1265,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 
 /* the inline options panel is a dark instrument panel on the printed band;
    the popover in the bar keeps the chrome, where these overrides do not apply. */
-.optpanel-inline{max-height:46vh;overflow:auto;padding:14px 16px;
+.optpanel-inline{max-height:42vh;overflow:auto;padding:14px 16px;
   background:rgba(11,15,20,.85);
   border:1px solid rgba(233,234,226,.16);
   backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
