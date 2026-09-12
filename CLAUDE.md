@@ -75,6 +75,18 @@ dossier is now an expandable `.consdet` row inside `#cons-table` (`consOpen` sta
 per the author: constituency prose (description, voting tendencies) in the expanded
 row, then a capital designation.
 
+**The capital is in:** `content/stations.js` has `winter_garden` (The Winter
+Garden, ring band, 80k, one seat) and `content/constituencies.js` has
+`capital_territory` (Capital Territory, `at_large`, `nonVoting: true`). The engine
+reads `nonVoting`: `seedRoll`/`reconcile` carry the flag into the roll, and
+`syncRoll`, `partyDistrict`, `vacantSeats`, `tierCheck`, `apportionment` and
+`generalElection` all skip it, so the seat has a member and a page but sits outside
+the 140-seat tier, the 280 chamber and every division. `test.js` was updated
+(141 constituencies, 140 voting; station seats 141) and the `commonwealth` article's
+station count moved to thirty. One fiction wrinkle left: the capital's electorate
+(49,200) is excluded from the district-roll sum in `test.js`, so its adults are not
+inside the bible's 4,149,803 and the districts were not rebalanced.
+
 **Do not commit** the untracked root duplicates (`events.js`, `glossary.js`,
 `lint.js`, `encyclopedia_content.js`, `encyclopedia_renderer.js`, `js/codex.js`)
 or the `tools/dither.sh` mode change — they are pre-existing and left alone.
