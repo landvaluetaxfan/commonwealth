@@ -1304,13 +1304,22 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
   background:var(--chrome);
 }
-.ch.open{background:var(--paper);}
+.ch.open{background:var(--paper);border-color:#d8c07a;}
+/* SELECTED IS THE GOLD TINT, the standard every table in the game now
+   uses (tr.sel). The open row used to be the dark inverted block, which
+   is precisely the treatment that was retired from the tables for
+   reading as two different things at once. One selection colour, one
+   meaning, everywhere. */
 .ch-head{
   display:flex;align-items:baseline;gap:7px;width:100%;text-align:left;
   background:none;border:0;padding:6px 8px;font:inherit;color:var(--ink);cursor:pointer;
 }
 .ch-head:hover{background:var(--chrome-dk);}
-.ch.open .ch-head{background:var(--bar);color:var(--bar-txt);}
+.ch.open .ch-head{
+  background:#f2e4b3;color:var(--ink);
+  box-shadow:inset 3px 0 0 #c9a227;
+}
+.ch.open .ch-head:hover{background:#eeddA4;}
 .ch-arrow{font-family:var(--f-data);font-size:10px;opacity:.7;flex:0 0 auto;}
 .ch-label{flex:1 1 auto;min-width:0;}
 .ch-strip{flex:0 0 auto;display:flex;gap:5px;}
@@ -1323,7 +1332,7 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .cm.cost {border-style:dashed;}
 .cm.owed {border-width:1px 1px 1px 3px;font-weight:700;}
 .cm.grave{border-style:double;border-width:3px;}
-.ch.open .cm{border-color:rgba(233,234,226,.5);}
+.ch.open .cm{border-color:#c9a227;}
 
 .ch-body{padding:8px 10px 10px;border-top:1px solid var(--rule);}
 .ch-sec + .ch-sec{margin-top:9px;}

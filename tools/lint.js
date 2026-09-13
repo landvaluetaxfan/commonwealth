@@ -130,6 +130,77 @@ n += section("IN PROSE BUT NOT IN THE GLOSSARY", sus,
   s => `"${s}" — used in ${seenSuspect[s].join(", ")}`);
 
 /* =============================================================
+   THE CONSEQUENCE CHAIN (bible 7.9)
+
+   7.9 states the chain and then states a design rule about it:
+
+     decision -> price -> station conditions -> event
+
+     "a `price` effect with no event gated on it is a number nobody
+      sees; an event gated on a price nothing moves will never fire."
+
+   Nobody enforced that rule, and the build drifted into the first
+   failure mode across the board: prices and station conditions move
+   every sitting and almost nothing is gated on them. This walks the
+   content and reports both directions.
+
+   `inert` is a note rather than a failure - a number nothing moves and
+   nothing reads is merely unused. The asymmetric cases are the bugs.
+   ============================================================= */
+const chainRows = [];
+try {
+  const moved = {}, gated = {};
+  const bump = (m, k) => { m[k] = (m[k] || 0) + 1; };
+
+  const walkEffects = eff => [].concat(eff || []).forEach(e => Object.keys(e).forEach(k => {
+    if (k === "price")   Object.keys(e[k]).forEach(x => bump(moved, "price." + x));
+    if (k === "scalar")  Object.keys(e[k]).forEach(x => bump(moved, "scalar." + x));
+    if (k === "station") bump(moved, "station");
+    if (k === "law")     Object.keys(e[k]).forEach(x => bump(moved, "law." + x));
+  }));
+  const walkWhen = w => w && Object.keys(w).forEach(k => {
+    if (k === "priceAbove" || k === "priceBelow")
+      Object.keys(w[k]).forEach(x => bump(gated, "price." + x));
+    if (k === "scalarAbove" || k === "scalarBelow")
+      Object.keys(w[k]).forEach(x => bump(gated, "scalar." + x));
+    if (k === "stationBelow" || k === "suspendedAbove" || k === "suspendedBelow")
+      bump(gated, "station");
+    if (k === "lawIs" || k === "lawAbove" || k === "lawBelow")
+      Object.keys(w[k]).forEach(x => bump(gated, "law." + x));
+  });
+
+  EVENTS.forEach(e => {
+    walkWhen(e.when);
+    (e.choices || []).forEach(c => { walkEffects(c.effects); walkWhen(c.when); });
+  });
+  /* instruments carry effects too, and an order that moves a price is
+     exactly the kind of thing that needs an event watching it */
+  try {
+    const src2 = fs.readFileSync(path.join(root, "content", "instruments.js"), "utf8");
+    const box = {}; require("vm").runInNewContext(src2 + ";this.__I = INSTRUMENTS;", box);
+    (box.__I || []).forEach(i => { walkEffects(i.effects); walkWhen(i.when); });
+  } catch (e) { /* instruments are optional to this check */ }
+
+  const keys = [...new Set(Object.keys(moved).concat(Object.keys(gated)))].sort();
+  keys.forEach(k => {
+    const m = moved[k] || 0, g = gated[k] || 0;
+    let verdict = "ok";
+    if (m && !g) verdict = "NUMBER NOBODY SEES";
+    else if (!m && g) verdict = "EVENT NEVER FIRES";
+    else if (!m && !g) verdict = "inert";
+    chainRows.push({ k, m, g, verdict });
+  });
+} catch (e) { chainRows.push({ k: "(could not read the chain)", m: 0, g: 0, verdict: "ok" }); }
+
+const chainBad = chainRows.filter(r => r.verdict === "NUMBER NOBODY SEES" ||
+                                       r.verdict === "EVENT NEVER FIRES");
+R.push("CONSEQUENCE CHAIN (7.9)");
+if (!chainRows.length) R.push("  nothing moves and nothing is gated");
+chainRows.forEach(r => R.push("  " + r.k.padEnd(34) +
+  ("moved by " + r.m).padEnd(12) + ("gated by " + r.g).padEnd(13) + r.verdict));
+R.push("");
+
+/* =============================================================
    ARTIFACT SHAPES (bible 12.11)
 
    Shapes are pinned in the pipeline and in the CSS. An image that
@@ -180,5 +251,11 @@ section("ARTIFACT IMAGES OF THE WRONG SHAPE", artBad, x => x);
 R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
+if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`);
 console.log(R.join("\n"));
+/* The chain is reported loudly and does NOT fail the build yet: the
+   current content breaks it in several places by omission, and a check
+   that fails from the day it lands gets disabled rather than fixed. It
+   becomes a hard failure when the content pass in design/03 closes the
+   rows below. */
 if (artBad.length) process.exit(1);

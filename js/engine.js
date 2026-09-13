@@ -13,13 +13,13 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 8;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings
+  const STATE_VERSION = 9;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed
 
   /* ---------------------------------------------------------
      1. STATE
      --------------------------------------------------------- */
 
-  function newGame(C) {
+  function newGame(C, seed) {
     const st = {
       version: STATE_VERSION,
       sitting: 1,
@@ -91,6 +91,17 @@ const Engine = (function () {
          notices. There is deliberately no verb for "mark it done": a
          promise is discharged by keeping it. See design/02. */
       undertakings: [],   // [{id, text, owed_to, by, discharge, onBreach, state}]
+
+      /* THE SEED. Selection is deterministic GIVEN THE SAVE: the cursor
+         lives here and every draw advances it, so a save always replays
+         identically to itself while two games differ. That is the
+         property 1.5 actually protects — testable balance and a
+         reproducible bug report — and it survives intact.
+
+         newGame defaults it rather than reading the clock, because
+         test.js asserts newGame is pure and repeatable. Shell passes a
+         real one when a player starts a game. */
+      seed: (seed == null ? 20287 : (seed >>> 0)) || 1,
 
       queue: [],      // [{eventId, dueSitting}]
       seen: {},       // eventId -> times fired
@@ -178,6 +189,10 @@ const Engine = (function () {
     if (st.version < 8) {                     // undertakings
       st.undertakings = st.undertakings || [];
       st.version = 8;
+    }
+    if (st.version < 9) {                     // the seed
+      if (!st.seed) st.seed = 20287;
+      st.version = 9;
     }
     return st;
   }
@@ -1186,6 +1201,17 @@ const Engine = (function () {
     chapterIs:      (st, v) => st.chapter === v,
     chapterAtLeast: (st, v) => st.chapter >= v,
     inGovernment:   (st, v) => st.inGovernment === v,
+    /* THE CONSEQUENCE CHAIN'S LAST LINK (7.9). Prices move stations and
+       stations shed people, and until now no condition could see it, so
+       the chain had nowhere to terminate. "federal" is the roster sum,
+       DERIVED rather than stored — a total kept beside its parts
+       diverges from them, which this project has been bitten by before. */
+    suspendedAbove: (st, v) => Object.keys(v).every(k =>
+                      (k === "federal" ? federalSuspended(st)
+                                       : ((st.stations[k] || {}).suspended || 0)) > v[k]),
+    suspendedBelow: (st, v) => Object.keys(v).every(k =>
+                      (k === "federal" ? federalSuspended(st)
+                                       : ((st.stations[k] || {}).suspended || 0)) < v[k]),
     /* An undertaking still outstanding, and one that was broken. `breached`
        is the cheap form of long memory: content written months apart can
        refer back to a promise the player did not keep. */
@@ -1194,6 +1220,12 @@ const Engine = (function () {
     breached:       (st, v) => [].concat(v).every(id =>
                       (st.undertakings || []).some(u => u.id === id && u.state === "broken"))
   };
+
+  function federalSuspended(st) {
+    let n = 0;
+    for (const id in st.stations) n += st.stations[id].suspended || 0;
+    return n;
+  }
 
   function matches(st, when) {
     if (!when) return true;
@@ -1258,7 +1290,14 @@ const Engine = (function () {
       });
       syncFunctional(st, C);
     }),
-    flag:   (st, C, v) => [].concat(v).forEach(f => st.flags[f] = true),
+    /* One verb, not two. `{flag:"x"}` sets, `{flag:{x:false}}` clears.
+       `unflag` is kept as an alias because content and saved editor
+       output use it; new content should not. */
+    flag:   (st, C, v) => {
+      if (v && typeof v === "object" && !Array.isArray(v))
+        Object.keys(v).forEach(f => { if (v[f]) st.flags[f] = true; else delete st.flags[f]; });
+      else [].concat(v).forEach(f => st.flags[f] = true);
+    },
     unflag: (st, C, v) => [].concat(v).forEach(f => delete st.flags[f]),
     bill:   (st, C, v) => Object.keys(v).forEach(id => Object.assign(st.bills[id], v[id])),
     relationship: (st, C, v) => Object.keys(v).forEach(k => {
@@ -1377,6 +1416,32 @@ const Engine = (function () {
     return null;
   }
 
+  /* ---------------------------------------------------------
+     THE DRAW
+
+     A 32-bit xorshift, advanced only through here, so every draw is
+     recorded in the save by the seed's new value. Math.random is
+     banned outright: it is not reproducible and it cannot be saved,
+     which are the two things 1.5 is protecting.
+
+     WHERE IT MAY BE USED, and where it may not:
+
+       may   choosing between events of equal weight and eligibility
+       may   an event's `chance`, tested once when it first becomes
+             eligible and never re-rolled
+       NOT   whether an event is eligible at all
+       NOT   a division. The arithmetic is the argument of the game,
+             and a division that could go either way on a die roll
+             would also break the proof that a division resolves the
+             same whether its dialog is watched or skipped.
+     --------------------------------------------------------- */
+  function draw(st) {
+    let x = st.seed || 1;
+    x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+    st.seed = x >>> 0;
+    return st.seed / 4294967296;
+  }
+
   function nextEvent(st, C) {
     const due = st.queue.filter(q => q.dueSitting <= st.sitting);
     if (due.length) {
@@ -1386,10 +1451,30 @@ const Engine = (function () {
     }
     const pro = nextPrologue(st, C);
     if (pro) return pro;
-    const pool = eligible(st, C);
+    let pool = eligible(st, C);
     if (!pool.length) return null;
+
+    /* `chance` is tested ONCE, when an event first becomes eligible, and
+       the answer is remembered. Re-rolling every sitting would turn a
+       one-in-three event into a certainty within a few sittings, which
+       is the classic way a chance field stops meaning what it says. */
+    pool = pool.filter(e => {
+      if (e.chance == null) return true;
+      st.rolled = st.rolled || {};
+      if (st.rolled[e.id] == null) st.rolled[e.id] = draw(st) < e.chance;
+      return st.rolled[e.id];
+    });
+    if (!pool.length) return null;
+
     pool.sort((a, b) => (b.weight || 1) - (a.weight || 1) || (a.id < b.id ? -1 : 1));
-    return pool[0];
+    /* Ties used to break on id, which meant the same state always played
+       the same sitting in the same order. They break on a draw now; the
+       id ordering above still decides everything the draw does not, and
+       a save with no seed cannot reach here because migrate() gives it
+       the default. */
+    const top = (pool[0].weight || 1);
+    const tied = pool.filter(e => (e.weight || 1) === top);
+    return tied.length > 1 ? tied[Math.floor(draw(st) * tied.length)] : pool[0];
   }
 
   /* ---------------------------------------------------------
@@ -1717,7 +1802,8 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
-    settle, outstanding, describe, grave, choiceOpen, openChoices,
+    settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
+    federalSuspended,
     CONDITIONS, EFFECTS
   };
 })();
