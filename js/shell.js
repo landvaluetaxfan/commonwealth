@@ -255,12 +255,11 @@ const Shell = (function () {
         <p><b>Ways &amp; Means</b> — a narrative political thriller with real
         electoral mechanics, set in the Circumterrestrial Commonwealth.</p>
         <p>Written and designed by Harper.</p>
-        <p>Engine, editor and tooling built with Claude Code. Prose in this build
-        is placeholder pending a full content pass.</p>
-        <p class="dim">Parallel voting, dual-majority functional constituencies and
-        the divergence threshold are the load-bearing mechanics. Nothing in the
-        resolution is random.</p>
+        <p>Art and imagery by Harper.</p>
+        <p>Engine, editor and tooling built with Claude Code and DeepSeek V4
+        Flash Vision Exp.</p>
       </div>
+      <img class="studio" src="img/logos/retrograde.png" alt="Retrograde Softworks">
       <div class="menu-btns row"><button class="mbtn" data-go="root">Back</button></div>`;
   }
 
