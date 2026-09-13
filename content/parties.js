@@ -29,7 +29,7 @@ const PARTIES = [
     note:"Old left. Embodied maintenance labour. The strike weapon." },
 
   { id:"cl",  name:"Liberal Party",                short:"LIB", colour:"var(--p-cl)",
-    leader:"watkins",
+    leader:"watkins", logo:"cl.png", wordmark:"cl_mark.png",
     seats:{district:22,list:19,functional:6},
     kind:"national", loyalty:20,
     axes:{ownership:"private",personhood:"expansionist",sovereignty:"federal",closure:"integrationist"},
