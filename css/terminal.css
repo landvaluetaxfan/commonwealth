@@ -844,10 +844,12 @@ body.menu-on{background:#0b1826;}
   background:
     linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
 .menu-plate{position:relative;z-index:2;max-width:620px;padding:52px 44px 96px 56px;}
-.menu-title{font-family:var(--f-disp);color:#fff;line-height:.84;
+/* the wordmark: Georgia for the words, Garamond for the ampersand */
+.menu-title{font-family:Georgia,"Liberation Serif","Times New Roman",Times,serif;color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 2px 24px rgba(0,0,0,.72);}
 .menu-title .w{display:block;font-size:66px;letter-spacing:.06em;}
-.menu-title .a{font-size:38px;letter-spacing:0;padding-right:6px;}
+.menu-title .a{font-family:Garamond,"EB Garamond","Times New Roman",serif;
+  font-size:40px;letter-spacing:0;padding-right:8px;}
 .menu-title .m{font-size:66px;letter-spacing:.04em;}
 .menu-tagline{font-family:var(--f-ui);font-size:15px;letter-spacing:.05em;
   color:#dfe2d6;margin-top:18px;text-shadow:0 1px 8px rgba(0,0,0,.6);}
