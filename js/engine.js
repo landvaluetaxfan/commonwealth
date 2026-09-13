@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 7;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll
+  const STATE_VERSION = 8;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings
 
   /* ---------------------------------------------------------
      1. STATE
@@ -84,6 +84,14 @@ const Engine = (function () {
       president: Object.assign({}, C.setup.president),
 
       flags: {},
+
+      /* UNDERTAKINGS — what the government has said it will do.
+         A choice does not perform an act; it undertakes to. The act is
+         then carried out on the screen that owns it, and settle() below
+         notices. There is deliberately no verb for "mark it done": a
+         promise is discharged by keeping it. See design/02. */
+      undertakings: [],   // [{id, text, owed_to, by, discharge, onBreach, state}]
+
       queue: [],      // [{eventId, dueSitting}]
       seen: {},       // eventId -> times fired
       wire: [],       // [{sitting, text}]
@@ -165,6 +173,11 @@ const Engine = (function () {
          — the same honest reconstruction as the district roll in v5. */
       st.functionalReseeded = true;
       st.version = 7;
+    }
+
+    if (st.version < 8) {                     // undertakings
+      st.undertakings = st.undertakings || [];
+      st.version = 8;
     }
     return st;
   }
@@ -823,6 +836,7 @@ const Engine = (function () {
     st.log.unshift({ sitting: st.sitting, text: "Division: " + b.title + " — carried" +
       (paid.seats ? " (" + paid.seats + " whipped)" : "") });
     const a = presidentDecides(st, C, billId, result);
+    settle(st, C);
     return { result: result, paid: paid, assent: a };
   }
 
@@ -931,6 +945,7 @@ const Engine = (function () {
     else if (i >= 0) { bs.stage = STAGE_ORDER[i + 1]; }
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     st.slots.used += 1;
+    (st.slotsGranted || (st.slotsGranted = [])).push(billId);
     let gained = 0;
     const owner = b.owner;
     if (owner && owner !== st.playerParty && st.capital[owner] != null) {
@@ -939,6 +954,7 @@ const Engine = (function () {
     }
     st.log.unshift({ sitting: st.sitting,
       text: "Slot granted: " + b.title + (gained ? " (+" + gained + " with " + owner + ")" : "") });
+    settle(st, C);
     return { ok: true, gained: gained, owner: owner, stage: bs.stage };
   }
 
@@ -987,6 +1003,7 @@ const Engine = (function () {
     }
     if (si.political_cost) apply(st, C, si.political_cost);
     st.log.unshift({ sitting: st.sitting, text: "Instrument made: " + si.title });
+    settle(st, C);
     return { ok: true, inForce: s.inForce };
   }
 
@@ -1168,7 +1185,14 @@ const Engine = (function () {
     slotsLeft:      (st, v) => (st.slots.total - st.slots.used) >= v,
     chapterIs:      (st, v) => st.chapter === v,
     chapterAtLeast: (st, v) => st.chapter >= v,
-    inGovernment:   (st, v) => st.inGovernment === v
+    inGovernment:   (st, v) => st.inGovernment === v,
+    /* An undertaking still outstanding, and one that was broken. `breached`
+       is the cheap form of long memory: content written months apart can
+       refer back to a promise the player did not keep. */
+    owes:           (st, v) => [].concat(v).every(id =>
+                      (st.undertakings || []).some(u => u.id === id && u.state === "open")),
+    breached:       (st, v) => [].concat(v).every(id =>
+                      (st.undertakings || []).some(u => u.id === id && u.state === "broken"))
   };
 
   function matches(st, when) {
@@ -1275,6 +1299,28 @@ const Engine = (function () {
     byelection: (st, C, v) => [].concat(v).forEach(cid => byElection(st, C, cid)),
     election: (st, C, v) => { if (v) generalElection(st, C); },
 
+    /* UNDERTAKE — the government says it will do a thing by a sitting.
+       `by` is relative to now, because content cannot know the absolute
+       sitting it will fire on. Re-undertaking an id that is already open
+       is a no-op rather than a duplicate: a promise repeated is one
+       promise. */
+    undertake: (st, C, v) => [].concat(v).forEach(u => {
+      if (!u || !u.id) return;
+      if ((st.undertakings || []).some(x => x.id === u.id && x.state === "open")) return;
+      st.undertakings.push({
+        id: u.id, text: u.text || u.id, owed_to: u.owed_to || null,
+        by: st.sitting + (u.by == null ? 3 : u.by),
+        discharge: u.discharge || null, onBreach: u.onBreach || null,
+        state: "open", made: st.sitting
+      });
+    }),
+    /* For content that resolves an undertaking some other way than by
+       keeping it — a promise overtaken by events, or released. */
+    discharge: (st, C, v) => [].concat(v).forEach(id => {
+      const u = (st.undertakings || []).find(x => x.id === id && x.state === "open");
+      if (u) u.state = "kept";
+    }),
+
     chapter: (st, C, v) => {
       if (v === st.chapter) return;
       st.chapter = v;
@@ -1346,11 +1392,198 @@ const Engine = (function () {
     return pool[0];
   }
 
+  /* ---------------------------------------------------------
+     UNDERTAKINGS — settling, and breaking
+
+     A DISCHARGE IS NEVER A BUTTON. The player lays the order on the
+     screen that lays orders, and this notices. If a control ever
+     appears that marks an undertaking done, the mechanic has been
+     misbuilt: the whole point is that a promise is discharged by
+     keeping it, in the place where keeping it happens.
+
+     settle() is therefore called from everything that could keep one -
+     apply(), and each of the acts - rather than from a draw function,
+     which would make it a rendering side effect.
+     --------------------------------------------------------- */
+  function met(st, C, d) {
+    if (!d) return false;
+    if (d.flag) return !!st.flags[d.flag];
+    if (d.si) { const x = st.instruments[d.si]; return !!(x && x.made); }
+    if (d.slot) return (st.slotsGranted || []).indexOf(d.slot) >= 0;
+    if (d.bill) {
+      const b = st.bills[d.bill];
+      if (!b) return false;
+      if (!d.stage) return b.stage !== (C.billById[d.bill] || {}).stage;
+      return STAGE_ORDER.indexOf(b.stage) >= STAGE_ORDER.indexOf(d.stage);
+    }
+    if (d.division) {
+      const b = st.bills[d.division];
+      return !!(b && b.lastDivision && (d.carried == null || b.lastDivision.carried === d.carried));
+    }
+    return false;
+  }
+
+  function settle(st, C) {
+    if (!st.undertakings || !st.undertakings.length) return [];
+    const kept = [];
+    st.undertakings.forEach(u => {
+      if (u.state !== "open") return;
+      if (!met(st, C, u.discharge)) return;
+      u.state = "kept";
+      kept.push(u);
+      st.log.unshift({ sitting: st.sitting, text: "Undertaking kept \u2014 " + u.text });
+    });
+    return kept;
+  }
+
+  function outstanding(st) {
+    return (st.undertakings || []).filter(u => u.state === "open");
+  }
+
+  /* ---------------------------------------------------------
+     DESCRIBE — what a choice does, read off its own effects
+
+     DERIVED, NEVER WRITTEN. A hand-written description of an effect
+     drifts from the effect and then lies to the player. This reads the
+     effects themselves, so it cannot.
+
+     DIRECTION AND WHO, NEVER THE NUMBER. 7.6: the player should hold
+     the state in their head rather than do sums, and an exact figure
+     turns a decision into an optimisation. Magnitude is banded.
+
+     It names no party, station or event - every name is looked up in
+     content (15.5).
+     --------------------------------------------------------- */
+  const BAND = [[12, "badly"], [6, ""], [0, "a little"]];
+  function band(n) {
+    const a = Math.abs(n);
+    for (const [t, w] of BAND) if (a >= t) return w;
+    return "a little";
+  }
+  /* A verb pair per scalar, because one template does not fit all five:
+     "Costs you the treasury" is not a sentence anybody would write. */
+  const SCALAR_SAY = {
+    party_loyalty:   ["Steadies your own benches", "Costs you on your own benches"],
+    public_standing: ["Improves how the government is seen", "Damages how the government is seen"],
+    consumables:     ["Eases the consumables floor", "Presses on the consumables floor"],
+    thermal_margin:  ["Widens the thermal margin", "Narrows the thermal margin"],
+    treasury:        ["Adds to the treasury", "Draws on the treasury"]
+  };
+
+  function describe(st, C, effects) {
+    const out = [];
+    /* A loyalty target may be a party OR a current inside one, and a
+       current rendered as its raw id ("cu_maintenance") is exactly the
+       kind of leak this whole function exists to prevent. Look in both. */
+    const nameOf = (list, id, key) => {
+      const pools = list === "parties" ? ["parties", "currents"] : [list];
+      for (const pool of pools) {
+        const x = (C[pool] || []).find(y => y.id === id);
+        if (x) return x[key] || x.name || id;
+      }
+      return String(id).replace(/_/g, " ");
+    };
+    [].concat(effects || []).forEach(eff => Object.keys(eff).forEach(k => {
+      const v = eff[k];
+      switch (k) {
+        case "scalar": Object.keys(v).forEach(sk => {
+          const say = SCALAR_SAY[sk];
+          const stem = say ? say[v[sk] >= 0 ? 0 : 1]
+                           : (v[sk] >= 0 ? "Improves " : "Costs you ") + sk.replace(/_/g, " ");
+          out.push({ tone: v[sk] >= 0 ? "good" : "bad",
+                     text: stem + (band(v[sk]) ? ", " + band(v[sk]) : "") });
+        });
+          break;
+        case "loyalty": Object.keys(v).forEach(pk => out.push({
+          tone: v[pk] >= 0 ? "good" : "bad",
+          text: (v[pk] >= 0 ? "Pleases " : "Costs you with ") +
+                nameOf("parties", pk, "name") + (band(v[pk]) ? ", " + band(v[pk]) : "") }));
+          break;
+        case "relationship": Object.keys(v).forEach(ck => out.push({
+          tone: v[ck] >= 0 ? "good" : "bad",
+          text: (v[ck] >= 0 ? "Warms " : "Cools ") + nameOf("characters", ck, "name") }));
+          break;
+        case "price": Object.keys(v).forEach(pk => out.push({
+          tone: v[pk] <= 0 ? "good" : "bad",
+          text: (v[pk] >= 0 ? "Pushes up " : "Brings down ") + pk + " prices" }));
+          break;
+        case "capital": Object.keys(v).forEach(pk => out.push({
+          tone: v[pk] >= 0 ? "good" : "bad", cost: true,
+          text: (v[pk] >= 0 ? "Puts " : "Spends credit with ") +
+                nameOf("parties", pk, "name") + (v[pk] >= 0 ? " in your debt" : "") }));
+          break;
+        case "law": Object.keys(v).forEach(lk => out.push({
+          tone: "grave", text: "Changes the law on " + lk.replace(/_/g, " ") }));
+          break;
+        case "undertake": [].concat(v).forEach(u => out.push({
+          tone: "owed", owed: true, text: u.text || u.id }));
+          break;
+        case "si": [].concat(v).forEach(id => out.push({
+          tone: "grave", text: "Makes " + nameOf("instruments", id, "number") }));
+          break;
+        case "wire": out.push({ tone: "plain", text: "Puts it on the wire" }); break;
+        case "coalition":
+          if (v.remove) out.push({ tone: "grave", text: "Breaks the coalition" });
+          if (v.add) out.push({ tone: "good", text: "Widens the coalition" });
+          break;
+        case "election": if (v) out.push({ tone: "grave", text: "Dissolves parliament" }); break;
+        case "cross": case "vacate_seat": case "byelection":
+          out.push({ tone: "grave", text: "Moves seats in the chamber" }); break;
+        case "station": out.push({ tone: "plain", text: "Changes conditions on a habitat" }); break;
+        case "bill": Object.keys(v).forEach(bid => {
+          const title = nameOf("bills", bid, "title");
+          if (v[bid].dead) out.push({ tone: "grave", text: "Kills the " + title });
+          else if (v[bid].stage) out.push({ tone: "plain",
+            text: "Moves the " + title + " to " + String(v[bid].stage).replace(/_/g, " ") });
+          else out.push({ tone: "plain", text: "Changes the " + title });
+        });
+          break;
+        case "queue": case "flag": case "unflag": case "chapter": case "seen":
+          break;   /* bookkeeping the player does not need told about */
+        default: out.push({ tone: "plain", text: k.replace(/_/g, " ") });
+      }
+    }));
+    return out;
+  }
+
+  /* GRAVE — does this choice deserve a confirmation?
+     A confirm on every choice becomes a reflex click within twenty
+     minutes and then protects nothing, so the engine decides rather
+     than an author remembering. */
+  function grave(st, C, choice) {
+    if (!choice) return false;
+    if (choice.grave) return true;
+    if (choice.cost) return true;
+    return [].concat(choice.effects || []).some(eff =>
+      eff.law || eff.undertake || eff.capital || eff.coalition || eff.election);
+  }
+
+  /* Can this choice be taken at all? A choice whose `when` fails or
+     whose `cost` cannot be paid is ABSENT, not disabled: a disabled
+     control is a thing you are being refused, and this was never on
+     the table. */
+  function choiceOpen(st, C, choice) {
+    if (!choice) return false;
+    if (choice.when && !matches(st, choice.when)) return false;
+    const c = choice.cost || null;
+    if (c && c.slot && (st.slots.total - st.slots.used) < c.slot) return false;
+    return true;
+  }
+
+  function openChoices(st, C, event) {
+    return (event.choices || [])
+      .map((c, i) => ({ choice: c, index: i }))
+      .filter(x => choiceOpen(st, C, x.choice));
+  }
+
   function choose(st, C, event, choiceIndex) {
     const ch = event.choices[choiceIndex];
+    if (!choiceOpen(st, C, ch)) return null;
+    if (ch.cost && ch.cost.slot) st.slots.used += ch.cost.slot;
     apply(st, C, ch.effects);
     st.seen[event.id] = (st.seen[event.id] || 0) + 1;
     st.log.unshift({ sitting: st.sitting, text: event.title + " — " + ch.label });
+    settle(st, C);
     return ch.result || null;
   }
 
@@ -1418,6 +1651,17 @@ const Engine = (function () {
 
   function advance(st, C) {
     st.sitting += 1;
+    /* A promise not kept by its sitting is broken, once. Breaking it
+       QUEUES AN EVENT and moves no number: the politics of a broken
+       promise belongs where it can be written and argued with, not in a
+       silent correction the player never sees. See design/02. */
+    (st.undertakings || []).forEach(u => {
+      if (u.state !== "open" || u.by >= st.sitting) return;
+      u.state = "broken";
+      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken \u2014 " + u.text });
+      if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
+        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+    });
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
@@ -1473,6 +1717,7 @@ const Engine = (function () {
     canMake, makeInstrument, prayAgainst, prayerForecast, revokeInstrument,
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
+    settle, outstanding, describe, grave, choiceOpen, openChoices,
     CONDITIONS, EFFECTS
   };
 })();

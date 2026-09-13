@@ -588,4 +588,107 @@ try {
 } catch (e) { ok("tab order and focus", false, e.message); }
 
 
+
+/* =============================================================
+   THE SITTING SCREEN — the expanded choice, and the docket.
+
+   The mechanic this checks: a choice does not perform an act, it
+   UNDERTAKES to, and the act is carried out on the screen that owns
+   it. So the assertions that matter most are the negative ones —
+   nothing on the docket is a control, and there is no way anywhere to
+   mark an undertaking done. If either ever passes, the whole point of
+   the mechanic has been built away.
+   ============================================================= */
+try {
+  w.eval('UI.boot(UI.state(), CONTENT);');
+  w.document.querySelector('.tab[data-t="sit"]').click();
+
+  const rows = w.document.querySelectorAll("#sitting-body .ch");
+  ok("a choice is a row, not a bare button", rows.length > 0, rows.length + " rows");
+
+  /* collapsed carries the label and nothing else that could be clicked */
+  const bodiesClosed = w.document.querySelectorAll("#sitting-body .ch-body").length;
+  ok("every row starts collapsed", bodiesClosed === 0, bodiesClosed + " open");
+
+  /* expanding is a user action and may cue; drawing may not */
+  w.eval('window.__cues.length = 0;');
+  w.document.querySelector("#sitting-body [data-expand]").click();
+  ok("expanding a row makes exactly one sound", w.eval("window.__cues.length") === 1,
+     w.eval("JSON.stringify(window.__cues)"));
+  ok("and opens exactly one body",
+     w.document.querySelectorAll("#sitting-body .ch-body").length === 1);
+
+  const body = w.document.querySelector("#sitting-body .ch-body");
+  ok("the expanded row says what the choice does",
+     /What this does/i.test(body.textContent));
+
+  /* DIRECTION AND WHO, NEVER THE NUMBER (7.6). A raw figure in the
+     reading turns the decision into an optimisation, so a digit next to
+     a plus or minus is a failure and not a style note. */
+  const eff = [].slice.call(body.querySelectorAll(".ch-eff li")).map(n => n.textContent);
+  ok("and states no raw number", !eff.some(t => /[+\-−]?\s?\d+/.test(t)),
+     eff.join(" | "));
+
+  ok("the commit button names the act, not 'confirm'",
+     !!body.querySelector(".commit") && !/confirm/i.test(body.querySelector(".commit").textContent),
+     body.querySelector(".commit").textContent.trim());
+} catch (e) { ok("the sitting screen", false, e.message); }
+
+/* THE DERIVED READING is pure and covers every verb the content uses. A
+   verb with no description would render as a bare key, which is how the
+   player learns the engine's vocabulary instead of the world's. */
+try {
+  const st = w.eval("JSON.parse(Engine.save(UI.state()))");
+  const before = w.eval("Engine.save(UI.state())");
+  w.eval('window.__d = Engine.describe(UI.state(), CONTENT, [{scalar:{treasury:-8}},{loyalty:{psa:5}}]);');
+  ok("describe() mutates nothing", w.eval("Engine.save(UI.state())") === before);
+  const d = w.eval("JSON.stringify(window.__d)");
+  ok("describe() names the party rather than its id", /New Progressive/.test(d), d);
+
+  const bare = w.eval(`(function () {
+    var bad = [];
+    CONTENT.events.forEach(function (e) {
+      (e.choices || []).forEach(function (c) {
+        Engine.describe(UI.state(), CONTENT, c.effects).forEach(function (x) {
+          if (/^[a-z_]+$/.test(x.text)) bad.push(e.id + ": " + x.text);
+        });
+      });
+    });
+    return bad;
+  })()`);
+  ok("no choice in the content describes itself as a bare verb name",
+     bare.length === 0, bare.join(", "));
+} catch (e) { ok("the derived reading", false, e.message); }
+
+/* UNDERTAKINGS AND THE DOCKET. */
+try {
+  w.eval(`(function () {
+    var st = UI.state();
+    Engine.apply(st, CONTENT, [{undertake:{ id:"probe_u", text:"Lay the probe order",
+      by:2, discharge:{ flag:"probe_done" } }}]);
+    UI.redraw();
+  })()`);
+  const dk = w.document.querySelectorAll("#sit-docket .dk.owed");
+  ok("an undertaking appears on the docket", dk.length === 1, dk.length + " items");
+  ok("the status bar counts it", /OWED/.test(w.document.querySelector("#sb-owed").textContent));
+
+  ok("nothing on the docket is a control",
+     w.document.querySelectorAll("#sit-docket button,#sit-docket a,#sit-docket input").length === 0);
+
+  /* THE ONE THAT MATTERS. A promise is discharged by keeping it, in the
+     place where keeping it happens — never by a control that marks it
+     done. If this ever finds one, the mechanic has been built away. */
+  const marks = [].slice.call(w.document.querySelectorAll("button,a,input"))
+    .filter(n => /\b(mark|tick|complete|done|discharge|dismiss)\b/i.test(n.textContent || ""));
+  ok("no control anywhere marks an undertaking done", marks.length === 0,
+     marks.map(n => n.textContent.trim()).join(", "));
+
+  /* keeping it, by the act itself */
+  w.eval('Engine.apply(UI.state(), CONTENT, [{flag:"probe_done"}]); Engine.settle(UI.state(), CONTENT); UI.redraw();');
+  ok("doing the thing takes it off the docket",
+     w.document.querySelectorAll("#sit-docket .dk.owed").length === 0);
+  ok("and the status bar chip goes with it",
+     w.document.querySelector("#sb-owed").textContent === "");
+} catch (e) { ok("undertakings and the docket", false, e.message); }
+
 H.finish("the interface is healthy");

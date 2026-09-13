@@ -255,6 +255,16 @@ const UI = (function () {
     $("#sb-slots").textContent = `SLOTS ${st.slots.total - st.slots.used}/${st.slots.total}`;
     $("#sb-sig").textContent = `SIGNATURES ${st.signatures || 0}/9`;
     $("#sb-sig").style.color = (st.signatures || 0) >= 7 ? "var(--alert)" : "";
+    /* OUTSTANDING UNDERTAKINGS. Absent when there are none, rather than
+       showing a zero: this is the thing that makes rising cost
+       something, and a permanent "OWED 0" is furniture. */
+    const owedN = Engine.outstanding(st);
+    const ow = $("#sb-owed");
+    if (ow) {
+      ow.textContent = owedN.length ? "OWED " + owedN.length : "";
+      ow.style.display = owedN.length ? "" : "none";
+      ow.style.color = owedN.some(u => u.by - st.sitting <= 1) ? "var(--alert)" : "";
+    }
     const loss = Engine.checkLoss(st, C);
     $("#sb-state").textContent = loss.lost ? "GOVERNMENT FALLEN — " + loss.reason.toUpperCase() : "READY";
     $("#sb-state").style.color = loss.lost ? "var(--alert)" : "";
@@ -485,6 +495,21 @@ const UI = (function () {
         `<td class="n">${b.owner && b.owner !== st.playerParty ? "+" + (b.priority ? 3 : 2) : "&mdash;"}</td>` +
         `<td class="n"><button class="btn slotbtn" data-slot="${b.id}"${left ? "" : " disabled"}>Grant</button></td></tr>`
       ).join("")}</tbody></table>`;
+    /* THE ORDER PAPER CARRIES UNDERTAKINGS TOO. An order paper lists the
+       business, and a promise the government has made is business. This
+       is the other end of the docket on the Sitting screen: the item
+       appears there when you promise and disappears from both when you
+       keep it — by doing the thing, on this screen, with the button that
+       already exists. There is deliberately no control here that marks
+       one done. */
+    const owed = Engine.outstanding(st);
+    const ob = $("#gov-owed");
+    if (ob) ob.innerHTML = owed.length
+      ? owed.map(u => `<div class="dk owed${u.by - st.sitting <= 1 ? " late" : ""}">` +
+          `<b>${esc(u.text)}</b><i>${u.by - st.sitting <= 0 ? "due this sitting"
+            : "by sitting " + u.by}</i></div>`).join("")
+      : `<div class="note">The government has given no undertakings.</div>`;
+
     $("#gov-slots").querySelectorAll(".slotbtn").forEach(btn =>
       btn.addEventListener("click", () => {
         const b = C.bills.find(x => x.id === btn.dataset.slot);
@@ -939,7 +964,167 @@ const UI = (function () {
   }
 
   /* ---------- sitting ---------- */
+  /* ---------- sitting ----------
+
+     A CHOICE IS A ROW THAT EXPANDS, NOT A BUTTON THAT FIRES.
+
+     It used to be a button carrying a whole sentence, which put four
+     things on the label at once: what you are doing, what it costs, who
+     it upsets, and whether it commits you to anything. The row moves
+     three of those inside, where the player asks for them.
+
+     WHAT IT DOES IS DERIVED, NEVER WRITTEN. Engine.describe() reads the
+     effects themselves, so the description cannot drift from the effect
+     and lie. Direction and who, never the number (bible 7.6): an exact
+     figure turns a decision into an optimisation.
+
+     NO CUE AND NO REVEAL FROM IN HERE. Drawing a row is not a user
+     action; expanding one is. Every Sound.play in this section sits in
+     a listener, which is what tools/uitest.js checks for. */
+
+  /* which row is open, so it survives the redraw that every decision
+     causes. Keyed by event so a new event opens closed. */
+  let openRow = { event: null, i: -1 };
+
+  const TONE_MARK = { good: "+", bad: "−", grave: "!", owed: "¤", plain: "·" };
+
+  /* The commit button says the ACT. The terminal does not ask whether
+     you are sure; you either do the thing or you do not. Content may
+     name it with `act`; otherwise it is read off the effects. */
+  function actLabel(c) {
+    if (c.act) return c.act;
+    const eff = [].concat(c.effects || []);
+    if (eff.some(e => e.undertake)) return "Give the undertaking";
+    if (eff.some(e => e.coalition && e.coalition.remove)) return "Break the coalition";
+    if (eff.some(e => e.election)) return "Dissolve parliament";
+    if (eff.some(e => e.law)) return "Change the law";
+    if (eff.some(e => e.si)) return "Sign the order";
+    return "Decide";
+  }
+
+  /* CABINET REACTION, derived from the cabinet's own party membership.
+     Not invented prose: a choice that costs a party is a choice its
+     ministers feel, and they are named with their office because that
+     is the fact the player needs. A richer mapping - which ministry
+     owns which brief - wants a `brief` field on content/cabinet.js and
+     is left for the content pass. */
+  function cabinetView(effects) {
+    const moved = {};
+    /* A loyalty target may be a CURRENT rather than a party, and a
+       current's ministers sit for its party — so fold currents up to
+       their parent or the cabinet never notices the half of the caucus
+       most likely to be upset. */
+    const owner = id => {
+      const cur = (C.currents || []).find(x => x.id === id);
+      return cur ? cur.party : id;
+    };
+    const add = (k, v) => { const o = owner(k); moved[o] = (moved[o] || 0) + v; };
+    [].concat(effects || []).forEach(e => {
+      if (e.loyalty) Object.keys(e.loyalty).forEach(k => add(k, e.loyalty[k]));
+      if (e.capital) Object.keys(e.capital).forEach(k => add(k, e.capital[k]));
+    });
+    const rows = [];
+    (C.cabinet || []).forEach(post => {
+      const p = st.cabinet[post.id];
+      if (!p || !p.holder) return;
+      const party = p.party || post.party;
+      if (moved[party] == null || moved[party] === 0) return;
+      const who = C.characterById[p.holder];
+      rows.push({ name: who ? who.name : p.holder, office: post.title || post.name,
+                  for: moved[party] > 0 });
+    });
+    /* NEVER EXACTLY ONE. A single adviser reads as the game telling you
+       the answer, which is the failure this guard exists for. Two who
+       disagree is a decision; two or more who agree is also information,
+       and a stronger kind — "the cabinet is against this" is worth
+       hearing. So: a disagreeing pair if there is one, otherwise up to
+       two of a united view, and nothing at all from a lone voice. */
+    const yes = rows.filter(r => r.for), no = rows.filter(r => !r.for);
+    if (yes.length && no.length) return [yes[0], no[0]];
+    if (rows.length >= 2) return rows.slice(0, 2);
+    return [];
+  }
+
+  function choiceRow(e, c, i, open) {
+    const cl = Engine.describe(st, C, c.effects);
+    const owed = cl.filter(x => x.owed);
+    const grave = Engine.grave(st, C, c);
+    const cab = cabinetView(c.effects);
+    const strip = [
+      c.cost && c.cost.slot ? `<span class="cm cost">costs order-paper time</span>` : "",
+      owed.length ? `<span class="cm owed">commits you</span>` : "",
+      grave && !owed.length && !(c.cost && c.cost.slot)
+        ? `<span class="cm grave">significant</span>` : ""
+    ].join("");
+
+    return `<div class="ch${open ? " open" : ""}" data-ch="${i}">
+      <button class="ch-head" data-expand="${i}" aria-expanded="${open}">
+        <span class="ch-arrow">${open ? "▾" : "▸"}</span>
+        <span class="ch-label">${esc(c.label)}</span>
+        ${strip ? `<span class="ch-strip">${strip}</span>` : ""}
+      </button>
+      ${open ? `<div class="ch-body">
+        <div class="ch-sec"><h4>What this does</h4>
+          ${cl.filter(x => !x.owed).length
+            ? `<ul class="ch-eff">${cl.filter(x => !x.owed).map(x =>
+                `<li class="t-${x.tone}"><i>${TONE_MARK[x.tone] || "·"}</i>${esc(x.text)}</li>`
+              ).join("")}</ul>`
+            /* A choice can be entirely a position taken: nothing moves and
+               the House hears you say it. An empty panel reads as broken,
+               so it says so rather than showing nothing. */
+            : `<div class="note">Nothing that moves a number. What changes is
+                 what you have said, and who heard it.</div>`}
+        </div>
+        ${owed.length ? `<div class="ch-sec owed"><h4>You would be undertaking</h4>
+          ${owed.map(x => `<div class="ch-owe">${esc(x.text)}</div>`).join("")}
+          <div class="note">It goes on the order paper. Keep it there and it stands
+            against you.</div></div>` : ""}
+        ${cab.length ? `<div class="ch-sec"><h4>The cabinet</h4>
+          ${cab.map(r => `<div class="ch-cab ${r.for ? "for" : "against"}">
+            <b>${esc(r.name)}</b> <em>${esc(r.office)}</em>
+            <span>${r.for ? "for" : "against"}</span></div>`).join("")}</div>` : ""}
+        <div class="ch-commit">
+          <button class="btn commit${grave ? " grave" : ""}" data-i="${i}">${esc(actLabel(c))}</button>
+        </div>
+      </div>` : ""}
+    </div>`;
+  }
+
+  /* THE DOCKET. What is before the House, which is how a decision taken
+     here reaches the screen that carries it out: promising something
+     puts an item here, and keeping it takes the item away. */
+  function docketHTML() {
+    const owed = Engine.outstanding(st);
+    const bill = (C.bills || []).find(b => st.bills[b.id] && !st.bills[b.id].dead &&
+      st.bills[b.id].stage !== "assented");
+    const rows = [];
+    if (bill) rows.push(`<div class="dk bill"><b>${esc(bill.title)}</b>
+      <i>${esc(String(st.bills[bill.id].stage).replace(/_/g, " "))}</i></div>`);
+    owed.forEach(u => {
+      const due = u.by - st.sitting;
+      rows.push(`<div class="dk owed${due <= 1 ? " late" : ""}"><b>${esc(u.text)}</b>
+        <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
+          u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""}</i></div>`);
+    });
+    (C.instruments || []).forEach(si => {
+      const x = st.instruments[si.id];
+      if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
+        rows.push(`<div class="dk pray"><b>${esc(si.number)}</b>
+          <i>prayable for ${x.prayerCloses - st.sitting} more</i></div>`);
+    });
+    return rows.length ? rows.join("")
+      : `<div class="note">Nothing before the House but the sitting itself.</div>`;
+  }
+  function partyName(id) {
+    const p = (C.parties || []).find(x => x.id === id) ||
+              (C.characters || []).find(x => x.id === id);
+    return p ? p.name : String(id).replace(/_/g, " ");
+  }
+
   function drawSitting() {
+    const dk = $("#sit-docket");
+    if (dk) dk.innerHTML = docketHTML();
+
     const box = $("#sitting-body");
     const loss = Engine.checkLoss(st, C);
     if (loss.lost) {
@@ -951,15 +1136,13 @@ const UI = (function () {
     if (!currentEvent) {
       box.innerHTML = `<div class="note">Nothing on the order paper demands a decision this sitting.</div>` +
         `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
-      $("#btn-advance").addEventListener("click", () => {
-        Engine.advance(st, C); currentEvent = null; lastResult = null;
-        setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
-        drawAll(); saved(); afterAction(); reveal();
-      });
+      $("#btn-advance").addEventListener("click", rise);
       return;
     }
     const e = currentEvent;
+    if (openRow.event !== e.id) openRow = { event: e.id, i: -1 };
     const spk = e.speaker ? C.characterById[e.speaker] : null;
+    const open = Engine.openChoices(st, C, e);
     $("#sitting-hdr").textContent = e.title;
     box.innerHTML =
       plate(e.image) +
@@ -969,29 +1152,44 @@ const UI = (function () {
       (lastResult
         ? `<div class="decl" style="margin-top:8px"><b>Outcome</b><br><span id="sitting-outcome">${lastResult}</span></div>
            <div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`
-        : `<div class="rulehead">Decision</div>` +
-          e.choices.map((c, i) => `<div class="btnrow" style="margin-top:3px"><button class="btn choice" data-i="${i}" style="text-align:left">${c.label}</button></div>`).join(""));
+        : `<div class="rulehead">Decision</div><div class="choices">` +
+          open.map(x => choiceRow(e, x.choice, x.index, openRow.i === x.index)).join("") +
+          `</div>`);
 
-    if (lastResult) {
-      bindGlossary(box);
-      $("#btn-advance").addEventListener("click", () => {
-        Engine.advance(st, C); currentEvent = null; lastResult = null;
-        setStatus("The House rises \u00b7 sitting " + st.sitting, "transient");
-        drawAll(); saved(); afterAction(); reveal();
-      });
-    } else {
-      bindGlossary(box);
-      box.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
-        lastResult = Engine.choose(st, C, e, +b.dataset.i) || "Noted.";
-        cue("stamp");
-        setStatus(e.title + " \u2014 " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
-        saved();
-        drawAll(); afterAction();
-        /* The outcome is new text, so it arrives the way new text arrives.
-           The body above it does not retype: you have read that already. */
-        revealNode($("#sitting-outcome"), e);
-      }));
-    }
+    bindGlossary(box);
+    if (lastResult) { $("#btn-advance").addEventListener("click", rise); return; }
+
+    /* Expanding is a user action, so it may cue. Drawing is not. */
+    box.querySelectorAll("[data-expand]").forEach(b => b.addEventListener("click", () => {
+      const i = +b.dataset.expand;
+      openRow = { event: e.id, i: openRow.i === i ? -1 : i };
+      cue("click");
+      Focus.around(() => drawSitting(), null);
+      const n = $(`[data-expand="${openRow.i}"]`);
+      if (n) n.focus({ preventScroll: true });
+    }));
+
+    box.querySelectorAll(".commit").forEach(b => b.addEventListener("click", () => {
+      const i = +b.dataset.i, ch = e.choices[i];
+      const owes = [].concat(ch.effects || []).some(x => x.undertake);
+      lastResult = Engine.choose(st, C, e, i) || "Noted.";
+      /* THE FIGURE, AND THE HOURGLASS. Both scale with what was done:
+         an undertaking hangs unresolved and takes longer to file. */
+      cue(owes ? "undertake" : "decide");
+      if (typeof Wait !== "undefined") Wait.brief(owes ? 480 : 280);
+      setStatus(e.title + " — " + lastResult.replace(/\s+/g, " ").slice(0, 120), "transient");
+      saved();
+      drawAll(); afterAction();
+      revealNode($("#sitting-outcome"), e);
+    }));
+  }
+
+  function rise() {
+    Engine.advance(st, C); currentEvent = null; lastResult = null;
+    openRow = { event: null, i: -1 };
+    setStatus("The House rises · sitting " + st.sitting, "transient");
+    if (typeof Wait !== "undefined") Wait.brief(200);
+    drawAll(); saved(); afterAction(); reveal();
   }
 
   /* ---------- chamber ---------- */
@@ -1498,5 +1696,8 @@ const UI = (function () {
 
   /* setStatus is exported so that Shell and, later, the induction pack can
      write the line without reaching into #sb-msg themselves. */
-  return { boot, state: () => st, annotate, setStatus };
+  /* redraw is exported for the checks only. It is drawAll under another
+     name, and it makes no sound — which is itself asserted, so exporting
+     it cannot become a way to smuggle a cue into a renderer. */
+  return { boot, state: () => st, annotate, setStatus, redraw: drawAll };
 })();

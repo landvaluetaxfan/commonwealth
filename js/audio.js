@@ -121,6 +121,28 @@ const Sound = (function () {
     o.start(t); o.stop(t + dur + 0.02);
   }
 
+  /* A NOTE SCHEDULED AHEAD, which blip() cannot do.
+
+     The existing two-note cues sequence with setTimeout, which is fine
+     for two notes 90ms apart and wrong for a phrase: setTimeout fires
+     on the main thread, so a redraw between notes shifts one of them
+     and the figure limps. Web Audio has its own clock; schedule against
+     that and the rhythm is exact however busy the page is.
+
+     `at` is seconds from now. Everything else is blip's shape. */
+  function note(cat, f, at, dur, type, peak, f2) {
+    if (!live()) return;
+    const t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type || "triangle";
+    o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bus[cat] || master);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
   function thud(cat, dur, cut, peak) {
     if (!live()) return;
     const t = ctx.currentTime, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(),
@@ -148,7 +170,43 @@ const Sound = (function () {
     nay:    () => { blip("event", 233.08, 0.16, "triangle", 0.07);
                     setTimeout(() => blip("event", 174.61, 0.32, "triangle", 0.06), 110); },
     /* the government has fallen */
-    knell:  () => { blip("event", 110, 0.9, "sine", 0.1); thud("event", 0.5, 300, 0.09); }
+    knell:  () => { blip("event", 110, 0.9, "sine", 0.1); thud("event", 0.5, 300, 0.09); },
+
+    /* ---- THE DECISION FIGURE ----
+
+       A decision taken. Four notes over a third of a second, scheduled
+       on the audio clock so the rhythm holds while the screen redraws
+       behind it.
+
+       It is a PERFECT FOURTH RESOLVING UPWARD - G, C, then D over a low
+       C - which is the shape of a thing being filed rather than a thing
+       being celebrated. 12.3 governs here as everywhere: if it reads as
+       triumphant it is wrong. There is a paper thud under it because
+       this is an office, and the last note is quieter than the first
+       because nothing in this building congratulates you.
+
+       Peaks are well under the 0.07 the two-note division cues use,
+       since this fires on every decision and a cue you hear forty times
+       an hour must sit below the ones you hear twice. */
+    decide: () => {
+      thud("event", 0.10, 780, 0.11);
+      note("event", 392.00, 0.000, 0.10, "triangle", 0.050);   /* G4  */
+      note("event", 523.25, 0.075, 0.10, "triangle", 0.046);   /* C5  */
+      note("event", 587.33, 0.150, 0.20, "triangle", 0.038);   /* D5  */
+      note("event", 130.81, 0.150, 0.34, "sine",     0.045);   /* C3  under it */
+    },
+
+    /* A decision that PUT SOMETHING ON THE DOCKET. The same figure, and
+       then it does not finish: a fifth note hangs above the resolution,
+       unresolved, because you have not finished either. The player
+       should be able to tell an obligation from a plain decision with
+       their eyes shut - that is the whole reason this is a second cue
+       and not a louder first one. */
+    undertake: () => {
+      CUES.decide();
+      note("event", 783.99, 0.330, 0.42, "triangle", 0.034);   /* G5, hanging */
+      note("event", 196.00, 0.330, 0.46, "sine",     0.030);
+    }
   };
 
   function play(name) {
@@ -264,7 +322,7 @@ const Sound = (function () {
   }
 
   return {
-    init: init, play: play, type: type, room: room,
+    init: init, play: play, type: type, room: room, note: note,
     registers: Object.keys(BAND),
     setMute: setMute, setGain: setGain, apply: apply,
     categories: CATS, gainKey: GAIN_KEY,

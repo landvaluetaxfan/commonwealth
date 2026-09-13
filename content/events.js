@@ -43,6 +43,8 @@ undercut their wages, would rather you had paid a different price.`,
       effects:[{flag:"read_the_count"},],
       result:"It carries among elected members and dies among the functional ones. You will need to know why." },
     { label:"Say publicly that the government stands behind it",
+      act:"Say it",
+      cost:{ slot:1 },
       effects:[{flag:"read_the_count"},{scalar:{public_standing:3}},
                {loyalty:{psa:8,cu_maintenance:-9}},
                {wire:"PM COMMITS GOVERNMENT TO FORTY-HOUR THRESHOLD"}],
@@ -64,7 +66,17 @@ and then the panel that certifies life support is a panel my members do not
 recognise. You are not reforming personhood. You are reforming us."`,
   choices:[
     { label:"Offer a licensure carve-out — the threshold moves, licensure does not",
+      act:"Offer it",
+      /* MECHANICAL PLACEHOLDER, opencode's to reword: the undertaking's
+         `text` is the line the order paper carries and the wording is
+         prose. The shape is right — this choice is a promise made to a
+         named person who will notice — but the sentence is engineering. */
       effects:[{flag:"gb_approached"},{chapter:2},{relationship:{gb_chair:12}},{loyalty:{gb:6,psa:-9}},
+               {undertake:{ id:"licensure_carveout",
+                            text:"Lay the licensing order carrying the carve-out",
+                            owed_to:"gb_chair", by:4,
+                            discharge:{ si:"si_2287_44" },
+                            onBreach:"gb_approach" }},
                {wire:"GOVERNMENT SIGNALS LICENSURE CARVE-OUT; SUBSTRATE LEFT FURIOUS"},
                {flag:"licensure_carveout_offered"}],
       result:"She does not say yes. She says she will take it to the panel, which from her is a great deal." },

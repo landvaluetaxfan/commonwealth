@@ -1286,3 +1286,102 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 .optpanel-inline .opt-sep{background:rgba(233,234,226,.16);}
 .optpanel-inline .optlvl{color:#c6cabb;}
 .optpanel-inline .opt input[type=checkbox]{accent-color:#cfd3c4;}
+/* =============================================================
+   THE SITTING SCREEN — a choice is a row that expands.
+
+   The row carries the label and, collapsed, a strip of marks saying
+   what KIND of decision it is: costs time, commits you, significant.
+   Everything else is inside, because 2.6 says explanation cost is the
+   real budget and an expandable is how you pay it only when asked.
+
+   NO TRANSITIONS ON SELECTION OR FOCUS anywhere in this block. The
+   game's rule: focus is a 1px dotted rectangle and nothing animates
+   into it. The arrow changes glyph; the row does not slide.
+   ============================================================= */
+.choices{display:flex;flex-direction:column;gap:3px;margin-top:4px;}
+.ch{
+  border-top:1px solid var(--chrome-lt);border-left:1px solid var(--chrome-lt);
+  border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
+  background:var(--chrome);
+}
+.ch.open{background:var(--paper);}
+.ch-head{
+  display:flex;align-items:baseline;gap:7px;width:100%;text-align:left;
+  background:none;border:0;padding:6px 8px;font:inherit;color:var(--ink);cursor:pointer;
+}
+.ch-head:hover{background:var(--chrome-dk);}
+.ch.open .ch-head{background:var(--bar);color:var(--bar-txt);}
+.ch-arrow{font-family:var(--f-data);font-size:10px;opacity:.7;flex:0 0 auto;}
+.ch-label{flex:1 1 auto;min-width:0;}
+.ch-strip{flex:0 0 auto;display:flex;gap:5px;}
+/* the marks. Form as well as hue, because 12.2 and because a colour-only
+   signal is no signal at all for a good number of players. */
+.cm{
+  font-family:var(--f-data);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  padding:1px 5px;border:1px solid var(--rule);
+}
+.cm.cost {border-style:dashed;}
+.cm.owed {border-width:1px 1px 1px 3px;font-weight:700;}
+.cm.grave{border-style:double;border-width:3px;}
+.ch.open .cm{border-color:rgba(233,234,226,.5);}
+
+.ch-body{padding:8px 10px 10px;border-top:1px solid var(--rule);}
+.ch-sec + .ch-sec{margin-top:9px;}
+.ch-sec h4{
+  margin:0 0 3px;font-family:var(--f-data);font-size:9px;font-weight:400;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+}
+.ch-eff{margin:0;padding:0;list-style:none;}
+.ch-eff li{display:flex;gap:6px;padding:1px 0;font-size:12px;}
+.ch-eff li i{
+  flex:0 0 12px;font-style:normal;font-family:var(--f-data);text-align:center;
+  color:var(--ink-soft);
+}
+.ch-eff .t-bad i,.ch-eff .t-grave i{color:var(--warn,#8a3b2a);}
+.ch-eff .t-good i{color:var(--ok,#3f6b3a);}
+.ch-eff .t-grave{font-weight:700;}
+
+/* an undertaking is set apart, because it is the one consequence that
+   outlives the sitting */
+.ch-sec.owed{border-left:3px solid var(--ink);padding-left:8px;}
+.ch-owe{font-size:12.5px;font-weight:700;}
+.ch-sec.owed .note{margin-top:2px;}
+
+.ch-cab{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:1px 0;}
+.ch-cab em{font-style:normal;font-family:var(--f-data);font-size:9.5px;color:var(--ink-soft);
+  flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ch-cab span{
+  font-family:var(--f-data);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  padding:0 4px;border:1px solid var(--rule);}
+.ch-cab.for span{border-color:var(--ok,#3f6b3a);}
+.ch-cab.against span{border-color:var(--warn,#8a3b2a);}
+
+.ch-commit{margin-top:10px;}
+.ch-commit .commit{min-width:170px;}
+/* a grave commit is heavier stock, not a red button: the terminal does
+   not shout, it prints the consequential thing on thicker paper */
+.ch-commit .commit.grave{border-width:2px;font-weight:700;box-shadow:2px 2px 0 rgba(27,29,25,.2);}
+
+/* ---------- the docket ---------- */
+#sit-docket .dk{padding:3px 0;border-bottom:1px dotted var(--rule);}
+#sit-docket .dk:last-child{border-bottom:0;}
+#sit-docket .dk b{display:block;font-size:12px;font-weight:400;}
+#sit-docket .dk i{display:block;font-style:normal;font-family:var(--f-data);
+  font-size:9.5px;color:var(--ink-soft);}
+#sit-docket .dk.owed{border-left:3px solid var(--ink);padding-left:6px;}
+#sit-docket .dk.owed b{font-weight:700;}
+#sit-docket .dk.owed.late{border-left-color:var(--warn,#8a3b2a);}
+#sit-docket .dk.owed.late i{color:var(--warn,#8a3b2a);}
+#sit-docket .dk.pray i{font-style:italic;}
+
+/* The sitting screen fills the viewport. It was content-height, so a short
+   event left a third of the screen as bare chrome under the panel — the
+   one screen the player spends most of their time on, and the emptiest.
+   The prose column scrolls inside its panel instead. */
+.g-sit{height:100%;align-items:stretch;grid-template-rows:minmax(0,1fr);}
+#s-sit.screen.on{display:flex;flex-direction:column;}
+#s-sit .grid{flex:1 1 auto;min-height:0;}
+#s-sit .panel{min-height:0;}
+#s-sit #sitting-body{overflow:auto;}
+#s-sit .stack{min-height:0;overflow:auto;}
+#sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
