@@ -895,21 +895,22 @@ body.menu-on{background:#0b1826;}
 .menu-warn{margin-top:26px;max-width:600px;font-family:var(--f-ui);font-size:12px;
   color:#e9a08f;border-left:2px solid #e9a08f;padding-left:9px;line-height:1.45;}
 
-/* the printed band under the plate, on the same stock as an instrument.
-   Equal padding top and bottom; the mark sits at the foot of the band. */
-.menu-footer{flex:0 0 auto;display:flex;align-items:flex-end;gap:40px;
-  justify-content:space-between;background:#f1f0ea;color:#1d1d1b;
-  font-family:"Times New Roman",Times,Georgia,serif;padding:28px 56px;}
-.menu-footer .mf-text{max-width:860px;}
+/* the printed band under the plate, on the same stock as an instrument. The
+   text sits toward the head of the band and the mark on the foot, so the copy
+   is not pushed down by the mark's height. */
+.menu-footer{position:relative;flex:0 0 auto;background:#f1f0ea;color:#1d1d1b;
+  font-family:"Times New Roman",Times,Georgia,serif;padding:20px 56px 44px;}
+.menu-footer .mf-text{max-width:min(860px,calc(100% - 340px));}
 .menu-footer h1{margin:0 0 12px;font-size:21px;font-weight:400;}
 .menu-footer p{margin:0;font-size:13px;line-height:1.45;}
-/* the government's own mark, bottom-right of the printed band */
-.menu-footer .mf-gov{flex:0 0 auto;width:300px;height:auto;opacity:.92;}
+/* the government's own mark, at the foot of the printed band */
+.menu-footer .mf-gov{position:absolute;right:56px;bottom:26px;width:300px;height:auto;opacity:.92;}
 @media (max-width:700px){
-  .menu-footer{flex-direction:column;align-items:flex-start;gap:18px;padding:18px 20px;}
+  .menu-footer{padding:18px 20px 76px;}
+  .menu-footer .mf-text{max-width:100%;}
   .menu-footer h1{font-size:18px;}
   .menu-footer p{font-size:12px;}
-  .menu-footer .mf-gov{width:220px;}
+  .menu-footer .mf-gov{right:20px;bottom:18px;width:200px;}
 }
 
 /* Options > Animations off. The ceremony still resolves, it just does not draw. */
