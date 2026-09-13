@@ -132,6 +132,13 @@ undertaking's `text` is what the order paper prints and the wording is prose.
 
 Small, and none of it blocks Part C.
 
+- **The calendar** (`design/15`), and it should go first. Nothing advances
+  `st.session`, nothing refills the slots, and no session length exists — so
+  §7.7's "currency that cannot be topped up" also never runs out, and a division
+  happens whenever the player calls it. One setup field, one block in
+  `advance()`, one field on a bill. It closes the loudest complaint about the
+  loop with less code than anything else in `design/`.
+
 - **The `move` consolidation** (`design/01`), once the author decides. It touches
   every event and the editor, and it gets more expensive with every event
   written.
