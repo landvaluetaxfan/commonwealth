@@ -1,11 +1,11 @@
 # FINISHING THE ENGINE — THE COMPLETION PLAN
 
-**13 September 2026.** Fourteen documents specifying every remaining engine system,
+**13 September 2026.** Fifteen documents specifying every remaining engine system,
 in dependency order, to the point where `js/engine.js` is done and the project is
 content work plus interface work and nothing else.
 
 **Read this file first.** It defines what "finished" means, and the three tests
-every proposal in the other thirteen had to pass. Several obvious-sounding features
+every proposal in the other fourteen had to pass. Several obvious-sounding features
 are specified here as *smaller* than they sound, because canon forbids the large
 version — that is not caution, it is the design.
 
@@ -17,7 +17,7 @@ version — that is not caution, it is the design.
 |---|---|---|
 | `bible.md` | canon, out-of-world | **wins over everything here** |
 | `textbook.md` | canon, in-world | wins on tone |
-| `sweep-brief.md` | the last build phase and its gap list | superseded in part; see §5 |
+| `sweep-brief.md` | **the current build phase** — closing the consequence chain | the phase; its gap list is now these documents |
 | `loop-brief.md` | measurements of what the build does | the evidence these plans rest on |
 | `design/*` | **the plans to finish the engine** | subordinate to the bible |
 
@@ -187,6 +187,7 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `11-foreign-affairs.md` | light-lag as the organising axis; anchors, Kessler severance, metanationals | Claude |
 | `12-the-sitting-screen.md` | the expanded choice, cabinet advice, the confirmation rule, the order paper as the docket | Claude |
 | `13-money-and-supply.md` | the fiscal currency, the Appropriation Bill, what confidence-and-supply means | canon, then Claude |
+| `14-the-player-character.md` | how malleable Flash is, what must already be true about her, what the player is expected to do | the narrative pass |
 
 Every document ends with an **Acceptance** section naming the assertions that
 must exist in `npm run check` before it can be called done. That is the project's
