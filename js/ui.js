@@ -1134,9 +1134,46 @@ const UI = (function () {
     }
     if (!currentEvent) currentEvent = Engine.nextEvent(st, C);
     if (!currentEvent) {
-      box.innerHTML = `<div class="note">Nothing on the order paper demands a decision this sitting.</div>` +
-        `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`;
+      /* A QUIET SITTING IS NOT THE SAME AS AN EMPTY GAME, and the screen
+         used to say the same sentence for both. A player met "nothing
+         demands a decision this sitting", pressed Rise, met it again,
+         and pressed Rise thirty times before anything happened —
+         reading it as a missing placeholder rather than as the state of
+         the world, which is a fair reading of it.
+
+         So: look ahead. If something is coming, offer to sit through to
+         it in one act and say what happened on the way. If nothing is
+         coming at all, say THAT, plainly, because a game that has run
+         out of content should admit it rather than let the player keep
+         clicking. */
+      const ahead = lookAhead();
+      box.innerHTML =
+        `<div class="note">${ahead.n === 0
+          ? "There is no further business before the House. Nothing in the order " +
+            "paper will call for a decision, however long the session runs."
+          : "Nothing on the order paper demands a decision this sitting."}</div>` +
+        (ahead.n > 0
+          ? `<div class="btnrow">
+               <button class="btn" id="btn-advance">Rise until the next sitting</button>
+               ${ahead.n > 1 ? `<button class="btn" id="btn-until">Sit until there is business
+                 <i>${ahead.n} sittings</i></button>` : ""}
+             </div>`
+          : `<div class="btnrow"><button class="btn" id="btn-advance">Rise until the next sitting</button></div>`);
       $("#btn-advance").addEventListener("click", rise);
+      const until = $("#btn-until");
+      if (until) until.addEventListener("click", () => {
+        const from = st.sitting;
+        /* Capped, and it stops the moment anything arrives. The cap is
+           the same number lookAhead scans, so the button never promises
+           a distance it will not go. */
+        for (let i = 0; i < LOOKAHEAD && !Engine.nextEvent(st, C); i++) Engine.advance(st, C);
+        currentEvent = null; lastResult = null;
+        cue("stamp");
+        if (typeof Wait !== "undefined") Wait.brief(520);
+        setStatus("The House sat " + (st.sitting - from) + " times without a division · sitting " +
+                  st.sitting, "transient");
+        drawAll(); saved(); afterAction(); reveal();
+      });
       return;
     }
     const e = currentEvent;
@@ -1182,6 +1219,25 @@ const UI = (function () {
       drawAll(); afterAction();
       revealNode($("#sitting-outcome"), e);
     }));
+  }
+
+  /* HOW FAR AWAY THE NEXT DECISION IS, without taking it.
+
+     Engine.nextEvent MUTATES — it pulls a due event off the queue — so
+     this looks ahead on a COPY of the state and never on the live one.
+     A read that quietly consumed the next event would be a very hard
+     bug to find. */
+  const LOOKAHEAD = 40;
+  function lookAhead() {
+    let probe;
+    try { probe = Engine.load(Engine.save(st), C); }
+    catch (e) { return { n: 1 }; }
+    for (let i = 1; i <= LOOKAHEAD; i++) {
+      Engine.advance(probe, C);
+      if (Engine.nextEvent(probe, C)) return { n: i };
+      if (Engine.checkLoss(probe, C).lost) return { n: i };
+    }
+    return { n: 0 };
   }
 
   function rise() {

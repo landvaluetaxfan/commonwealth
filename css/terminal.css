@@ -1304,7 +1304,14 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
   border-bottom:1px solid var(--chrome-dkr);border-right:1px solid var(--chrome-dkr);
   background:var(--chrome);
 }
-.ch.open{background:var(--paper);border-color:#d8c07a;}
+/* --field, not --paper. There is no --paper token, and an undefined
+   custom property does NOT fall back to the .ch background above it:
+   an invalid var() is "invalid at computed-value time", so
+   background-color computes to its INITIAL value, transparent. The open
+   row went see-through and the light panel stock showed through it as a
+   white flash. Second time this token has been invented; tools/lint.js
+   now fails on an undefined custom property. */
+.ch.open{background:var(--field);border-color:#d8c07a;}
 /* SELECTED IS THE GOLD TINT, the standard every table in the game now
    uses (tr.sel). The open row used to be the dark inverted block, which
    is precisely the treatment that was retired from the tables for
@@ -1387,10 +1394,18 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
    event left a third of the screen as bare chrome under the panel — the
    one screen the player spends most of their time on, and the emptiest.
    The prose column scrolls inside its panel instead. */
-.g-sit{height:100%;align-items:stretch;grid-template-rows:minmax(0,1fr);}
-#s-sit.screen.on{display:flex;flex-direction:column;}
+/* The grid is a flex child of the screen and takes its height from
+   `flex:1 1 auto` below. `height:100%` here resolved against a screen of
+   auto height, so it did nothing, and an expanded row grew the grid past
+   the viewport — the window "expanding" underneath the decision. The
+   screen gets the definite height instead, exactly as #s-orb does. */
+.g-sit{align-items:stretch;grid-template-rows:minmax(0,1fr);}
+#s-sit.screen.on{display:flex;flex-direction:column;height:100%;min-height:0;}
 #s-sit .grid{flex:1 1 auto;min-height:0;}
 #s-sit .panel{min-height:0;}
 #s-sit #sitting-body{overflow:auto;}
 #s-sit .stack{min-height:0;overflow:auto;}
 #sb-owed{border-left:3px solid currentColor;padding-left:5px;font-weight:700;}
+/* the second button on a quiet sitting carries its distance */
+#btn-until i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.72;
+  display:block;letter-spacing:0;text-transform:none;}

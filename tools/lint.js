@@ -130,6 +130,46 @@ n += section("IN PROSE BUT NOT IN THE GLOSSARY", sus,
   s => `"${s}" — used in ${seenSuspect[s].join(", ")}`);
 
 /* =============================================================
+   UNDEFINED CUSTOM PROPERTIES
+
+   A var() naming a property nothing defines is invalid at
+   computed-value time, and the property then computes to its INITIAL
+   value - NOT to whatever the cascade set earlier. So one typo turns a
+   background transparent, a colour black, or a border none, silently
+   and only sometimes visibly.
+
+   This has now happened twice with the same invented token, which is
+   the definition of a check worth having. Hard failure.
+   ============================================================= */
+const cssBad = [];
+try {
+  const css = fs.readFileSync(path.join(root, "css", "terminal.css"), "utf8");
+  const defined = new Set();
+  (css.match(/(^|[;{\s])(--[A-Za-z0-9_-]+)\s*:/g) || []).forEach(m =>
+    defined.add(m.replace(/[;{\s]/g, "").replace(/:$/, "")));
+  /* A property may legitimately be set from script at runtime -
+     --len is written per-element for the signature stroke - so js/ is
+     scanned too. Without this the check cries wolf and gets disabled,
+     which is how a check stops being a check. */
+  fs.readdirSync(path.join(root, "js")).filter(f => /\.js$/.test(f)).forEach(f => {
+    const src3 = fs.readFileSync(path.join(root, "js", f), "utf8");
+    (src3.match(/setProperty\(\s*["'](--[A-Za-z0-9_-]+)["']/g) || []).forEach(m =>
+      defined.add(m.replace(/.*["'](--[A-Za-z0-9_-]+)["'].*/, "$1")));
+  });
+  const used = {};
+  let m, re = /var\(\s*(--[A-Za-z0-9_-]+)\s*([,)])/g;
+  while ((m = re.exec(css))) {
+    /* var(--x, fallback) is safe: the fallback is what renders. */
+    if (m[2] === ",") continue;
+    if (!defined.has(m[1])) used[m[1]] = (used[m[1]] || 0) + 1;
+  }
+  Object.keys(used).sort().forEach(k =>
+    cssBad.push(`${k} is used ${used[k]} time(s) and defined nowhere`));
+} catch (e) { cssBad.push("could not read the stylesheet: " + e.message); }
+
+section("UNDEFINED CSS CUSTOM PROPERTIES", cssBad, x => x);
+
+/* =============================================================
    THE CONSEQUENCE CHAIN (bible 7.9)
 
    7.9 states the chain and then states a design rule about it:
@@ -252,10 +292,11 @@ R.push("=".repeat(60));
 R.push(n ? `${n} legibility issues` : "no legibility issues");
 if (artBad.length) R.push(`${artBad.length} ARTIFACT SHAPE FAILURES`);
 if (chainBad.length) R.push(`${chainBad.length} BREAKS IN THE CONSEQUENCE CHAIN`);
+if (cssBad.length) R.push(`${cssBad.length} UNDEFINED CSS CUSTOM PROPERTIES`);
 console.log(R.join("\n"));
 /* The chain is reported loudly and does NOT fail the build yet: the
    current content breaks it in several places by omission, and a check
    that fails from the day it lands gets disabled rather than fixed. It
    becomes a hard failure when the content pass in design/03 closes the
    rows below. */
-if (artBad.length) process.exit(1);
+if (artBad.length || cssBad.length) process.exit(1);
