@@ -18,6 +18,12 @@ const SETUP = {
             merges seats back into multi-member districts. */
          district_divisor:"fptp", list_divisor:"dhondt" },
   slotsPerSession: 6,
+  /* HOW LONG A SESSION RUNS, in sittings. The House rises at the end of it:
+     order-paper time refills, business not carried falls, and anything owed
+     "before the House rises" comes due. Bible 7.7 calls order-paper time the
+     currency that cannot be topped up — this is the period it cannot be
+     topped up WITHIN. */
+  sittingsPerSession: 24,
   /* opening ledger. Positive means they owe you. */
   capital: { psa: 2, rv: -3, upl: 0, geo: 1 },
   president: { id:"tenaya", relationship:22,

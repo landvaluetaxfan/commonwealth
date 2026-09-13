@@ -1409,3 +1409,10 @@ body.explaining [data-tip]{box-shadow:inset 0 -2px 0 var(--rule);}
 /* the second button on a quiet sitting carries its distance */
 #btn-until i{font-style:normal;font-family:var(--f-data);font-size:9.5px;opacity:.72;
   display:block;letter-spacing:0;text-transform:none;}
+#sit-docket .dk.div b{font-weight:700;}
+#sit-docket .dk.div{border-left:3px solid var(--rule);padding-left:6px;}
+/* the session's end is the horizon, so it is ruled off from the business */
+#sit-docket .dk.rises{border-top:1px solid var(--rule);margin-top:3px;padding-top:4px;}
+#sit-docket .dk.rises b{font-family:var(--f-data);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-soft);}
+#sit-docket .dk.rises.late b,#sit-docket .dk.rises.late i{color:var(--alert);}

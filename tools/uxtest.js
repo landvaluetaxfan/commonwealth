@@ -691,4 +691,82 @@ try {
      w.document.querySelector("#sb-owed").textContent === "");
 } catch (e) { ok("undertakings and the docket", false, e.message); }
 
+
+/* =============================================================
+   THE CALENDAR — a session, and a division with a day.
+
+   The order paper was a list: nothing advanced the session, nothing
+   refilled the slots, and a division happened whenever the player
+   called for one. These assert that it is a schedule now, and in
+   particular that the two things which must NOT change have not:
+   an instrument is still immediate, and a division still resolves
+   the same however it is watched.
+   ============================================================= */
+try {
+  const E = w.eval("Engine"), Cx = w.eval("CONTENT");
+  const mk = () => w.eval("Engine.newGame(CONTENT)");
+
+  const st0 = mk();
+  ok("a session has an end", st0.sessionEnds > st0.sitting, "rises at " + st0.sessionEnds);
+
+  /* granting the last slot SETS a day rather than opening a window */
+  const a = mk();
+  let guard = 0;
+  while (a.bills.divergence.stage !== "third_reading" && guard++ < 8) E.grantSlot(a, Cx, "divergence");
+  ok("reaching the division stage sets a day", a.bills.divergence.dividesOn > a.sitting,
+     "sitting " + a.bills.divergence.dividesOn);
+  ok("and the division is refused before it",
+     E.canDivide(a, Cx, "divergence").ok === false &&
+     E.divide(a, Cx, "divergence").ok === false);
+  const dayOf = a.bills.divergence.dividesOn;
+  while (a.sitting < dayOf) {
+    ok("refused on sitting " + a.sitting, E.canDivide(a, Cx, "divergence").ok === false);
+    E.advance(a, Cx);
+  }
+  ok("and allowed on the day", E.canDivide(a, Cx, "divergence").ok === true);
+  ok("the division then resolves", !!E.divide(a, Cx, "divergence").result);
+
+  /* prorogation */
+  const b = mk();
+  const liveBefore = Object.keys(b.bills).filter(k => !b.bills[k].dead).length;
+  const drafting = Object.keys(b.bills).filter(k => b.bills[k].stage === "drafting").length;
+  const si = (Cx.instruments || [])[0].id;
+  E.makeInstrument(b, Cx, si);
+  E.grantSlot(b, Cx, "divergence");
+  const sess = b.session;
+  /* Compute the target ONCE: b.sitting climbs while the bound would
+     shrink, so a live expression here exits the loop about halfway. */
+  const riseAt = b.sessionEnds + 2;
+  while (b.sitting < riseAt) E.advance(b, Cx);
+  ok("the House rises and a new session opens", b.session === sess + 1,
+     "session " + b.session);
+  ok("order-paper time refills", b.slots.used === 0);
+  ok("business not carried falls",
+     Object.keys(b.bills).filter(k => !b.bills[k].dead).length < liveBefore);
+  ok("but a bill never introduced does not fall",
+     Object.keys(b.bills).filter(k => b.bills[k].stage === "drafting").length === drafting,
+     drafting + " in drafting");
+  ok("and an instrument in force survives it",
+     b.instruments[si].inForce || b.instruments[si].made);
+  ok("the next rise is scheduled", b.sessionEnds > b.sitting);
+
+  /* an undertaking owed before the House rises */
+  const c = mk();
+  E.apply(c, Cx, [{ undertake: { id: "cal_probe", text: "before the House rises",
+                                 by: null, discharge: { flag: "never" } } }]);
+  ok("by:null means the House rising, not a sitting number",
+     c.undertakings[0].by === null);
+  for (let i = 0; i < 5; i++) E.advance(c, Cx);
+  ok("so it does not break early", c.undertakings[0].state === "open");
+  const cRise = c.sessionEnds + 2;
+  while (c.sitting < cRise) E.advance(c, Cx);
+  ok("and breaks at prorogation", c.undertakings[0].state === "broken");
+
+  /* the docket says when the House rises, always */
+  w.eval('UI.boot(UI.state(), CONTENT);');
+  w.document.querySelector('.tab[data-t="sit"]').click();
+  ok("the docket carries the session's end",
+     /House rises/i.test(w.document.querySelector("#sit-docket").textContent));
+} catch (e) { ok("the calendar", false, e.message); }
+
 H.finish("the interface is healthy");

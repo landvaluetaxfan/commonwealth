@@ -13,7 +13,7 @@
 const Engine = (function () {
   "use strict";
 
-  const STATE_VERSION = 9;   // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed
+  const STATE_VERSION = 10;  // 3 prices, 4 cabinet+instruments, 5 the district roll, 6 content reconciliation, 7 the functional roll, 8 undertakings, 9 the seed, 10 the calendar
 
   /* ---------------------------------------------------------
      1. STATE
@@ -102,6 +102,13 @@ const Engine = (function () {
          test.js asserts newGame is pure and repeatable. Shell passes a
          real one when a player starts a game. */
       seed: (seed == null ? 20287 : (seed >>> 0)) || 1,
+
+      /* THE CALENDAR. A session has an end, and that is what makes the
+         order paper a schedule rather than a list. Everything with a
+         deadline counts toward this sitting: slots refill here, business
+         not carried falls here, and an undertaking owed before the House
+         rises comes due here. */
+      sessionEnds: (C.setup.sittingsPerSession || 24),
 
       queue: [],      // [{eventId, dueSitting}]
       seen: {},       // eventId -> times fired
@@ -193,6 +200,12 @@ const Engine = (function () {
     if (st.version < 9) {                     // the seed
       if (!st.seed) st.seed = 20287;
       st.version = 9;
+    }
+    if (st.version < 10) {                    // the calendar
+      /* An older save is mid-session by definition, so it is given a full
+         session from where it stands rather than being prorogued on load. */
+      if (st.sessionEnds == null) st.sessionEnds = st.sitting + 24;
+      st.version = 10;
     }
     return st;
   }
@@ -827,6 +840,8 @@ const Engine = (function () {
      paying for it clears it. Callers use this rather than sequencing it
      themselves. */
   function divide(st, C, billId) {
+    const chk = canDivide(st, C, billId);
+    if (!chk.ok) return { ok: false, reason: chk.reason, result: null, paid: null, assent: null };
     const b = C.billById[billId];
     const result = division(st, C, billId);     // whips still in place
     const paid = payWhips(st, C, billId);       // now charge for them
@@ -961,6 +976,9 @@ const Engine = (function () {
     else return { ok: false, reason: 'unknown stage "' + bs.stage + '"' };
     st.slots.used += 1;
     (st.slotsGranted || (st.slotsGranted = [])).push(billId);
+    /* Two sittings' notice. Long enough for the benches to be worked,
+       short enough that the session can still hold a division. */
+    if (bs.stage === DIVIDES_AT && bs.dividesOn == null) bs.dividesOn = st.sitting + 2;
     let gained = 0;
     const owner = b.owner;
     if (owner && owner !== st.playerParty && st.capital[owner] != null) {
@@ -1348,7 +1366,12 @@ const Engine = (function () {
       if ((st.undertakings || []).some(x => x.id === u.id && x.state === "open")) return;
       st.undertakings.push({
         id: u.id, text: u.text || u.id, owed_to: u.owed_to || null,
-        by: st.sitting + (u.by == null ? 3 : u.by),
+        /* `by` counts sittings from now. An EXPLICIT null means "before
+           the House rises" and comes due at prorogation instead, which
+           is the deadline an author usually means and could not
+           previously express without guessing a sitting number. */
+        by: (Object.prototype.hasOwnProperty.call(u, "by") && u.by === null)
+              ? null : st.sitting + (u.by === undefined ? 3 : u.by),
         discharge: u.discharge || null, onBreach: u.onBreach || null,
         state: "open", made: st.sitting
       });
@@ -1734,6 +1757,82 @@ const Engine = (function () {
     return marks;
   }
 
+  /* ---------------------------------------------------------
+     PROROGATION — the House rises
+
+     THE ONE THING THAT MAKES THE ORDER PAPER A SCHEDULE. Until this
+     existed, order-paper time was a lifetime allowance, nothing was ever
+     due, and a bill could sit at committee forever at no cost. 7.7 calls
+     time "the currency that cannot be topped up"; this is the period it
+     cannot be topped up within.
+
+     BILLS DIE AND INSTRUMENTS SURVIVE. That asymmetry is already the
+     argument the Papers screen makes — a bill needs a majority and
+     cannot be undone, an order needs no majority and can be revoked —
+     and prorogation sharpens it into a reason to reach for the fast,
+     deniable tool.
+
+     IT IS NOT A TURN LIMIT. Nothing is lost that cannot be brought back
+     next session, poorer. The boundary is a cost, not a fail state.
+     --------------------------------------------------------- */
+  function prorogue(st, C) {
+    const fell = [];
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || bs.dead) return;
+      if (bs.stage === "assented" || bs.stage === "in_force") return;
+      /* A bill still in drafting has not been introduced, so there is
+         nothing before the House to fall. It waits for the next session
+         with its stage intact — which is also what keeps prorogation
+         from wiping the whole legislative programme on the first pass. */
+      if (bs.stage === "drafting") return;
+      bs.stage = "fallen"; bs.dead = true; bs.dividesOn = null;
+      fell.push(b.title);
+    });
+
+    /* Owed "before the House rises" — by:null — comes due here rather
+       than on a sitting number the author had to guess. */
+    (st.undertakings || []).forEach(u => {
+      if (u.state !== "open" || u.by != null) return;
+      u.state = "broken";
+      st.log.unshift({ sitting: st.sitting, text: "Undertaking broken at prorogation — " + u.text });
+      if (u.onBreach && C.eventById && C.eventById[u.onBreach])
+        st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
+    });
+
+    st.session += 1;
+    st.slots.used = 0;
+    st.slotsGranted = [];
+    st.sessionEnds = st.sitting + (C.setup.sittingsPerSession || 24);
+    st.log.unshift({ sitting: st.sitting,
+      text: "The House rises. Session " + st.session + " opens" +
+            (fell.length ? "; " + fell.length + " bill" + (fell.length > 1 ? "s" : "") +
+             " fell" : "") + "." });
+    st.wire.unshift({ sitting: st.sitting,
+      text: "THE HOUSE RISES" + (fell.length ? "; " + fell.length + " BILL" +
+        (fell.length > 1 ? "S FALL" : " FALLS") : "") });
+    return fell;
+  }
+
+  /* A division has a DAY. Granting the last slot schedules it; it does
+     not fire it. The player still chooses whether and when to schedule,
+     which is the government's real power over the order paper — but
+     having scheduled it they must live in the sittings before it, which
+     is where whipping and (later) amendment and lobbying belong. */
+  function canDivide(st, C, billId) {
+    const bs = st.bills[billId];
+    if (!bs) return { ok: false, reason: "no such bill" };
+    if (bs.dead) return { ok: false, reason: "the bill is dead" };
+    /* THE DAY, AND ONLY THE DAY. divide() has never enforced a stage and
+       this is not the change that should start: content and the checks
+       both divide from committee. What is new is that once a division
+       has been SET, it happens then and not before. */
+    if (bs.dividesOn != null && st.sitting < bs.dividesOn)
+      return { ok: false, reason: "the division is set for sitting " + bs.dividesOn,
+               on: bs.dividesOn };
+    return { ok: true };
+  }
+
   function advance(st, C) {
     st.sitting += 1;
     /* A promise not kept by its sitting is broken, once. Breaking it
@@ -1741,12 +1840,13 @@ const Engine = (function () {
        promise belongs where it can be written and argued with, not in a
        silent correction the player never sees. See design/02. */
     (st.undertakings || []).forEach(u => {
-      if (u.state !== "open" || u.by >= st.sitting) return;
+      if (u.state !== "open" || u.by == null || u.by >= st.sitting) return;
       u.state = "broken";
       st.log.unshift({ sitting: st.sitting, text: "Undertaking broken \u2014 " + u.text });
       if (u.onBreach && C && C.eventById && C.eventById[u.onBreach])
         st.queue.push({ eventId: u.onBreach, dueSitting: st.sitting });
     });
+    if (C && st.sessionEnds != null && st.sitting > st.sessionEnds) prorogue(st, C);
     if (C) reviewReturns(st, C);
     if (C) tick(st, C).forEach(m =>
       st.wire.unshift({ sitting: st.sitting, text: m.toUpperCase() }));
@@ -1803,6 +1903,7 @@ const Engine = (function () {
     instrumentsInForce, appoint, vacate,
     whippable, setWhip, whipCost, payWhips, clearWhips, divide, grantSlot, STAGE_ORDER,
     settle, outstanding, describe, grave, choiceOpen, openChoices, draw,
+    prorogue, canDivide,
     federalSuspended,
     CONDITIONS, EFFECTS
   };

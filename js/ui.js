@@ -647,7 +647,18 @@ const UI = (function () {
     const clr = $("#btn-clearwhip");
     if (clr) clr.addEventListener("click", () => { Engine.clearWhips(st, id); drawBill(id); });
 
+    /* A division that has been SET happens on its day. The button says
+       when rather than going quiet: a control that is merely dead tells
+       the player nothing about why. */
+    const dchk = Engine.canDivide(st, C, id);
+    const dbtn = $("#btn-divide");
+    if (dbtn && !dchk.ok && dchk.on != null) {
+      dbtn.disabled = true;
+      dbtn.textContent = "Division set for sitting " + dchk.on;
+      dbtn.title = dchk.reason;
+    }
     $("#btn-divide").addEventListener("click", () => {
+      if (!Engine.canDivide(st, C, id).ok) { cue("deny"); return; }
       /* THE DIVISION RESOLVES HERE, ON THE CLICK, BEFORE ANYTHING IS
          SHOWN. Engine.divide pays the whips, moves the stage, logs it and
          puts the bill in front of the President; the dialog that follows
@@ -1106,12 +1117,31 @@ const UI = (function () {
         <i>${due <= 0 ? "due this sitting" : "by sitting " + u.by}${
           u.owed_to ? " · " + esc(partyName(u.owed_to)) : ""}</i></div>`);
     });
+    /* A DIVISION HAS A DAY, and the day is business. */
+    (C.bills || []).forEach(b => {
+      const bs = st.bills[b.id];
+      if (!bs || bs.dead || bs.dividesOn == null) return;
+      const away = bs.dividesOn - st.sitting;
+      rows.push(`<div class="dk div${away <= 0 ? " late" : ""}">
+        <b>Division: ${esc(b.title)}</b>
+        <i>${away <= 0 ? "today" : "sitting " + bs.dividesOn +
+            " · " + away + " sitting" + (away === 1 ? "" : "s") + " away"}</i></div>`);
+    });
     (C.instruments || []).forEach(si => {
       const x = st.instruments[si.id];
       if (x && x.inForce && x.prayerCloses != null && x.prayerCloses > st.sitting)
         rows.push(`<div class="dk pray"><b>${esc(si.number)}</b>
           <i>prayable for ${x.prayerCloses - st.sitting} more</i></div>`);
     });
+    /* THE SESSION'S END IS ALWAYS ON THE PAPER. It is the cheapest
+       possible source of pressure and it needs no mechanic of its own:
+       everything above it has to happen before it. */
+    if (st.sessionEnds != null) {
+      const left = st.sessionEnds - st.sitting + 1;
+      rows.push(`<div class="dk rises${left <= 3 ? " late" : ""}">
+        <b>The House rises</b><i>sitting ${st.sessionEnds} · ${left} sitting${
+          left === 1 ? "" : "s"} left of session ${st.session}</i></div>`);
+    }
     return rows.length ? rows.join("")
       : `<div class="note">Nothing before the House but the sitting itself.</div>`;
   }

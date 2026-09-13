@@ -60,7 +60,7 @@ const Tips = (function () {
       body: "Sittings of debating time left this session. Granting one to a " +
             "partner's bill advances that bill a stage and puts them in your " +
             "debt; granting one to your own advances nothing but your programme. " +
-            "They do not refill until the session does." },
+            "They do not refill until the House rises and the next session opens." },
     signatures: { title: "Signatures",
       body: "Names Czarnecki has collected toward the nine he needs to force a " +
             "leadership ballot. Your own conduct feeds this counter - packing a " +
