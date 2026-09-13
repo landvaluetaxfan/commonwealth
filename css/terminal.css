@@ -843,11 +843,7 @@ body.menu-on{background:#0b1826;}
 .menu-stage::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
   background:
     linear-gradient(90deg, rgba(12,14,11,.88) 0%, rgba(12,14,11,.6) 34%, rgba(12,14,11,.06) 68%, rgba(12,14,11,0) 100%);}
-.menu-stage::before{content:"Circumterrestrial Commonwealth \2014 Office of the Prime Minister";
-  position:relative;z-index:2;display:block;background:rgba(28,31,25,.72);color:var(--bar-txt);
-  font-family:var(--f-ui);font-size:12px;letter-spacing:.09em;text-transform:uppercase;
-  padding:4px 10px;border-bottom:1px solid rgba(233,234,226,.14);}
-.menu-plate{position:relative;z-index:2;max-width:620px;padding:70px 44px 96px 56px;}
+.menu-plate{position:relative;z-index:2;max-width:620px;padding:52px 44px 96px 56px;}
 .menu-title{font-family:var(--f-disp);color:#fff;line-height:.84;
   text-transform:uppercase;text-shadow:0 2px 24px rgba(0,0,0,.72);}
 .menu-title .w{display:block;font-size:66px;letter-spacing:.06em;}
