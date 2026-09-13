@@ -1,11 +1,11 @@
 # FINISHING THE ENGINE — THE COMPLETION PLAN
 
-**13 September 2026.** Twelve documents specifying every remaining engine system,
+**13 September 2026.** Fourteen documents specifying every remaining engine system,
 in dependency order, to the point where `js/engine.js` is done and the project is
 content work plus interface work and nothing else.
 
 **Read this file first.** It defines what "finished" means, and the three tests
-every proposal in the other eleven had to pass. Several obvious-sounding features
+every proposal in the other thirteen had to pass. Several obvious-sounding features
 are specified here as *smaller* than they sound, because canon forbids the large
 version — that is not caution, it is the design.
 
@@ -59,7 +59,7 @@ Most of what looks missing is missing *eyes*, not missing machinery.
 
 ## 2. The three tests
 
-Every proposal in `01`–`11` had to pass all three. Anything that fails one is
+Every proposal in `01`–`13` had to pass all three. Anything that fails one is
 either cut or reduced until it passes, and where something was reduced the
 document says so.
 
@@ -119,7 +119,11 @@ Nothing here is a schedule. Arrows are hard dependencies.
                         │                                        │
                         ├──> 07 bargaining ──────────────────────┘
                         │
-                        └──> 09 knowledge ──────> 11 foreign affairs
+                        ├──> 09 knowledge ──────> 11 foreign affairs
+                        │
+                        ├──> 12 the sitting screen   (the interface half of 02)
+                        │
+                        └──> 13 money and supply ────────────> 10 election
 ```
 
 `05` is a framing document rather than a build: it decides how strict the
@@ -137,6 +141,11 @@ more numbers nobody sees.
 **One thing from `05` lands early**, with `01`: `content/setup.js` becomes a list
 rather than a singleton. It is an afternoon now and a week after fifty places
 have assumed it is singular.
+
+**`13` is a canon decision before it is an engine change.** Lock §7.5.3, name the
+unit, and amend §7.6's treasury line in `bible.md` first. It shares the
+escalation ladder with `03` and it must land before `10`, because an election
+fought with no budget in the record is an election about nothing.
 
 **`11` last**, and Part XVI is explicit about why: not before chapter one has
 about twenty-five events. It has twelve.
@@ -176,6 +185,8 @@ binding constraint, and no document here should be built as a block ahead of it.
 | `09-knowledge.md` | secrets, scandal, the distribution list, attestation | Claude |
 | `10-the-election.md` | dissolution, the campaign, Election Night, the changed electorate | Claude |
 | `11-foreign-affairs.md` | light-lag as the organising axis; anchors, Kessler severance, metanationals | Claude |
+| `12-the-sitting-screen.md` | the expanded choice, cabinet advice, the confirmation rule, the order paper as the docket | Claude |
+| `13-money-and-supply.md` | the fiscal currency, the Appropriation Bill, what confidence-and-supply means | canon, then Claude |
 
 Every document ends with an **Acceptance** section naming the assertions that
 must exist in `npm run check` before it can be called done. That is the project's

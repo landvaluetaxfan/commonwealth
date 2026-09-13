@@ -85,6 +85,20 @@ in the event, where it can be written, argued with and refracted through whoever
 is telling you about it.** An engine that docked eight loyalty silently would be
 cheaper and much worse.
 
+**The order paper carries the item.** This is the connective tissue between the
+two screens and it needs no new surface: the Government screen already has
+`<h2>Order paper <em>select a bill</em></h2>` over `#gov-bills`, currently
+listing bills. An order paper in any real parliament lists **the business**, and
+an outstanding undertaking is business.
+
+> **Promising something puts an item on the order paper. The order paper is
+> where you go to carry it out.**
+
+An order paper that listed only the player's own promises would be a to-do list
+wearing a hat, so it lists everything before the House — bills at their stage,
+instruments awaiting signature, prayer windows open, papers to be laid, and
+undertakings. `12` specifies the surface in full.
+
 **The status bar carries the count.** "2 outstanding" beside the sitting number.
 This is what makes "Rise until the next sitting" stop being free, and it costs
 one line in `drawStatus()`.
@@ -115,23 +129,13 @@ null when the promise was made publicly.
 **Not a replacement for the queue.** `queue` schedules an event; an undertaking
 tracks an obligation and may or may not end in one.
 
-## 6. The split window
+## 6. The interface
 
-The interface half of this, specified here because it is what makes the mechanic
-legible rather than bureaucratic. Sitting, when a choice carries an undertaking,
-opens onto:
-
-- **the instrument on the right** — the actual order, bill clause or paper, drawn
-  with the Papers screen's own stock, because it is the same object;
-- **the longer description in a dropdown**, closed by default (§2.6: explanation
-  cost is the real budget — an expandable is how you pay it only when asked);
-- **advisor disagreement along the bottom** — *not* an impact table. Two named
-  ministers who want opposite things is a decision; "loyalty −9" is a number
-  players learn to optimise. The cabinet is already data with holders and
-  titles, so an advisor line keyed on the minister whose brief the decision
-  touches costs nothing structural;
-- **the forecast, attributed and fallible.** See `07` §6: the count is the
-  whips' estimate, it carries a stated provenance, and it can be wrong.
+Specified in full in **`12-the-sitting-screen.md`** — the expanded choice, the
+derived reading of what a choice does, cabinet advice, the confirmation rule, and
+the order paper as the docket. It is a separate document because it is a
+substantial build in its own right, and because the mechanic here is worth
+nothing if the player cannot read it.
 
 ## 7. Acceptance
 
